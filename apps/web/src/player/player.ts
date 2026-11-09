@@ -2,6 +2,7 @@
 
 import type {
   AccountResponse,
+  AppStatusResponse,
   BoosterWalletResponse,
   CarnetResponse,
   EditionsResponse,
@@ -28,6 +29,9 @@ export const levelRewards = sharedResource<LevelRewardsResponse>(api.fetchLevelR
 
 /** Guest or member. */
 export const account = sharedResource<AccountResponse>(api.fetchAccount);
+
+/** What this API offers: Google sign-in, the patron subscription on sale. */
+export const appStatus = sharedResource<AppStatusResponse>(api.fetchAppStatus);
 
 /** Pseudo, avatar, cosmetics, pinned cards, figures. */
 export const profile = sharedResource<ProfileResponse>(api.fetchProfile);

@@ -15,7 +15,15 @@ import { myClan } from "@/player/clan";
 import { joustsOverview } from "@/player/jousts";
 import { mailbox } from "@/player/mail";
 import { incomingOffers } from "@/player/offers";
-import { account, carnet, levelRewards, profile, wallet, welcomeWeek } from "@/player/player";
+import {
+  account,
+  appStatus,
+  carnet,
+  levelRewards,
+  profile,
+  wallet,
+  welcomeWeek,
+} from "@/player/player";
 import { useShared, useSharedWhen } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
 
@@ -27,6 +35,7 @@ export function usePlayerView() {
   const who = useShared(account);
   const offers = useShared(incomingOffers);
   const me = useShared(profile);
+  const status = useShared(appStatus);
   const clan = useShared(myClan);
   const mail = useShared(mailbox);
   const welcome = useShared(welcomeWeek);
@@ -59,6 +68,9 @@ export function usePlayerView() {
     rewardsWaiting: coffrets.length + (welcomeWaits(welcome) ? 1 : 0) + (carnetWaits(card) ? 1 : 0),
     /** The patron's mark, `null` for who has none or until read. */
     patron: me?.patron ?? null,
+    /** Leads to the patron page: once sales open, and before to a patron or an admin. */
+    patronDoor:
+      me?.patron != null || (who?.kind === "member" && who.isAdmin) || status?.patronOffer === true,
     /** The title worn: the one chosen in the atelier, else the latest won. */
     title: me !== null ? me.title : now === 0 ? null : playerTitle(claimed, now),
     guest: who?.kind === "guest",

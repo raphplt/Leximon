@@ -28,7 +28,11 @@ describe("api", () => {
       {},
       { ...testEnv(), MOBILE_MIN_VERSION: "1.2.0" },
     );
-    expect(await response.json()).toEqual({ mobileMinVersion: "1.2.0", googleSignIn: false });
+    expect(await response.json()).toEqual({
+      mobileMinVersion: "1.2.0",
+      googleSignIn: false,
+      patronOffer: true,
+    });
   });
 
   it("locks nobody out on a malformed minimum version", async () => {
@@ -37,7 +41,20 @@ describe("api", () => {
       {},
       { ...testEnv(), MOBILE_MIN_VERSION: "1.2" },
     );
-    expect(await response.json()).toEqual({ mobileMinVersion: "0.0.0", googleSignIn: false });
+    expect(await response.json()).toEqual({
+      mobileMinVersion: "0.0.0",
+      googleSignIn: false,
+      patronOffer: true,
+    });
+  });
+
+  it("hides the patron offer until sales open", async () => {
+    const response = await createApp().request(
+      "/app",
+      {},
+      { ...testEnv(), PATRON_SALES: "closed" },
+    );
+    expect(await response.json()).toMatchObject({ patronOffer: false });
   });
 
   it("sets security headers", async () => {

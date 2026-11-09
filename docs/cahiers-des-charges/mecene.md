@@ -19,7 +19,7 @@
 
 ### Page Mécène, sur le web
 
-- **Avant l'ouverture** (vente fermée, `PATRON_SALES`) : la fausse porte, avec les avantages de P73 réécrits, le prix et « Préviens-moi ».
+- **Avant l'ouverture** (vente fermée, `PATRON_SALES`) : la page et son entrée dans le menu sont cachées à qui ne peut pas encore acheter (choix du 2026-11-09) ; `/mecene` renvoie vers Jouer. Seuls les admins et les mécènes la voient. La fausse porte (avantages, prix, « Préviens-moi ») ne sert plus qu'à qui ne peut pas acheter une fois la vente ouverte.
 - **Vente ouverte, joueur non abonné** :
   - les avantages, le cosmétique du mois (« Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. »), le prix ;
   - deux choix, « 3,99 € par mois » et « 29,99 € par an », et « résiliable en un clic » ;

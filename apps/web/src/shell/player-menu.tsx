@@ -44,6 +44,9 @@ export function PlayerMenu({
   const [appearanceFresh, appearanceSeen] = useSeenFlag(APPEARANCE_NEW_KEY);
 
   const admin: Item[] = view.admin ? [{ label: "Admin", icon: "cle", href: "/admin" }] : [];
+  const patron: Item[] = view.patronDoor
+    ? [{ label: patronMenuLabel(view.patron), icon: "crown", href: "/mecene" }]
+    : [];
   // Until the account is read, the account page: it knows what to offer either way.
   const account: readonly Item[] = view.member
     ? [{ label: "Déconnexion", icon: "logout", action: () => setSignOutOpen(true) }]
@@ -64,7 +67,7 @@ export function PlayerMenu({
     ],
     [
       { label: "Nouveautés", icon: "bolt", href: "/nouveautes" },
-      { label: patronMenuLabel(view.patron), icon: "crown", href: "/mecene" },
+      ...patron,
       { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },
       ...admin,
     ],

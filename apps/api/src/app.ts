@@ -42,6 +42,7 @@ import {
 } from "./middleware/rate-limit";
 import { type BillingFactory, createStripeBilling } from "./patron/billing";
 import { createDiscordApi, type DiscordFactory } from "./patron/discord";
+import { patronSales } from "./patron/patron";
 import {
   adminPatronRoutes,
   discordRoutes,
@@ -123,6 +124,7 @@ export function createApp(options: AppOptions = {}) {
     return c.json<AppStatusResponse>({
       mobileMinVersion: minimum.success ? minimum.data : "0.0.0",
       googleSignIn: googleSignInConfigured(c.env),
+      patronOffer: patronSales(c.env) === "open",
     });
   });
 

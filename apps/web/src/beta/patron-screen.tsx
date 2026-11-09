@@ -210,6 +210,14 @@ function PatronPage() {
     };
   }, [fromPortal, load, router, thanks]);
 
+  const guest = me !== null && !me.member;
+  const kind = patron === null ? null : patronPageKind(patron, guest);
+  // Before sales open, the page is kept from whoever cannot buy yet.
+  const hidden = kind === "door" && patron?.sales !== "open";
+  useEffect(() => {
+    if (hidden) router.replace("/jouer");
+  }, [hidden, router]);
+
   if (patron === null && failed) {
     return (
       <main className={styles.page}>
@@ -217,10 +225,9 @@ function PatronPage() {
       </main>
     );
   }
-  if (patron === null) return <main className={styles.page} />;
+  if (patron === null || kind === null || hidden) return <main className={styles.page} />;
 
-  const guest = me !== null && !me.member;
-  switch (patronPageKind(patron, guest)) {
+  switch (kind) {
     case "member":
       return thanks ? (
         <Thanks
