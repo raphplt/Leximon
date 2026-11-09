@@ -6,9 +6,11 @@ import {
   clockShare,
   completeDeck,
   deadlineText,
+  deckCostLegend,
   deckPointsLine,
   deckPoolGroups,
   deckRoomLine,
+  deckRuleLine,
   forfeitLine,
   ghostLine,
   joustLine,
@@ -21,6 +23,7 @@ import {
   scoreText,
   secondsLeft,
   seeAllEndedText,
+  sortDeckPool,
   sortJousts,
   toggleDeckCard,
   trappedLine,
@@ -288,5 +291,44 @@ describe("the deck's points on the hall", () => {
     expect(deckPointsLine(25, 25)).toBe("Ton deck utilise ses 25 points.");
     expect(deckPointsLine(24, 25)).toBe("Il te reste 1 point pour ton deck.");
     expect(deckPointsLine(21, 25)).toBe("Il te reste 4 points pour ton deck.");
+  });
+});
+
+describe("the deck window", () => {
+  it("says the rule with its figures", () => {
+    expect(deckRuleLine(10, 25)).toBe(
+      "Chaque carte coûte des points selon sa rareté. Ton deck en a 25 pour 10 cartes au plus.",
+    );
+  });
+
+  it("gives each rarity its cost, the commonest first", () => {
+    const legend = deckCostLegend(Date.parse("2026-11-09T10:00:00Z"));
+    expect(legend.map((item) => item.rarity)).toEqual([
+      "common",
+      "uncommon",
+      "rare",
+      "precious",
+      "epic",
+      "legendary",
+    ]);
+    expect(legend.map((item) => item.cost)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it("sorts the words alphabetically, or those that trapped the most first", () => {
+    const cards = ["palus", "abajoue", "chloris"].map((word) => ({ cardId: word, card: { word } }));
+    const trapped = new Map([
+      ["chloris", 3],
+      ["palus", 1],
+    ]);
+    expect(sortDeckPool(cards, "word", trapped).map((card) => card.cardId)).toEqual([
+      "abajoue",
+      "chloris",
+      "palus",
+    ]);
+    expect(sortDeckPool(cards, "traps", trapped).map((card) => card.cardId)).toEqual([
+      "chloris",
+      "palus",
+      "abajoue",
+    ]);
   });
 });

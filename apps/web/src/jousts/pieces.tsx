@@ -2,7 +2,9 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
-import { answerTimeText, FURET, formatCount, trappedText } from "@leximon/view-model";
+import type { Rarity } from "@leximon/core";
+import { cssFill, rarityStyles } from "@leximon/tokens";
+import { answerTimeText, FURET, trappedText } from "@leximon/view-model";
 import type { CSSProperties, ReactNode } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
@@ -15,6 +17,23 @@ import styles from "./jousts.module.css";
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
 export const rise = (index: number) => ({ "--rise": index }) as CSSProperties;
 
+/** What a card costs in a deck: a gem cut in the colour of its rarity. */
+export function CostGem({ rarity, cost }: { readonly rarity: Rarity; readonly cost: number }) {
+  return (
+    <span
+      className={styles.gem}
+      style={
+        {
+          "--gem": cssFill(rarityStyles[rarity].band),
+          "--gem-ink": rarityStyles[rarity].bandInk,
+        } as CSSProperties
+      }
+    >
+      <span>{cost}</span>
+    </span>
+  );
+}
+
 /**
  * A card of the deck, the real face at a small size: its cost on a gold coin when asked, and the
  * opponents it trapped on a red seal.
@@ -24,17 +43,14 @@ export function MiniCard({
   width,
   cost,
   trapped = 0,
-  sealLeft = false,
   className,
   style,
 }: {
   readonly card: CatalogCard;
   readonly width: number;
   readonly cost?: number | undefined;
-  /** Opponents the card trapped, shown as a seal under it. */
+  /** Opponents the card trapped, said on a ribbon across its foot. */
   readonly trapped?: number;
-  /** In a fan, where the next card covers the right edge, the seal moves to the left. */
-  readonly sealLeft?: boolean;
   readonly className?: string | undefined;
   readonly style?: CSSProperties | undefined;
 }) {
@@ -42,8 +58,12 @@ export function MiniCard({
   return (
     <span
       className={`${styles.mini} ${className ?? ""}`}
-      data-seal-left={sealLeft || undefined}
-      style={{ "--w": `${width}px`, ...style } as CSSProperties}
+      style={
+        {
+          "--w": `${width}px`,
+          ...style,
+        } as CSSProperties
+      }
     >
       <Card
         card={card}
@@ -52,14 +72,10 @@ export function MiniCard({
       />
       {cost !== undefined && (
         <span className={styles.miniCost} aria-hidden="true">
-          {cost}
+          <CostGem rarity={card.rarity} cost={cost} />
         </span>
       )}
-      {trapped > 0 && (
-        <span className={styles.trapSeal} role="img" aria-label={trappedText(trapped)}>
-          {formatCount(trapped)}
-        </span>
-      )}
+      {trapped > 0 && <span className={styles.trapRibbon}>{trappedText(trapped)}</span>}
     </span>
   );
 }

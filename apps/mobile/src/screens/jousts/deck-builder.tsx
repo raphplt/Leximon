@@ -4,11 +4,16 @@ import { cardSize, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   COMPLETE_DECK,
   completeDeck,
+  DECK_SORTS,
+  type DeckSort,
+  deckCostLegend,
   deckPoolGroups,
   deckRefusalText,
   deckRoomLine,
+  deckRuleLine,
   plural,
   SAVE_DECK,
+  sortDeckPool,
   toggleDeckCard,
 } from "@leximon/view-model";
 import { type ReactNode, useState } from "react";
@@ -21,7 +26,7 @@ import { catalogCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Lettering, Toy } from "@/ui/toy";
-import { ink, LeafKicker, MiniCard, Notice } from "./pieces";
+import { CostGem, ink, LeafKicker, MiniCard, Notice } from "./pieces";
 import { NO_ANSWER } from "./use-launch";
 
 /** A card dropped in its place lands with a little bounce. */
@@ -57,6 +62,7 @@ export function DeckBuilder({
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [rarity, setRarity] = useState<Rarity | null>(null);
+  const [sort, setSort] = useState<DeckSort>("rarity");
   // The cards share the row's width, measured once laid out.
   const [rowWidth, setRowWidth] = useState(0);
   const share = (perRow: number, gap: number, fallback: number) =>
@@ -106,11 +112,51 @@ export function DeckBuilder({
             card: catalogCard(catalog, candidate.cardId),
           })),
         );
+  const shown = groups.filter((group) => rarity === null || group.rarity === rarity);
+  const poolCard = (candidate: (typeof groups)[number]["cards"][number]) => {
+    const taken = chosen.includes(candidate.cardId);
+    const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
+    return (
+      <Pressable
+        key={candidate.cardId}
+        style={[{ width: poolWidth }, !taken && !fits && styles.poolOff]}
+        disabled={!taken && !fits}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !taken && !fits, selected: taken }}
+        accessibilityLabel={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
+        onPress={() => toggle(candidate.cardId)}
+      >
+        <MiniCard
+          card={candidate.card}
+          cost={candidate.cost}
+          trapped={traps.get(candidate.cardId) ?? 0}
+          width={poolWidth}
+          style={taken && styles.poolTaken}
+        />
+        {taken && (
+          <View style={styles.takenMark}>
+            <View style={styles.takenSeal}>
+              <Icon name="check" size={20} color={toyMatters.paper.top} />
+            </View>
+          </View>
+        )}
+      </Pressable>
+    );
+  };
   const canSave = chosen.length >= deck.min;
   const slotHeight = (slotWidth * cardSize.height) / cardSize.width;
   return (
     <View style={styles.builder}>
       {intro}
+      <Text style={styles.rule}>{deckRuleLine(deck.size, deck.budget)}</Text>
+      <View style={styles.legend}>
+        {deckCostLegend(Date.now()).map((item) => (
+          <View key={item.rarity} style={styles.legendItem}>
+            <CostGem rarity={item.rarity} cost={item.cost} />
+            <Text style={styles.legendText}>{RARITY_LABELS[item.rarity]}</Text>
+          </View>
+        ))}
+      </View>
       <View style={styles.tray}>
         <View style={styles.trayHead}>
           <LeafKicker>{`Ton deck · ${chosen.length} / ${plural(deck.size, "carte", "cartes")}`}</LeafKicker>
@@ -216,46 +262,39 @@ export function DeckBuilder({
           ))}
         </View>
       )}
-      {groups
-        .filter((group) => rarity === null || group.rarity === rarity)
-        .map((group) => (
+      <View style={styles.filters} accessibilityLabel="Ordre">
+        {DECK_SORTS.map((each) => (
+          <Toy
+            key={each.id}
+            matter={each.id === sort ? "gold" : "paper"}
+            style={styles.filter}
+            bodyStyle={styles.filterBody}
+            accessibilityRole="button"
+            accessibilityState={{ selected: each.id === sort }}
+            onPress={() => setSort(each.id)}
+          >
+            <Text style={styles.filterText}>{each.label}</Text>
+          </Toy>
+        ))}
+      </View>
+      {sort === "rarity" ? (
+        shown.map((group) => (
           <View key={group.rarity} style={styles.poolGroup}>
             <Text style={styles.poolHead}>
               {`${RARITY_LABELS[group.rarity]} · ${plural(group.cost, "point", "points")}`}
             </Text>
-            <View style={styles.pool}>
-              {group.cards.map((candidate) => {
-                const taken = chosen.includes(candidate.cardId);
-                const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
-                return (
-                  <Pressable
-                    key={candidate.cardId}
-                    style={[{ width: poolWidth }, !taken && !fits && styles.poolOff]}
-                    disabled={!taken && !fits}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !taken && !fits, selected: taken }}
-                    accessibilityLabel={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
-                    onPress={() => toggle(candidate.cardId)}
-                  >
-                    <MiniCard
-                      card={candidate.card}
-                      trapped={traps.get(candidate.cardId) ?? 0}
-                      width={poolWidth}
-                      style={taken && styles.poolTaken}
-                    />
-                    {taken && (
-                      <View style={styles.takenMark}>
-                        <View style={styles.takenSeal}>
-                          <Icon name="check" size={20} color={toyMatters.paper.top} />
-                        </View>
-                      </View>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
+            <View style={styles.pool}>{group.cards.map(poolCard)}</View>
           </View>
-        ))}
+        ))
+      ) : (
+        <View style={styles.pool}>
+          {sortDeckPool(
+            shown.flatMap((group) => group.cards),
+            sort,
+            traps,
+          ).map(poolCard)}
+        </View>
+      )}
     </View>
   );
 }
@@ -264,6 +303,10 @@ const ALL_RARITIES = "Toutes";
 
 const styles = StyleSheet.create({
   builder: { gap: space.s6 },
+  rule: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, lineHeight: 21, color: ink.pageInk },
+  legend: { flexDirection: "row", flexWrap: "wrap", columnGap: space.s6, rowGap: space.s4 },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  legendText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
   filters: { flexDirection: "row", flexWrap: "wrap", gap: space.s3 },
   filter: { height: 34 },
   filterBody: { paddingHorizontal: space.s5 },

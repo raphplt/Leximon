@@ -5,11 +5,16 @@ import type { Rarity } from "@leximon/core";
 import {
   COMPLETE_DECK,
   completeDeck,
+  DECK_SORTS,
+  type DeckSort,
+  deckCostLegend,
   deckPoolGroups,
   deckRefusalText,
   deckRoomLine,
+  deckRuleLine,
   plural,
   SAVE_DECK,
+  sortDeckPool,
   toggleDeckCard,
 } from "@leximon/view-model";
 import { type CSSProperties, type ReactNode, useState } from "react";
@@ -21,7 +26,7 @@ import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Toy } from "@/ui/toy";
 import styles from "./jousts.module.css";
-import { MiniCard } from "./pieces";
+import { CostGem, MiniCard } from "./pieces";
 
 const ALL_RARITIES = "Toutes";
 
@@ -47,13 +52,14 @@ export function DeckBuilder({
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [rarity, setRarity] = useState<Rarity | null>(null);
+  const [sort, setSort] = useState<DeckSort>("rarity");
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const costOf = (cardId: string) => costs.get(cardId) ?? 0;
   const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
   const spent = chosen.reduce((total, id) => total + costOf(id), 0);
   const left = deck.candidates.filter((candidate) => !chosen.includes(candidate.cardId));
   const cheapestLeft = left.length === 0 ? null : Math.min(...left.map((c) => c.cost));
-  const slotWidth = narrow ? 52 : 96;
+  const slotWidth = narrow ? 52 : 84;
   const poolWidth = narrow ? 92 : 116;
 
   const toggle = (cardId: string) => {
@@ -92,9 +98,44 @@ export function DeckBuilder({
             card: catalogCard(catalog, candidate.cardId),
           })),
         );
+  const shown = groups.filter((group) => rarity === null || group.rarity === rarity);
+  const poolCard = (candidate: (typeof groups)[number]["cards"][number]) => {
+    const taken = chosen.includes(candidate.cardId);
+    const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
+    return (
+      <li key={candidate.cardId}>
+        <button
+          type="button"
+          className={styles.poolCard}
+          data-taken={taken || undefined}
+          disabled={!taken && !fits}
+          aria-pressed={taken}
+          aria-label={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
+          onClick={() => toggle(candidate.cardId)}
+        >
+          <MiniCard
+            card={candidate.card}
+            width={poolWidth}
+            cost={candidate.cost}
+            trapped={traps.get(candidate.cardId) ?? 0}
+          />
+          {taken && <span className={styles.takenMark}>Dans le deck</span>}
+        </button>
+      </li>
+    );
+  };
   return (
     <div className={styles.builder}>
       {intro}
+      <p className={styles.rule}>{deckRuleLine(deck.size, deck.budget)}</p>
+      <ul className={styles.legend}>
+        {deckCostLegend(Date.now()).map((item) => (
+          <li key={item.rarity}>
+            <CostGem rarity={item.rarity} cost={item.cost} />
+            {RARITY_LABELS[item.rarity]}
+          </li>
+        ))}
+      </ul>
       <section className={styles.tray}>
         <header className={styles.trayHead}>
           <span className={desk.leafKicker}>
@@ -170,56 +211,56 @@ export function DeckBuilder({
       </section>
 
       <span className={desk.leafKicker}>Tes mots trouvés</span>
-      {groups.length > 1 && (
-        <fieldset className={styles.filters} aria-label="Rareté">
-          {[null, ...groups.map((group) => group.rarity)].map((each) => (
+      <div className={styles.poolTools}>
+        {groups.length > 1 && (
+          <fieldset className={styles.filters} aria-label="Rareté">
+            {[null, ...groups.map((group) => group.rarity)].map((each) => (
+              <Toy
+                key={each ?? "all"}
+                matter={each === rarity ? "gold" : "paper"}
+                className={styles.filter}
+                aria-pressed={each === rarity}
+                onClick={() => setRarity(each)}
+              >
+                {each === null ? ALL_RARITIES : RARITY_LABELS[each]}
+              </Toy>
+            ))}
+          </fieldset>
+        )}
+        <fieldset className={styles.filters} aria-label="Ordre">
+          {DECK_SORTS.map((each) => (
             <Toy
-              key={each ?? "all"}
-              matter={each === rarity ? "gold" : "paper"}
+              key={each.id}
+              matter={each.id === sort ? "gold" : "paper"}
               className={styles.filter}
-              aria-pressed={each === rarity}
-              onClick={() => setRarity(each)}
+              aria-pressed={each.id === sort}
+              onClick={() => setSort(each.id)}
             >
-              {each === null ? ALL_RARITIES : RARITY_LABELS[each]}
+              {each.label}
             </Toy>
           ))}
         </fieldset>
-      )}
-      {groups
-        .filter((group) => rarity === null || group.rarity === rarity)
-        .map((group) => (
+      </div>
+      {sort === "rarity" ? (
+        shown.map((group) => (
           <div key={group.rarity} className={styles.poolGroup}>
             <span className={styles.poolHead}>
               {RARITY_LABELS[group.rarity]} · {plural(group.cost, "point", "points")}
             </span>
             <ul className={styles.pool} style={{ "--w": `${poolWidth}px` } as CSSProperties}>
-              {group.cards.map((candidate) => {
-                const taken = chosen.includes(candidate.cardId);
-                const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
-                return (
-                  <li key={candidate.cardId}>
-                    <button
-                      type="button"
-                      className={styles.poolCard}
-                      data-taken={taken || undefined}
-                      disabled={!taken && !fits}
-                      aria-pressed={taken}
-                      aria-label={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
-                      onClick={() => toggle(candidate.cardId)}
-                    >
-                      <MiniCard
-                        card={candidate.card}
-                        width={poolWidth}
-                        trapped={traps.get(candidate.cardId) ?? 0}
-                      />
-                      {taken && <span className={styles.takenMark}>Dans le deck</span>}
-                    </button>
-                  </li>
-                );
-              })}
+              {group.cards.map(poolCard)}
             </ul>
           </div>
-        ))}
+        ))
+      ) : (
+        <ul className={styles.pool} style={{ "--w": `${poolWidth}px` } as CSSProperties}>
+          {sortDeckPool(
+            shown.flatMap((group) => group.cards),
+            sort,
+            traps,
+          ).map(poolCard)}
+        </ul>
+      )}
     </div>
   );
 }

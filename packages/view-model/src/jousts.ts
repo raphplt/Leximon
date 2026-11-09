@@ -580,6 +580,48 @@ export function deckRoomLine(
     : `Aucun de tes mots ne tient dans ${points === 1 ? "le point qui reste" : `les ${points} points qui restent`}. Retire une carte rare pour poser plusieurs cartes moins chères${keep}.`;
 }
 
+/** At the head of the deck window: the rule, with its figures. */
+export function deckRuleLine(size: number, budget: number): string {
+  return `Chaque carte coûte des points selon sa rareté. Ton deck en a ${formatCount(budget)} pour ${plural(size, "carte", "cartes")} au plus.`;
+}
+
+const RARITIES_COMMONEST_FIRST: readonly Rarity[] = [
+  "common",
+  "uncommon",
+  "rare",
+  "precious",
+  "epic",
+  "legendary",
+];
+
+/** What each rarity costs in a deck, the commonest first. */
+export function deckCostLegend(
+  now: EpochMs,
+): readonly { readonly rarity: Rarity; readonly cost: number }[] {
+  const { cost } = joustRulesAt(JOUST_SCHEDULE, now);
+  return RARITIES_COMMONEST_FIRST.map((rarity) => ({ rarity, cost: cost[rarity] }));
+}
+
+export type DeckSort = "rarity" | "word" | "traps";
+
+export const DECK_SORTS: readonly { readonly id: DeckSort; readonly label: string }[] = [
+  { id: "rarity", label: "Par rareté" },
+  { id: "word", label: "De A à Z" },
+  { id: "traps", label: "Les plus piégeuses" },
+];
+
+/** The words found in one list: alphabetical, or those that trapped the most first. */
+export function sortDeckPool<
+  T extends { readonly cardId: string; readonly card: { readonly word: string } },
+>(cards: readonly T[], by: "word" | "traps", trapped: ReadonlyMap<string, number>): T[] {
+  const byWord = (a: T, b: T) => a.card.word.localeCompare(b.card.word, "fr");
+  return [...cards].sort((a, b) =>
+    by === "word"
+      ? byWord(a, b)
+      : (trapped.get(b.cardId) ?? 0) - (trapped.get(a.cardId) ?? 0) || byWord(a, b),
+  );
+}
+
 /** The words found that can enter the deck, by rarity, the rarest first; a rarity has one cost. */
 export function deckPoolGroups<
   T extends {

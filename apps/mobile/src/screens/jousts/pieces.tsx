@@ -1,7 +1,8 @@
 import type { CatalogCard } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
-import { toyMatters, toy as toyValues } from "@leximon/tokens";
-import { answerTimeText, FURET, formatCount, plural, trappedText } from "@leximon/view-model";
+import type { Rarity } from "@leximon/core";
+import { cssFill, rarityStyles, toyMatters, toy as toyValues } from "@leximon/tokens";
+import { answerTimeText, FURET, plural, trappedText } from "@leximon/view-model";
 import { type ReactNode, useEffect, useState } from "react";
 import {
   type LayoutChangeEvent,
@@ -33,29 +34,52 @@ import { ToyBody, ToyIcon } from "@/ui/toy";
 /** What the leaves hold is read on paper. */
 export const ink = paperColors;
 
+/** What a card costs in a deck: a gem cut in the colour of its rarity. As on the web. */
+export function CostGem({
+  rarity,
+  cost,
+  size = 22,
+}: {
+  readonly rarity: Rarity;
+  readonly cost: number;
+  readonly size?: number;
+}) {
+  const style = rarityStyles[rarity];
+  // A rarity's colour may be a gradient (gold, iridescent).
+  const fill =
+    typeof style.band === "string"
+      ? { backgroundColor: style.band }
+      : { backgroundImage: cssFill(style.band) };
+  return (
+    <View
+      style={[pieces.gem, fill, { width: size, height: size }]}
+      accessibilityLabel={plural(cost, "point", "points")}
+    >
+      <View style={pieces.gemFacet} />
+      <Text style={[pieces.gemText, { color: style.bandInk }]}>{cost}</Text>
+    </View>
+  );
+}
+
 /**
- * A card of the deck as the real card, small: the cost of its rarity as a coin on its corner if
- * asked, and the opponents it trapped as a seal.
+ * A card of the deck as the real card, small: the cost of its rarity as a gem on its corner if
+ * asked, and the opponents it trapped on a ribbon across its foot.
  */
 export function MiniCard({
   card,
   cost,
   trapped = 0,
-  sealLeft = false,
   width = 76,
   style,
 }: {
   readonly card: CatalogCard;
   readonly cost?: number | undefined;
-  /** Opponents the card trapped, shown as a seal on its corner. */
+  /** Opponents the card trapped, said on a ribbon across its foot. */
   readonly trapped?: number;
-  /** The seal on the left corner, which stays in view when the next card of a fan covers the right. */
-  readonly sealLeft?: boolean;
   readonly width?: number;
   readonly style?: StyleProp<ViewStyle>;
 }) {
   const catalog = useCatalog();
-  const coin = width < 70 ? 20 : 24;
   return (
     <View style={[{ width }, style]}>
       <Card
@@ -64,21 +88,15 @@ export function MiniCard({
         width={width}
       />
       {cost !== undefined && (
-        <View
-          style={[pieces.miniCost, { width: coin, height: coin, borderRadius: coin / 2 }]}
-          accessibilityLabel={plural(cost, "point", "points")}
-        >
-          <Text style={pieces.miniCostText}>{cost}</Text>
+        <View style={pieces.miniCost}>
+          <CostGem rarity={card.rarity} cost={cost} size={width < 70 ? 18 : 22} />
         </View>
       )}
       {trapped > 0 && (
-        <View
-          style={[pieces.trapSeal, sealLeft && pieces.trapSealLeft]}
-          accessible
-          accessibilityRole="image"
-          accessibilityLabel={trappedText(trapped)}
-        >
-          <Text style={pieces.trapCount}>{formatCount(trapped)}</Text>
+        <View style={pieces.trapRibbon}>
+          <Text style={pieces.trapText} numberOfLines={2}>
+            {trappedText(trapped)}
+          </Text>
         </View>
       )}
     </View>
@@ -270,20 +288,28 @@ export function LeafKicker({ children }: { readonly children: string }) {
 }
 
 export const pieces = StyleSheet.create({
-  miniCost: {
-    position: "absolute",
-    top: -6,
-    right: -6,
+  miniCost: { position: "absolute", top: -5, right: -5 },
+  gem: {
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
     borderWidth: 2,
     borderColor: toyValues.outline,
-    backgroundColor: toyMatters.gold.top,
+    borderRadius: 5,
+    transform: [{ rotate: "45deg" }],
   },
-  miniCostText: {
+  gemFacet: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "45%",
+    height: "45%",
+    backgroundColor: toyValues.sheen,
+  },
+  gemText: {
+    transform: [{ rotate: "-45deg" }],
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.nano,
-    color: toyValues.outline,
     includeFontPadding: false,
   },
   missed: { opacity: 0.6 },
@@ -306,22 +332,20 @@ export const pieces = StyleSheet.create({
     fontSize: fontSizes.micro,
     color: ink.pageInkMuted,
   },
-  trapSeal: {
+  trapRibbon: {
     position: "absolute",
-    right: -6,
-    bottom: -6,
-    minWidth: 20,
-    height: 20,
-    paddingHorizontal: 4,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: radii.pill,
+    left: -4,
+    right: -4,
+    bottom: "14%",
+    paddingHorizontal: space.s1,
+    paddingVertical: 2,
+    borderRadius: 5,
     borderWidth: 2,
     borderColor: toyValues.outline,
     backgroundColor: toyMatters.red.top,
   },
-  trapSealLeft: { right: undefined, left: -6 },
-  trapCount: {
+  trapText: {
+    textAlign: "center",
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.nano,
     color: colors.inkOnColor,

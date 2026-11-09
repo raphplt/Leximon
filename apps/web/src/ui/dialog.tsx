@@ -31,7 +31,7 @@ export function Dialog({
    * `center` only. `medium`: a box that is a moment of the game, drawn big; `large`: room for a
    * list to choose from, rather than a few lines and a button.
    */
-  readonly size?: "medium" | "large";
+  readonly size?: "medium" | "large" | "xlarge";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 

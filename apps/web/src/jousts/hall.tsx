@@ -231,7 +231,7 @@ export function Hall({
         open={deckOpen}
         title="Ton deck"
         variant="center"
-        size="large"
+        size="xlarge"
         onClose={() => setDeckOpen(false)}
       >
         {deckOpen && (

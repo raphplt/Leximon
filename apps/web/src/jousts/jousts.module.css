@@ -101,43 +101,49 @@
 
 .miniCost {
   position: absolute;
-  top: -7px;
-  right: -7px;
-  display: grid;
+  top: -6px;
+  right: -6px;
+  line-height: 0;
+}
+
+/* What a card costs in a deck: a gem cut in the colour of its rarity. */
+.gem {
+  display: inline-grid;
+  flex: none;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border: 2px solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  border-radius: 6px;
+  /* A rarity's colour may be a gradient (gold, iridescent): the lit facet lies over it. */
+  background: linear-gradient(135deg, var(--lx-toy-sheen) 0 30%, transparent 30%), var(--gem);
   box-shadow: 0 2px 0 var(--lx-toy-drop);
+  rotate: 45deg;
+}
+
+.gem > span {
+  rotate: -45deg;
   font-size: var(--lx-size-small);
   font-weight: 900;
   line-height: 1;
-  color: var(--lx-toy-outline);
+  color: var(--gem-ink);
 }
 
-.trapSeal {
+/* Opponents the card trapped, on a ribbon across its foot. */
+.trapRibbon {
   position: absolute;
-  right: -6px;
-  bottom: -6px;
-  display: grid;
-  place-items: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 5px;
+  right: -5px;
+  bottom: 14%;
+  left: -5px;
+  padding: 3px 4px;
   border: 2px solid var(--lx-toy-outline);
-  border-radius: 999px;
+  border-radius: 6px;
   background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
   font-size: var(--lx-size-micro);
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.1;
+  text-align: center;
   color: var(--lx-color-ink-on-color);
-}
-
-.mini[data-seal-left] .trapSeal {
-  right: auto;
-  left: -7px;
 }
 
 .furet {
@@ -552,6 +558,44 @@
   border-radius: 999px;
   background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
   transition: width 300ms ease-out;
+}
+
+/* The rule of the points, and what each rarity costs. */
+.rule {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+.poolTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+/* Wide enough, the ten places of the deck stand on one line. */
+@media (min-width: 1080px) {
+  .slots {
+    grid-template-columns: repeat(10, var(--w));
+  }
 }
 
 .room {
