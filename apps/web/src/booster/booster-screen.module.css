@@ -1,3 +1,63 @@
+/*
+ * Aged two-tone diamond room backdrop (62 × 66 px, with leather/cloth grain, pillowed centers
+ * and beveled seams), replacing the bookshelf background (`body::before`) on `/jouer`.
+ */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 36%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-color-sheet) 66%, var(--lx-room-floor));
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 13%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 46%, var(--d2));
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
+    radial-gradient(
+      ellipse 80% 58% at 50% 24%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 95% 90% at 50% 50%,
+      transparent 40%,
+      color-mix(in srgb, var(--lx-room-vignette) 84%, transparent) 100%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
+      transparent 54%
+    )
+    0 0 / 62px 66px,
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
+      transparent 54%
+    )
+    31px 33px / 62px 66px,
+    linear-gradient(
+      133.21deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(
+      226.79deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    62px 66px,
+    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
+    66px;
+}
+
 .screen {
   box-sizing: border-box;
   max-width: 1180px;
