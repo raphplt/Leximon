@@ -1,9 +1,17 @@
-import { carnetWaits, mailCount, waitingCoffrets, welcomeWaits } from "@leximon/view-model";
-import { useShared } from "./shared";
+import {
+  carnetWaits,
+  isFeatureOpen,
+  joustsWaiting,
+  mailCount,
+  waitingCoffrets,
+  welcomeWaits,
+} from "@leximon/view-model";
+import { useNow, useShared, useSharedWhen } from "./shared";
 import {
   account,
   carnet,
   incomingOffers,
+  joustsOverview,
   levelRewards,
   mailbox,
   myClan,
@@ -27,6 +35,11 @@ export function usePlayerView() {
   const waits = welcomeWaits(welcome);
   const card = useShared(carnet);
   const carnetWaiting = carnetWaits(card);
+  const now = useNow(60_000);
+  const jousts = useSharedWhen(
+    joustsOverview,
+    level !== null && isFeatureOpen("jousts", level.level, now),
+  );
   const coffrets =
     level === null || rewards === null ? [] : waitingCoffrets(level.level, rewards.claimed);
   const claimable = clan?.claimable ?? [];
@@ -50,6 +63,8 @@ export function usePlayerView() {
     claimable,
     mailbox: mail,
     offers: offers ?? 0,
+    /** Sealed results and jousts to answer: the red count of Défis. */
+    jousts: jousts === null ? 0 : joustsWaiting(jousts.jousts),
     mail: mailCount({
       coffrets: coffrets.length,
       // The welcome week's day and the carnet's case are entries of the same kind.

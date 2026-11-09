@@ -1,6 +1,7 @@
 import type { IconName } from "@leximon/tokens";
 import { toy as toyValues } from "@leximon/tokens";
 import { router } from "expo-router";
+import type { ReactNode } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { fontSizes, fonts, paperColors, space } from "@/theme";
@@ -21,6 +22,7 @@ export function LockedScreen({
   text,
   left,
   ratio,
+  above,
 }: {
   readonly icon: IconName;
   readonly level?: number;
@@ -28,9 +30,12 @@ export function LockedScreen({
   readonly text: string;
   readonly left?: string;
   readonly ratio?: number;
+  /** Over the leaf: the way to the rest of the place the feature belongs to. */
+  readonly above?: ReactNode;
 }) {
   return (
     <ScrollView contentContainerStyle={styles.page}>
+      {above}
       <Panel paper style={styles.panel}>
         <ToyBody matter="gold" shape="round" large style={styles.medal}>
           <Icon name={icon} size={38} color={toyValues.outline} />
@@ -62,6 +67,7 @@ const styles = StyleSheet.create({
   page: {
     flexGrow: 1,
     justifyContent: "center",
+    gap: space.s8,
     paddingHorizontal: space.s8,
     paddingVertical: space.s12,
     paddingBottom: TAB_BAR_RISE + 24,

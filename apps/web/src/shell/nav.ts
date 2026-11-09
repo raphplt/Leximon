@@ -15,10 +15,16 @@ export const TABS: readonly { id: TabId; href: string; label: string }[] = TAB_O
   href: HREFS[id],
 }));
 
-/** The community tab opens on the clan and also holds the friends and the lists. */
-const COMMUNITY_PATHS = ["/clan", "/amis", COMMUNITY_PATH];
+/**
+ * The community tab opens on the clan and also holds the friends and the lists; Défis holds the
+ * training and the jousts.
+ */
+const TAB_PATHS: Readonly<Record<string, readonly string[]>> = {
+  "/clan": ["/clan", "/amis", COMMUNITY_PATH],
+  "/defis": ["/defis", "/joutes"],
+};
 
 export function isCurrent(pathname: string, href: string): boolean {
-  const paths = href === "/clan" ? COMMUNITY_PATHS : [href];
+  const paths = TAB_PATHS[href] ?? [href];
   return paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }

@@ -3,6 +3,8 @@
 import type { Progress } from "@leximon/contract";
 import {
   carnetWaits,
+  isFeatureOpen,
+  joustsWaiting,
   mailCount,
   playerTitle,
   waitingCoffrets,
@@ -10,10 +12,11 @@ import {
 } from "@leximon/view-model";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
+import { joustsOverview } from "@/player/jousts";
 import { mailbox } from "@/player/mail";
 import { incomingOffers } from "@/player/offers";
 import { account, carnet, levelRewards, profile, wallet, welcomeWeek } from "@/player/player";
-import { useShared } from "@/player/resource";
+import { useShared, useSharedWhen } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
 
 /** Everything the shell shows about the player, read from the shared state. */
@@ -29,6 +32,10 @@ export function usePlayerView() {
   const welcome = useShared(welcomeWeek);
   const card = useShared(carnet);
   const now = useNow(15_000);
+  const jousts = useSharedWhen(
+    joustsOverview,
+    progress !== null && now !== 0 && isFeatureOpen("jousts", progress.level, now),
+  );
   const claimed = rewards?.claimed ?? [];
   const coffrets =
     progress === null || rewards === null ? [] : waitingCoffrets(progress.level, claimed);
@@ -64,6 +71,8 @@ export function usePlayerView() {
     /** The pseudo, else « Invité » or « Toi » before one is chosen. */
     name: me?.pseudo ?? (who?.kind === "guest" ? "Invité" : "Toi"),
     offers: offers ?? 0,
+    /** Sealed results and jousts to answer: the red count of Défis. */
+    jousts: jousts === null ? 0 : joustsWaiting(jousts.jousts),
     /** Weekly goal boosters to take. */
     claimable,
     /** The mail's first page; `null` until read. */

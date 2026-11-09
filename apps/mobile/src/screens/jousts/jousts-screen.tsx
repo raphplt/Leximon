@@ -18,7 +18,8 @@ import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { useShared } from "@/player/shared";
-import { profile } from "@/player/state";
+import { joustsOverview, profile } from "@/player/state";
+import { ChallengeHalves } from "@/screens/challenges/challenge-halves";
 import { fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -64,6 +65,7 @@ function JoustsHall() {
     Promise.all([api.fetchJousts(), api.fetchJoustDeck()])
       .then(([jousts, deck]) => {
         setLoaded({ state: "ready", jousts, deck });
+        joustsOverview.publish(jousts);
         if (jousts.access !== "open") return;
         api
           .fetchJoustLeague()
@@ -87,6 +89,7 @@ function JoustsHall() {
   if (loaded.state !== "ready") {
     return (
       <Page title={JOUSTS_TITLE}>
+        <ChallengeHalves current="jousts" />
         {loaded.state === "loading" && <Paragraph muted>Un instant…</Paragraph>}
         {loaded.state === "failed" && (
           <>
@@ -103,6 +106,7 @@ function JoustsHall() {
   if (closed !== null) {
     return (
       <Page title={JOUSTS_TITLE}>
+        <ChallengeHalves current="jousts" />
         <Leaf style={pieces.leaf}>
           <Text style={pieces.line}>{closed}</Text>
           {jousts.access === "account_required" && (
@@ -148,6 +152,7 @@ function JoustsHall() {
 
   return (
     <Page title={JOUSTS_TITLE}>
+      <ChallengeHalves current="jousts" />
       <Hall
         jousts={jousts}
         deck={deck}

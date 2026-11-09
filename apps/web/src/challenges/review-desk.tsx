@@ -44,6 +44,7 @@ import { useProgress } from "@/progress/use-progress";
 import { Bone } from "@/ui/skeleton";
 import { Lettering, Toy, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
+import { ChallengeHalves } from "./challenge-halves";
 import styles from "./review-desk.module.css";
 
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
@@ -81,6 +82,7 @@ export function ReviewDesk({
   return (
     <div className={styles.screen}>
       <Lettering className={styles.pageTitle}>Défis</Lettering>
+      <ChallengeHalves current="training" />
       <Review summary={summary} now={now} busy={busy} onStart={onStart} />
       {notice !== null && (
         <p className={styles.notice} role="status">

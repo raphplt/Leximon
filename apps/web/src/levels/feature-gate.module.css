@@ -1,0 +1,6 @@
+.gated {
+  box-sizing: border-box;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 22px var(--lx-s16) 0;
+}

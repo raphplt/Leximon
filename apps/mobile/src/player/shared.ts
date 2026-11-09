@@ -7,6 +7,15 @@ export function useShared<T>(resource: SharedResource<T>): T | null {
   return useSyncExternalStore(resource.subscribe, resource.current);
 }
 
+/** The same, read only once `wanted`: what the player cannot use yet costs no request. */
+export function useSharedWhen<T>(resource: SharedResource<T>, wanted: boolean): T | null {
+  useEffect(() => {
+    if (wanted) resource.ensure();
+  }, [resource, wanted]);
+  const value = useSyncExternalStore(resource.subscribe, resource.current);
+  return wanted ? value : null;
+}
+
 /** Whether the resource could not be read: a screen waiting for it offers to try again. */
 export function useSharedFailed<T>(resource: SharedResource<T>): boolean {
   return useSyncExternalStore(resource.subscribe, resource.failed);

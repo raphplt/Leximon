@@ -16,8 +16,10 @@ import {
   runSize,
 } from "@leximon/view-model";
 import { useCallback, useEffect, useState } from "react";
+import { ChallengeHalves } from "@/challenges/challenge-halves";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
+import { joustsOverview } from "@/player/jousts";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { Button, ButtonLink } from "@/ui/button";
@@ -64,6 +66,7 @@ function JoustsHall() {
     Promise.all([api.fetchJousts(), api.fetchJoustDeck()])
       .then(([jousts, deck]) => {
         setLoaded({ state: "ready", jousts, deck });
+        joustsOverview.publish(jousts);
         if (jousts.access !== "open") return;
         // The hall stands without them: a failure leaves the road without its écus.
         Promise.all([
@@ -85,13 +88,20 @@ function JoustsHall() {
       </main>
     );
   }
-  if (loaded.state === "loading") return <main className={styles.page} />;
+  if (loaded.state === "loading") {
+    return (
+      <main className={styles.page}>
+        <ChallengeHalves current="jousts" />
+      </main>
+    );
+  }
   const { jousts, deck } = loaded;
   const closed = accessText(jousts.access, jousts.opensAtLevel);
 
   if (closed !== null) {
     return (
       <main className={styles.page}>
+        <ChallengeHalves current="jousts" />
         <section className={`${ui.leaf} ${styles.closed}`}>
           <Lettering className={styles.homeTitle}>{JOUSTS_TITLE}</Lettering>
           <p className={styles.line}>{closed}</p>
@@ -138,6 +148,7 @@ function JoustsHall() {
 
   return (
     <main className={styles.page}>
+      <ChallengeHalves current="jousts" />
       <Hall
         jousts={jousts}
         deck={deck}

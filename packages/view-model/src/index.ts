@@ -7,6 +7,7 @@ export * from "./cabinet";
 export * from "./card-sheet";
 export * from "./cards";
 export * from "./carnet";
+export * from "./challenge-halves";
 export * from "./challenges";
 export * from "./changelog";
 export * from "./chat-poll";

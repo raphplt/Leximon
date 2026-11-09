@@ -121,7 +121,7 @@ export function LibraryTabBar({ state, emitter, navigateToTab }: BottomTabBarPro
   const view = usePlayerView();
   const now = useNow(60_000);
   const closed = closedTabs(view.progress?.level ?? null, now);
-  const counts = { offers: view.offers, coffrets: view.coffrets.length };
+  const counts = { offers: view.offers, coffrets: view.coffrets.length, jousts: view.jousts };
   const currentRoute = state.routes[state.index]?.name;
 
   const go = (id: TabId) => {

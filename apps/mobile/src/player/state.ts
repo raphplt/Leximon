@@ -4,6 +4,7 @@ import type {
   CarnetResponse,
   EditionsResponse,
   FriendsResponse,
+  JoustsResponse,
   LevelRewardsResponse,
   MailResponse,
   MissionsResponse,
@@ -47,6 +48,9 @@ export const incomingOffers = sharedResource<number>(async () => {
   return page.trades.filter((trade) => trade.status === "pending").length;
 });
 
+/** The jousts' state: the half of Défis that leads to them, and the red count of the tab. */
+export const joustsOverview = sharedResource<JoustsResponse>(api.fetchJousts);
+
 /** The level returned by an action (open, answer), unless the copy in hand is more recent. */
 export function publishProgress(next: Progress): void {
   const current = progress.current();
@@ -87,6 +91,7 @@ export function resetPlayerState(): void {
     friends,
     sanctions,
     incomingOffers,
+    joustsOverview,
   ]) {
     resource.reset();
   }

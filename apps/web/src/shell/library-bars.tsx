@@ -72,7 +72,7 @@ export function LibraryTopBar({
   const pathname = usePathname();
   const view = usePlayerView();
   const closed = closedTabs(view.progress?.level ?? null, view.now);
-  const counts = { offers: view.offers, coffrets: view.coffrets.length };
+  const counts = { offers: view.offers, coffrets: view.coffrets.length, jousts: view.jousts };
   const name =
     view.profile === null ? null : (view.profile.pseudo ?? (view.profile.member ? null : "Invité"));
   return (
@@ -208,7 +208,7 @@ export function LibraryTabs() {
   const router = useRouter();
   const view = usePlayerView();
   const closed = closedTabs(view.progress?.level ?? null, view.now);
-  const counts = { offers: view.offers, coffrets: view.coffrets.length };
+  const counts = { offers: view.offers, coffrets: view.coffrets.length, jousts: view.jousts };
   const tabs = SIDE_TABS.map(
     (id): Tab => ({
       icon: ICONS[id],

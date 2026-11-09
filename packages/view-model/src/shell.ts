@@ -25,13 +25,17 @@ export function closedTabs(level: number | null, now: EpochMs): ReadonlySet<TabI
   return new Set(level < levelsOfFeatures(now).trade ? (["echanges"] as const) : []);
 }
 
-/** The red count on a tab: offers received on Échanges, coffrets waiting on Jouer. */
+/**
+ * The red count on a tab: offers received on Échanges, coffrets waiting on Jouer, sealed results
+ * and jousts to answer on Défis.
+ */
 export function tabBadge(
   tab: TabId,
-  counts: { readonly offers: number; readonly coffrets: number },
+  counts: { readonly offers: number; readonly coffrets: number; readonly jousts: number },
 ): number {
   if (tab === "echanges") return counts.offers;
   if (tab === "jouer") return counts.coffrets;
+  if (tab === "defis") return counts.jousts;
   return 0;
 }
 

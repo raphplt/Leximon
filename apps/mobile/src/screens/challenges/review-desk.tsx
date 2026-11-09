@@ -59,6 +59,7 @@ import { Icon } from "@/ui/icon";
 import { Matter } from "@/ui/matter";
 import { Panel } from "@/ui/panel";
 import { Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { ChallengeHalves } from "./challenge-halves";
 
 const NOUN = PACK_NOUNS.sachet;
 
@@ -113,6 +114,7 @@ export function ReviewDesk({
       <View accessibilityRole="header">
         <Lettering size={fontSizes.heading}>Défis</Lettering>
       </View>
+      <ChallengeHalves current="training" />
       <Rising index={0}>
         <Review summary={summary} now={now} busy={busy} onStart={onStart} />
       </Rising>

@@ -8,14 +8,19 @@ import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { LockedScreen } from "@/ui/locked-screen";
 
-/** A screen opened by the level: the locked screen until the level, then `children`. */
+/**
+ * A screen opened by the level: the locked screen until the level, then `children`. `above`
+ * stays over the locked screen: the way to the rest of the place it belongs to.
+ */
 export function FeatureGate({
   feature,
   icon,
+  above,
   children,
 }: {
   readonly feature: LockedFeature;
   readonly icon: IconName;
+  readonly above?: ReactNode;
   readonly children: ReactNode;
 }) {
   const progress = useShared(progressResource);
@@ -39,6 +44,7 @@ export function FeatureGate({
       text={locked.text}
       left={locked.left}
       ratio={locked.ratio}
+      above={above}
     />
   );
 }

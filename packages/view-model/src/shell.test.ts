@@ -14,10 +14,11 @@ describe("closedTabs", () => {
 });
 
 describe("counts", () => {
-  it("puts offers on Échanges and coffrets on Jouer", () => {
-    expect(tabBadge("echanges", { offers: 2, coffrets: 1 })).toBe(2);
-    expect(tabBadge("jouer", { offers: 2, coffrets: 1 })).toBe(1);
-    expect(tabBadge("album", { offers: 2, coffrets: 1 })).toBe(0);
+  it("puts offers on Échanges, coffrets on Jouer and waiting jousts on Défis", () => {
+    expect(tabBadge("echanges", { offers: 2, coffrets: 1, jousts: 3 })).toBe(2);
+    expect(tabBadge("jouer", { offers: 2, coffrets: 1, jousts: 3 })).toBe(1);
+    expect(tabBadge("defis", { offers: 2, coffrets: 1, jousts: 3 })).toBe(3);
+    expect(tabBadge("album", { offers: 2, coffrets: 1, jousts: 3 })).toBe(0);
   });
 
   it("adds up what waits in the mail", () => {
