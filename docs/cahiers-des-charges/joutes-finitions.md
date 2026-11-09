@@ -1,6 +1,6 @@
 # Cahier des charges · Les finitions des joutes
 
-- **Statut :** proposé et tranché le 2026-11-09.
+- **Statut :** proposé et tranché le 2026-11-09. Dans le code le même jour, web et mobile : les ligues (F1, F2 ; planche `/planches/blasons`), l'accueil (F4 à F7), la fenêtre du deck (F8) et l'écran de fin (F9) ; pas encore en ligne. Restent Maître Furet (F10, gravure à télécharger avec l'accord du propriétaire), la page Défis en deux (F11) et les titres (F3).
 - **Choix du propriétaire, le 2026-11-09 :** toutes les recommandations, F1 à F11, avec une précision pour les blasons : un air ancien, d'enluminure (or, rouge vermillon, bleu lapis, rinceaux, filets), jamais un dessin moderne sans âme.
 - **Source :** le retour vocal du propriétaire du 2026-11-09, après avoir joué les lots 1 à 3 de [joutes-refonte.md](joutes-refonte.md), avec cinq captures (la partie, l'écran de fin, l'accueil, un défi, la fenêtre du deck).
 - **Règles liées :** P91 (joutes), P98 (ligues et tournoi de la semaine) ([regles-du-jeu.md](../regles-du-jeu.md)).
