@@ -752,6 +752,27 @@
     padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
   }
 
+  /*
+   * Once answered, the slip and its button hold the foot of the screen, whatever the length of the
+   * definitions above; the page keeps room to scroll the last choice out from under it.
+   */
+  .feedback {
+    position: fixed;
+    left: var(--lx-s7);
+    right: var(--lx-s7);
+    bottom: calc(var(--lx-s6) + env(safe-area-inset-bottom));
+    z-index: 40;
+    margin: 0;
+    box-shadow:
+      inset 0 -4px 0 var(--lx-toy-paper-bottom),
+      0 4px 0 var(--lx-toy-outline),
+      0 -10px 30px var(--lx-toy-drop);
+  }
+
+  .page:has(.feedback) {
+    padding-bottom: 240px;
+  }
+
   .prompt {
     padding: 22px var(--lx-s8);
   }

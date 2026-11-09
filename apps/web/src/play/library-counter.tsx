@@ -13,7 +13,15 @@ import {
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
-import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
+import { useNarrow } from "@/lib/use-narrow";
+import {
+  CollectionPager,
+  CollectionTitle,
+  Desk,
+  InfoBubble,
+  MainAction,
+  SideTile,
+} from "@/library/play-pieces";
 import { dailyChallenge } from "@/player/collection";
 import { missions } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -66,7 +74,10 @@ export interface LibraryCounterProps {
   readonly today?: ReactNode;
   /** Right of the desk, on a wide screen: the level, the clan, the rest of the room. */
   readonly standing?: ReactNode;
-  /** Under the button, below a wide screen: a word of the album to read again, or one slipping away. */
+  /**
+   * Under the button, between a phone and a wide screen: a word of the album to read again, or one
+   * slipping away. A phone leaves it out, so the screen holds without scrolling.
+   */
   readonly word?: ReactNode;
 }
 
@@ -106,6 +117,12 @@ export function LibraryCounter({
     else onPick(next, side);
   };
   const leaving = useLeavingSachet(choice.id, sachet, entry);
+  // On a phone the arrows go to the foot of the desk, within the thumb's reach.
+  const narrow = useNarrow();
+  const index = Math.max(
+    0,
+    choices.findIndex((c) => c.id === choice.id),
+  );
 
   return (
     <section className={styles.screen} data-opening={opening || undefined} aria-label="Ton sachet">
@@ -118,15 +135,13 @@ export function LibraryCounter({
               kicker="Sachet"
               name={choice.name}
               tagline={choice.tagline ?? ""}
-              index={Math.max(
-                0,
-                choices.findIndex((c) => c.id === choice.id),
-              )}
+              index={index}
               count={choices.length}
               previousLabel="Collection précédente"
               nextLabel="Collection suivante"
               onPrevious={() => turn("left")}
               onNext={() => turn("right")}
+              pager={!narrow}
             />
           </div>
           <Tiles say={say} />
@@ -151,6 +166,18 @@ export function LibraryCounter({
               </div>
             </div>
           </div>
+          {narrow && (
+            <div className={`${styles.pager} ${styles.fading}`}>
+              <CollectionPager
+                index={index}
+                count={choices.length}
+                previousLabel="Collection précédente"
+                nextLabel="Collection suivante"
+                onPrevious={() => turn("left")}
+                onNext={() => turn("right")}
+              />
+            </div>
+          )}
         </div>
         <div className={`${styles.cta} ${styles.fading}`}>
           <div className={styles.main}>
@@ -164,7 +191,7 @@ export function LibraryCounter({
             )}
             {footer}
           </div>
-          {word !== null && <div className={styles.word}>{word}</div>}
+          {word !== null && !narrow && <div className={styles.word}>{word}</div>}
         </div>
       </div>
       {standing !== null && <div className={`${styles.standing} ${styles.fading}`}>{standing}</div>}

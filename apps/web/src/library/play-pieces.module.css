@@ -255,6 +255,18 @@
   box-shadow: inset 0 -2px 0 var(--lx-toy-gold-edge);
 }
 
+/* The arrows and dots on their own, apart from the name. */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.pager .dots {
+  margin-top: 0;
+}
+
 .tagline {
   margin: 6px 40px 0;
   color: color-mix(in srgb, var(--lx-lettering-fill) 80%, transparent);
@@ -324,12 +336,13 @@
 
 /* --- The shelf of tabs --- */
 
+/* The icons and their names sit in the middle of the shelf, from its gilt edge to its foot. */
 .tabs {
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
-  height: 76px;
-  padding: 6px 4px calc(env(safe-area-inset-bottom) + 8px);
+  height: 71px;
+  padding: 6px 4px calc(env(safe-area-inset-bottom) + 13px);
   background:
     repeating-linear-gradient(90deg, var(--lx-toy-drop) 0 1px, transparent 1px 70px),
     linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));

@@ -1158,32 +1158,61 @@
     font-size: var(--lx-size-heading-large);
   }
 
+  /*
+   * Short, so the discussion keeps the screen: the emblem beside the name and the motto, the
+   * level's bar under them, then the clan's size and its buttons on one line.
+   */
   .hero {
-    gap: var(--lx-s7);
-    padding: var(--lx-s8);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--lx-s5) var(--lx-s7);
+    margin-bottom: var(--lx-s6);
+    padding: var(--lx-s8) var(--lx-s8) var(--lx-s7);
+  }
+
+  .heroText {
+    display: contents;
   }
 
   .heroName {
-    font-size: var(--lx-size-title-large);
+    grid-column: 2;
+    margin: 0;
+    font-size: var(--lx-size-title);
   }
 
-  .hero {
-    flex-direction: column;
-    align-items: flex-start;
+  .heroMotto {
+    grid-column: 2;
+    margin: 0;
+    font-size: var(--lx-size-body);
   }
 
-  .heroActions {
-    width: 100%;
-    flex-wrap: wrap;
+  .hero > :has(+ .heroText) {
+    grid-row: span 2;
+  }
+
+  .clanXp {
+    grid-column: 1 / -1;
+    max-width: none;
+    margin-top: 0;
   }
 
   .heroSide {
-    width: 100%;
-    align-items: flex-start;
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lx-s4) var(--lx-s6);
   }
 
   .heroFacts {
     justify-content: flex-start;
+    gap: var(--lx-s3) var(--lx-s7);
+  }
+
+  .heroActions {
+    flex-wrap: wrap;
   }
 
   .visitActions {

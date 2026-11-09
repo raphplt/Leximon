@@ -29,6 +29,7 @@ import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "r
 import { loadCatalog } from "@/cards/catalog";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
+import { useNarrow } from "@/lib/use-narrow";
 import { myClan } from "@/player/clan";
 import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/resource";
@@ -80,6 +81,7 @@ export function ClanPage({
   const owned = useShared(ownedCards);
   const mine = useShared(myClan);
   const toast = useToast();
+  const narrow = useNarrow();
   const claim = useClaim();
 
   const load = useCallback(async () => {
@@ -206,7 +208,7 @@ export function ClanPage({
     <main className={styles.screen} data-tab={tab}>
       <header className={`${ui.panel} ${styles.hero}`}>
         <Banner cardId={view.clan.banner} />
-        <Emblem emblem={view.clan.emblem} size={96} level={progress.level} />
+        <Emblem emblem={view.clan.emblem} size={narrow ? 64 : 96} level={progress.level} />
         <div className={styles.heroText}>
           <h1 className={`${ui.display} ${styles.heroName}`}>{view.clan.name}</h1>
           {motto !== null && <p className={styles.heroMotto}>{motto}</p>}

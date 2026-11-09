@@ -86,6 +86,7 @@ import { missions } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
+import { useHideTabs } from "@/shell/use-hide-tabs";
 import { Button, RoundButton } from "@/ui/button";
 import { GainBanner } from "@/ui/gain-banner";
 import { HelpTip } from "@/ui/help-tip";
@@ -299,6 +300,7 @@ function ChallengeFlow() {
   };
   const playing = session !== null && session.step.name !== "recap";
   const guard = useLeaveGuard(playing, LEAVE_SERIES);
+  useHideTabs(playing);
 
   if (session !== null && catalog !== null) {
     return (

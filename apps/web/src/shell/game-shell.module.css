@@ -18,9 +18,21 @@
   }
 }
 
+/*
+ * Lights and glows may reach past the window's edge, never widen the page: a phone would then pan
+ * sideways under the finger and repaint the whole room on every frame.
+ */
+.content {
+  overflow-x: clip;
+}
+
 /* Room under the phone tabs, so that nothing hides behind them. */
 @media (max-width: 759px) {
   .content {
     padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
+  :global(html[data-no-tabs]) .content {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

@@ -176,7 +176,10 @@ export function SideTile({
   );
 }
 
-/** The collection on the desk, with arrows to the others and a dot for each. */
+/**
+ * The collection on the desk, with arrows to the others and a dot for each. `pager={false}` leaves
+ * the arrows and the dots to a `CollectionPager` placed elsewhere.
+ */
 export function CollectionTitle({
   kicker,
   name,
@@ -187,6 +190,7 @@ export function CollectionTitle({
   nextLabel,
   onPrevious,
   onNext,
+  pager = true,
 }: {
   readonly kicker: string;
   readonly name: string;
@@ -197,36 +201,79 @@ export function CollectionTitle({
   readonly nextLabel: string;
   readonly onPrevious?: () => void;
   readonly onNext?: () => void;
+  readonly pager?: boolean;
 }) {
   return (
     <div className={styles.collection}>
       <div className={styles.collectionRow}>
-        <Toy
-          matter="paper"
-          className={styles.arrow}
-          aria-label={previousLabel}
-          onClick={onPrevious}
-        >
-          <ToyIcon name="arrow" size={26} />
-        </Toy>
+        {pager && <PagerArrow label={previousLabel} onClick={onPrevious} />}
         <div className={styles.collectionName}>
           <Kicker>{kicker}</Kicker>
           <Lettering className={styles.name}>{name}</Lettering>
-          <span className={styles.dots} aria-hidden="true">
-            {Array.from({ length: count }, (_, dot) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: one dot per place, which never moves
-              <i key={dot} className={dot === index ? styles.dotOn : styles.dot} />
-            ))}
-          </span>
+          {pager && <PagerDots index={index} count={count} />}
         </div>
-        <Toy matter="paper" className={styles.arrow} aria-label={nextLabel} onClick={onNext}>
-          <span className={styles.flipped}>
-            <ToyIcon name="arrow" size={26} />
-          </span>
-        </Toy>
+        {pager && <PagerArrow label={nextLabel} next onClick={onNext} />}
       </div>
       <p className={styles.tagline}>{tagline}</p>
     </div>
+  );
+}
+
+/** The arrows to the other collections and a dot for each, apart from the collection's name. */
+export function CollectionPager({
+  index,
+  count,
+  previousLabel,
+  nextLabel,
+  onPrevious,
+  onNext,
+}: {
+  readonly index: number;
+  readonly count: number;
+  readonly previousLabel: string;
+  readonly nextLabel: string;
+  readonly onPrevious?: () => void;
+  readonly onNext?: () => void;
+}) {
+  return (
+    <div className={styles.pager}>
+      <PagerArrow label={previousLabel} onClick={onPrevious} />
+      <PagerDots index={index} count={count} />
+      <PagerArrow label={nextLabel} next onClick={onNext} />
+    </div>
+  );
+}
+
+function PagerArrow({
+  label,
+  next = false,
+  onClick,
+}: {
+  readonly label: string;
+  readonly next?: boolean;
+  readonly onClick?: (() => void) | undefined;
+}) {
+  return (
+    <Toy matter="paper" className={styles.arrow} aria-label={label} onClick={onClick}>
+      {next ? (
+        <span className={styles.flipped}>
+          <ToyIcon name="arrow" size={26} />
+        </span>
+      ) : (
+        <ToyIcon name="arrow" size={26} />
+      )}
+    </Toy>
+  );
+}
+
+function PagerDots({ index, count }: { readonly index: number; readonly count: number }) {
+  return (
+    <span className={styles.dots} aria-hidden="true">
+      {Array.from({ length: count }, (_, dot) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: one dot per place, which never moves
+        <i key={dot} className={dot === index ? styles.dotOn : styles.dot} />
+      ))}
+    </span>
   );
 }
 

@@ -361,6 +361,10 @@
   transform-origin: left;
 }
 
+.recycle {
+  margin-top: var(--lx-s8);
+}
+
 .recapNote {
   margin: var(--lx-s10) 0 0;
   font-size: var(--lx-size-small);
@@ -421,15 +425,16 @@
    and the carousel running to them. The album has its tab right below, the kicker says what is
    plain. */
 @media (max-width: 759px) {
-  /* The shell already keeps room for the top bar and the tabs: the screen fills what is left. */
+  /* The tabs leave while the cards are on the desk: the screen fills all under the top bar. */
   .screen {
-    min-height: calc(100dvh - 166px - env(safe-area-inset-bottom));
-    padding-bottom: var(--lx-s6);
+    min-height: calc(100dvh - 66px - env(safe-area-inset-bottom));
+    padding: var(--lx-s3) var(--lx-s5) var(--lx-s5);
   }
 
   .recap,
   .revealing {
-    margin: 0 -8px;
+    flex-grow: 1;
+    margin: 0;
     padding: 30px 16px 24px;
   }
 
@@ -479,11 +484,15 @@
     margin-top: var(--lx-s6);
   }
 
-  /* One under the other: side by side, a phone breaks each label on two lines. */
+  /*
+   * One under the other: side by side, a phone breaks each label on two lines. They stand at the
+   * foot of the desk, under the thumb, whatever the cards left above them.
+   */
   .actions {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--lx-s5);
-    margin-top: var(--lx-s8);
+    margin-top: auto;
+    padding-top: var(--lx-s8);
   }
 
   .recap .actions > * + * {

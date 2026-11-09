@@ -82,6 +82,7 @@ import { account, carnet, missions, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
+import { useHideTabs } from "@/shell/use-hide-tabs";
 import { usePlayerView } from "@/shell/use-player-view";
 import { ButtonLink } from "@/ui/button";
 import { GainBanner } from "@/ui/gain-banner";
@@ -110,10 +111,11 @@ const RECAP_CARD_MAX = 210;
 /** Room left in the carousel for the next card to show at the edge, in px. */
 const RECAP_PEEK = 96;
 /**
- * Height a phone keeps around the carousel's cards, in px: top bar, tabs, the recap's lines and
- * its button. The cards shrink on a short screen so that the button shows without scrolling.
+ * Height a phone keeps around the carousel's cards, in px: the top bar, the recap's lines and its
+ * buttons, the tabs being hidden. The cards shrink on a short screen so that the buttons show
+ * without scrolling.
  */
-const RECAP_PHONE_CHROME = 460;
+const RECAP_PHONE_CHROME = 420;
 /** The lines a recap shows only sometimes, in px: a gain's banner, an account to create. */
 const RECAP_BANNER = 112;
 const RECAP_SIGN_UP_LINE = 42;
@@ -238,6 +240,8 @@ function BoosterFlow() {
   const sachetRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLElement>(null);
   const { shape, known } = usePackShape();
+  // The cards and their recap keep the phone's whole height; the recap has its own ways out.
+  useHideTabs(phase.name === "revealing" || phase.name === "recap");
   const view = usePlayerView();
   const who = useShared(account);
   const dates = useShared(cardDates);
@@ -962,7 +966,7 @@ function Recap({
       {!mustSignUp && !coffretWaits && nextSachet !== null && (
         <p className={styles.recapNote}>{nextSachet}</p>
       )}
-      {recycles && <RecycleButton small />}
+      {recycles && <RecycleButton small className={styles.recycle} />}
       <div className={styles.actions}>
         {coffretWaits ? (
           <MainAction label="Ouvrir le coffret" onClick={() => openCoffret()} />

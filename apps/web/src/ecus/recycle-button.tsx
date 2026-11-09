@@ -17,7 +17,7 @@ export function RecycleButton({
   readonly variant?: ButtonVariant;
   readonly small?: boolean;
   readonly wide?: boolean;
-  readonly className?: string;
+  readonly className?: string | undefined;
   /** Closes the window the button sits in, so that the two never stack. */
   readonly onOpen?: () => void;
 }) {

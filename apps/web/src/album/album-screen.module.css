@@ -594,10 +594,12 @@
     padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
   }
 
+  /* The desk runs on under the tabs, so the album holds the whole height below the top bar. */
   .page:has(.desk) {
-    height: calc(100dvh - 166px - env(safe-area-inset-bottom));
+    height: calc(100dvh - 66px);
     min-height: 480px;
-    padding-bottom: var(--lx-s4);
+    margin-bottom: calc(-96px - env(safe-area-inset-bottom));
+    padding-bottom: 0;
   }
 
   .header {
@@ -646,14 +648,6 @@
   .grid {
     gap: var(--lx-s8) 8px;
   }
-}
-
-/* What the collection holds, under its tab. */
-.tagline {
-  margin: 0;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-body-large);
-  color: var(--lx-color-page-ink-muted);
 }
 
 /* Comparing with a friend's album. */
@@ -716,9 +710,35 @@
   }
 }
 
+/*
+ * On a phone the desk runs to the screen's edges and under the tabs: only its top edge shows,
+ * and the cards have the whole width, centred.
+ */
 @media (max-width: 759px) {
   .desk {
-    margin: 0 -10px;
-    padding: 18px 10px 12px 14px;
+    margin: 0 calc(-1 * var(--lx-s7));
+    padding: 16px 10px 0;
+  }
+
+  .deskBack {
+    border-radius: 22px 22px 0 0;
+    box-shadow:
+      0 -3px 0 var(--lx-toy-outline),
+      inset 0 0 50px var(--lx-desk-hollow);
+  }
+
+  /* Its tooling would draw the sides and the foot the screen's edges replace. */
+  .deskBack > * {
+    display: none;
+  }
+
+  /* The last row clears the tabs; the letters, when the order shows them, are the only rail. */
+  .scroller {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+    scrollbar-width: none;
+  }
+
+  .lettersPlace {
+    display: none;
   }
 }

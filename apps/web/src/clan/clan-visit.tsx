@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
+import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
 import { profile } from "@/player/player";
@@ -118,6 +119,7 @@ function ClanVisit({
     readonly cursor: string | null;
   } | null>(null);
   const toast = useToast();
+  const narrow = useNarrow();
   const router = useRouter();
   const clan = view.clan;
 
@@ -162,7 +164,7 @@ function ClanVisit({
     <main className={styles.screen}>
       <header className={`${ui.panel} ${styles.hero}`}>
         <Banner cardId={clan.banner} />
-        <Emblem emblem={clan.emblem} size={96} level={clan.level} />
+        <Emblem emblem={clan.emblem} size={narrow ? 64 : 96} level={clan.level} />
         <div className={styles.heroText}>
           <p className={`${ui.kicker} ${styles.heroKicker}`}>Clan de niveau {clan.level}</p>
           <h1 className={`${ui.display} ${styles.heroName}`}>{clan.name}</h1>

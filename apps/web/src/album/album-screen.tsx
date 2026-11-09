@@ -216,7 +216,6 @@ export function AlbumScreen() {
     setState((s) => ({ ...s, sort: next }));
   };
   const cardWidth = narrow ? 100 : 168;
-  const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
   const pickedTheme = view?.themes.find((theme) => theme.id === state.theme);
 
   if (failed) {
@@ -346,7 +345,6 @@ export function AlbumScreen() {
 
             {!view.searching && (
               <>
-                {tagline !== undefined && <p className={styles.tagline}>{tagline}</p>}
                 <div className={styles.row}>
                   {view.rarities.map((chip) => (
                     <RarityChip
@@ -478,7 +476,7 @@ export function AlbumScreen() {
           </div>
           {/* Its place stays when the order hides it: changing the order moves nothing. */}
           {view.empty === null && view.letters.length === 0 && (
-            <div className={styles.letters} aria-hidden="true" />
+            <div className={`${styles.letters} ${styles.lettersPlace}`} aria-hidden="true" />
           )}
           {view.empty === null && view.letters.length > 0 && (
             <nav className={styles.letters} aria-label="Aller à la lettre">

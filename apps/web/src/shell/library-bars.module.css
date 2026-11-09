@@ -286,4 +286,8 @@
     z-index: 30;
     display: flex;
   }
+  /* A game under way keeps the whole height. */
+  :global(html[data-no-tabs]) .tabs {
+    display: none;
+  }
 }

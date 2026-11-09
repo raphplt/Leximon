@@ -213,7 +213,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const openOwned = useCallback((cardId: string) => openCard(cardId, shownIds.current), []);
 
   const list = useRef<FlatList<AlbumItem>>(null);
-  /** Where the rows of cards start, under the tagline and the review button. */
+  /** Where the rows of cards start, under the review button. */
   const rowsTop = useRef<number>(GRID_TOP);
   const resetKey = JSON.stringify(state);
   // Another filter or sort starts the cards over from the top of their box.
@@ -281,7 +281,6 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     writeCollection(id);
     setState((s) => ({ ...s, collectionId: id, rarity: null, theme: null, search: "" }));
   };
-  const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
   const comparing = friend !== null && state.compare != null;
   const filtersOn = activeFilterCount(state);
   const sort = state.sort ?? "alpha";
@@ -433,7 +432,6 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
         rowsTop.current = GRID_TOP + event.nativeEvent.layout.height;
       }}
     >
-      {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
       {practiceCards !== null && (
         <View style={styles.revise}>
           <Button
@@ -908,12 +906,6 @@ const styles = StyleSheet.create({
   tabCount: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.pageInkMuted },
   tabTrack: { height: 5, borderRadius: 3, backgroundColor: colors.well, overflow: "hidden" },
   tabFill: { height: 5, borderRadius: 3 },
-  tagline: {
-    fontFamily: fonts.text.italic,
-    fontSize: fontSizes.bodyLarge,
-    lineHeight: 22,
-    color: colors.pageInkMuted,
-  },
   chip: {
     flexDirection: "row",
     alignItems: "center",
