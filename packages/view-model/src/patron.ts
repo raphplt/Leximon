@@ -175,6 +175,11 @@ export const PATRON_DEFAULT_PLAN: PatronPlan = "yearly";
 
 /** Under the plans. */
 export const PATRON_CANCEL_NOTE = "Tu peux résilier en un clic depuis cette page, quand tu veux.";
+export const PATRON_PAYMENT_NOTE = "Le paiement se fait sur la page sécurisée de Stripe.";
+export const PATRON_PLANS_TITLE = "Choisis ta formule";
+export const PATRON_PERKS_TITLE = "Ce que tu reçois";
+/** At the foot of the offer, back up to the plans. */
+export const PATRON_CHOOSE_PLAN = "Choisir ma formule";
 
 export const PATRON_FOUNDING_OFFER =
   "Abonne-toi avant la fin du mois pour devenir Mécène fondateur. Tu gardes ce prix tant que ton abonnement continue, et le badge de fondateur à vie.";

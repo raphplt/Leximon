@@ -24,6 +24,7 @@ import {
   PATRON_CANCEL_NOTE,
   PATRON_CARD_KICKER,
   PATRON_CHECKOUT_FAILED,
+  PATRON_CHOOSE_PLAN,
   PATRON_CLAIM,
   PATRON_CLAIM_BUSY,
   PATRON_CLAIMABLE_TITLE,
@@ -52,7 +53,10 @@ import {
   PATRON_NOTIFY,
   PATRON_OPEN_ALBUM,
   PATRON_PAGE_TITLE,
+  PATRON_PAYMENT_NOTE,
   PATRON_PERKS,
+  PATRON_PERKS_TITLE,
+  PATRON_PLANS_TITLE,
   PATRON_POLL_CHOSEN,
   PATRON_POLL_FAILED,
   PATRON_POLL_VOTE,
@@ -280,7 +284,7 @@ function Hero({
   const month = monthCosmeticLine(patron.monthCosmetic);
   return (
     <header className={styles.hero} style={rise(0)}>
-      <CrownedAvatar size={150} {...monthLook(me, patron.monthCosmetic)} />
+      <CrownedAvatar size={160} {...monthLook(me, patron.monthCosmetic)} />
       <div className={styles.heroText}>
         <Kicker>{kicker}</Kicker>
         <h1 className={styles.display}>
@@ -290,6 +294,36 @@ function Hero({
         {month !== null && <p className={styles.month}>{month}</p>}
       </div>
     </header>
+  );
+}
+
+/** Where the foot of the page sends the player back up: the plans and the button. */
+const PLANS_ID = "formule";
+
+function scrollToPlans() {
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document
+    .getElementById(PLANS_ID)
+    ?.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+}
+
+/** The two prices in a sentence, « 3,99 € par mois ou 29,99 € par an. » */
+function Prices() {
+  const [monthly, yearly] = patronPlanChoices(Date.now());
+  return (
+    <p className={styles.prices}>
+      <strong>{monthly?.label}</strong> ou <strong>{yearly?.label}</strong>.
+    </p>
+  );
+}
+
+/** The foot of the offer, once every perk is read: the prices again and the way back to them. */
+function Closing({ children }: { readonly children: ReactNode }) {
+  return (
+    <Leaf className={styles.closing}>
+      <Prices />
+      {children}
+    </Leaf>
   );
 }
 
@@ -313,24 +347,55 @@ function PerkIcon({
   );
 }
 
-/** What the subscription gives, its first words in bold: the same list as on the subscriber's page. */
-function Perks() {
+/**
+ * What the subscription gives, a card for each perk in the order of the subscriber's page. The
+ * month's cosmetics are drawn on theirs, worn by the player: the most tangible of the perks.
+ */
+function Perks({
+  month,
+  me,
+}: {
+  readonly month: MonthCosmeticView | null;
+  readonly me: ProfileResponse | null;
+}) {
   return (
-    <div style={rise(2)}>
-      <Leaf className={styles.perkLeaf}>
-        <ul className={styles.perkList}>
-          {PATRON_PERKS.map((perk) => (
-            <li key={perk.key}>
+    <section className={styles.perks} aria-labelledby="patron-perks">
+      <h2 id="patron-perks" className={styles.sectionTitle} style={rise(3)}>
+        <Lettering>{PATRON_PERKS_TITLE}</Lettering>
+      </h2>
+      <ul className={styles.perkGrid}>
+        {PATRON_PERKS.map((perk, index) => (
+          <li key={perk.key} data-perk={perk.key} style={rise(index + 4)}>
+            <Leaf className={styles.perkCard}>
               <PerkIcon perk={perk.key} small />
-              <p>
-                <strong>{perk.lead}</strong>
-                {perk.rest}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </Leaf>
-    </div>
+              <div className={styles.perkText}>
+                <h3 className={styles.perkTitle}>{perk.title}</h3>
+                <p>
+                  {perk.lead}
+                  {perk.rest}
+                </p>
+              </div>
+              {perk.key === "cosmetic" && month !== null && (
+                <ul className={styles.showcase} aria-hidden>
+                  {month.cosmetics.map((cosmetic) => {
+                    const caption = patronCosmeticCaption(cosmetic);
+                    return (
+                      <li key={`${caption.kind}-${caption.name}`}>
+                        <CosmeticLook cosmetic={cosmetic} me={me} />
+                        <span className={styles.claimName}>
+                          <small>{caption.kind}</small>
+                          <strong>{caption.name}</strong>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Leaf>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -343,31 +408,30 @@ function DoorView({
   readonly me: ProfileResponse | null;
 }) {
   const [asked, setAsked] = useState(false);
-  const [monthly, yearly] = patronPlanChoices(Date.now());
   const ask = () => {
     setAsked(true);
     api.recordInterest("patron_notify").catch(() => undefined);
   };
+  const notify = asked ? (
+    <p className={styles.done} role="status">
+      {PATRON_NOTIFIED}
+    </p>
+  ) : (
+    <MainAction label={PATRON_NOTIFY} onClick={ask} />
+  );
   return (
     <main className={`${styles.page} ${styles.shop}`}>
-      <Hero kicker={PATRON_DOOR_KICKER} patron={patron} me={me} />
-      <div className={styles.shopBody}>
-        <Perks />
-        <div className={styles.buyColumn} style={rise(3)}>
+      <div className={styles.shopTop}>
+        <Hero kicker={PATRON_DOOR_KICKER} patron={patron} me={me} />
+        <div className={styles.buyColumn} style={rise(1)}>
           <Leaf className={styles.buy}>
-            <p className={styles.prices}>
-              <strong>{monthly?.label}</strong> ou <strong>{yearly?.label}</strong>.
-            </p>
-            {asked ? (
-              <p className={styles.done} role="status">
-                {PATRON_NOTIFIED}
-              </p>
-            ) : (
-              <MainAction label={PATRON_NOTIFY} onClick={ask} />
-            )}
+            <Prices />
+            {notify}
           </Leaf>
         </div>
       </div>
+      <Perks month={patron.monthCosmetic} me={me} />
+      <Closing>{notify}</Closing>
     </main>
   );
 }
@@ -418,19 +482,21 @@ function OfferView({
           {PATRON_CONFIRMING}
         </p>
       )}
-      <Hero kicker={PATRON_KICKER} patron={patron} me={me} />
-      {patron.foundingOffer && (
-        <div className={styles.founding} style={rise(1)}>
-          <ToyBody matter="red" shape="round" className={styles.seal}>
-            <Icon name="crown" size={26} />
-          </ToyBody>
-          <p>{PATRON_FOUNDING_OFFER}</p>
+      <div className={styles.shopTop}>
+        <div className={styles.heroColumn}>
+          <Hero kicker={PATRON_KICKER} patron={patron} me={me} />
+          {patron.foundingOffer && (
+            <div className={styles.founding} style={rise(1)}>
+              <ToyBody matter="red" shape="round" className={styles.seal}>
+                <Icon name="crown" size={26} />
+              </ToyBody>
+              <p>{PATRON_FOUNDING_OFFER}</p>
+            </div>
+          )}
         </div>
-      )}
-      <div className={styles.shopBody}>
-        <Perks />
-        <div className={styles.buyColumn} style={rise(3)}>
+        <div className={styles.buyColumn} id={PLANS_ID} style={rise(2)}>
           <Leaf className={styles.buy}>
+            <h2 className={styles.buyTitle}>{PATRON_PLANS_TITLE}</h2>
             <fieldset className={styles.plans} aria-label="Formule">
               {patronPlanChoices(Date.now()).map((choice) => (
                 <Toy
@@ -455,10 +521,9 @@ function OfferView({
                 </Toy>
               ))}
             </fieldset>
-            <p className={styles.note}>{PATRON_CANCEL_NOTE}</p>
             {guest ? (
               <>
-                <p className={styles.text}>{PATRON_GUEST_NOTE}</p>
+                <p className={styles.guest}>{PATRON_GUEST_NOTE}</p>
                 <ButtonLink href="/compte">{PATRON_CREATE_ACCOUNT}</ButtonLink>
               </>
             ) : (
@@ -484,9 +549,23 @@ function OfferView({
                 )}
               </>
             )}
+            <ul className={styles.reassure}>
+              <li>
+                <Icon name="check" size={18} />
+                {PATRON_CANCEL_NOTE}
+              </li>
+              <li>
+                <Icon name="lock" size={18} />
+                {PATRON_PAYMENT_NOTE}
+              </li>
+            </ul>
           </Leaf>
         </div>
       </div>
+      <Perks month={patron.monthCosmetic} me={me} />
+      <Closing>
+        <MainAction label={PATRON_CHOOSE_PLAN} onClick={scrollToPlans} />
+      </Closing>
     </main>
   );
 }
@@ -1105,7 +1184,7 @@ function CosmeticLook({
     case "avatar":
       return <Avatar avatar={cosmetic.avatar} frame="simple" size={CLAIM_LOOK} />;
     case "title":
-      return <Lettrine icon="crown" matter="gold" size={CLAIM_LOOK} />;
+      return <Lettrine icon="gilded" matter="gold" size={CLAIM_LOOK} />;
   }
 }
 

@@ -537,7 +537,7 @@ function CosmeticLook({ cosmetic }: { readonly cosmetic: PatronCosmeticView }) {
     case "avatar":
       return <Avatar avatar={cosmetic.avatar} frame="simple" size={CLAIM_LOOK} />;
     case "title":
-      return <Lettrine icon="crown" matter="gold" size={CLAIM_LOOK} />;
+      return <Lettrine icon="gilded" matter="gold" size={CLAIM_LOOK} />;
   }
 }
 
