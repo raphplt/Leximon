@@ -247,6 +247,12 @@
   opacity: 0.92;
 }
 
+.weekReward {
+  margin: 0;
+  font-weight: 800;
+  color: var(--lx-lettering-kicker);
+}
+
 .clock {
   display: inline-flex;
   align-self: flex-start;
@@ -364,15 +370,6 @@
 }
 
 .stop[data-state="ahead"] .stopName {
-  color: var(--lx-color-paper-ink-muted);
-}
-
-.stopGain {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: var(--lx-size-caption);
-  font-weight: 800;
   color: var(--lx-color-paper-ink-muted);
 }
 

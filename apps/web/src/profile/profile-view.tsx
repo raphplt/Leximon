@@ -24,7 +24,7 @@ import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { PatronBadge } from "@/components/patron-badge";
 import { ProfileBanner } from "@/components/profile-banner";
-import { Shield } from "@/jousts/league-pieces";
+import { Crest } from "@/jousts/crest";
 import { useNarrow } from "@/lib/use-narrow";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
@@ -223,7 +223,7 @@ export function JoustsPanel({ jousts }: { readonly jousts: ProfileJousts }) {
   return (
     <section className={`${ui.panel} ${styles.panel}`} aria-labelledby="jousts-title">
       <div className={styles.joustsHead}>
-        <Shield league={jousts.league} size={42} />
+        <Crest league={jousts.league} size={42} />
         <div>
           <h2 id="jousts-title" className={`${ui.display} ${styles.panelTitle}`}>
             {PROFILE_JOUSTS_TITLE}

@@ -53,6 +53,7 @@ import {
   sealedLine,
   standingHeader,
   weekFigures,
+  weekRewardLine,
   YOU,
   zoneChip,
 } from "@leximon/view-model";
@@ -126,6 +127,7 @@ export function Hall({
       <h1 className={styles.title}>{JOUSTS_TITLE}</h1>
       <Lice
         standing={jousts.standing}
+        league={league}
         now={now}
         style={rise(order++)}
         help={
@@ -256,18 +258,21 @@ export function Hall({
 
 function Lice({
   standing,
+  league,
   now,
   style,
   help,
   children,
 }: {
   readonly standing: JoustStanding;
+  readonly league: LeagueResponse | null;
   readonly now: number;
   readonly style: CSSProperties;
   readonly help: ReactNode;
   readonly children: ReactNode;
 }) {
   const header = standingHeader(standing, gameDayOf(now).key);
+  const reward = weekRewardLine(standing.league, league?.ladder ?? null);
   const engraving = useEngravingInk(LICE_ENGRAVING);
   const figures = standing.group === null ? null : weekFigures(standing.group);
   return (
@@ -305,6 +310,7 @@ function Lice({
           </div>
         )}
         <p className={styles.weekLine}>{header.line}</p>
+        {reward !== null && <p className={styles.weekReward}>{reward}</p>}
         <span className={styles.clock}>
           <Icon name="clock" size={16} /> {header.week}
         </span>
@@ -417,7 +423,7 @@ export function Road({
   readonly style: CSSProperties;
 }) {
   const narrow = useNarrow();
-  const stops = leagueRoad(standing.league, league?.ladder ?? null);
+  const stops = leagueRoad(standing.league);
   const here = stops.findIndex((stop) => stop.state === "here");
   return (
     <section className={styles.leaf} style={style}>
@@ -445,11 +451,6 @@ export function Road({
               dim={stop.state === "ahead"}
             />
             <span className={styles.stopName}>{stop.name}</span>
-            {stop.ecus !== null && stop.ecus > 0 && (
-              <span className={styles.stopGain}>
-                <ToyIcon name="ecu" size={14} /> {stop.ecus}
-              </span>
-            )}
           </span>
         ))}
       </button>

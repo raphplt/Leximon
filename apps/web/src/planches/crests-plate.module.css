@@ -1,0 +1,65 @@
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(1100px, 100% - 32px);
+  margin: 32px auto 64px;
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 28px 20px;
+}
+
+.title {
+  font-size: var(--lx-size-title-large);
+}
+
+.large,
+.road {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 18px 26px;
+}
+
+.figure {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.name {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-title);
+  font-weight: 800;
+  color: var(--lx-color-paper-ink);
+}
+
+.small {
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  color: var(--lx-color-paper-ink);
+}
+
+.caption {
+  margin: 0;
+  color: var(--lx-color-paper-ink-muted);
+  font-weight: 700;
+}
+
+.leather {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  padding: 28px 20px;
+  border: 3px solid var(--lx-toy-outline);
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+}

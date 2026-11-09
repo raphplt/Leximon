@@ -8,6 +8,7 @@ import {
   openedLetter,
   rankedLances,
   weekFigures,
+  weekRewardLine,
   zoneChip,
 } from "./joust-hall";
 
@@ -42,7 +43,7 @@ describe("the lice", () => {
 
 describe("the road of the leagues", () => {
   it("lights the leagues passed and raises the player's", () => {
-    const road = leagueRoad("chevalier", null);
+    const road = leagueRoad("chevalier");
     expect(road.map((stop) => stop.state)).toEqual([
       "past",
       "past",
@@ -52,17 +53,25 @@ describe("the road of the leagues", () => {
       "ahead",
       "ahead",
     ]);
-    expect(road[0]).toEqual({ league: "page", name: "Page", state: "past", ecus: null });
+    expect(road[0]).toEqual({ league: "page", name: "Page", state: "past" });
   });
+});
 
-  it("says the écus of each league once the ladder is known", () => {
-    const road = leagueRoad("page", [
-      { league: "page", up: 10, down: 0, rewards: [{ kind: "ecus", amount: 10 }] },
-      { league: "ecuyer", up: 8, down: 3, rewards: [{ kind: "garni_booster" }] },
-    ]);
-    expect(road[0]?.ecus).toBe(10);
-    expect(road[1]?.ecus).toBe(0);
-    expect(road[2]?.ecus).toBeNull();
+describe("what the week gives", () => {
+  it("says the rewards of the player's league once the ladder is known", () => {
+    const ladder = [
+      {
+        league: "page" as const,
+        up: 10,
+        down: 0,
+        rewards: [{ kind: "ecus" as const, amount: 10 }],
+      },
+    ];
+    expect(weekRewardLine("page", ladder)).toBe(
+      "Dimanche, ta semaine en Page te rapporte 10 écus.",
+    );
+    expect(weekRewardLine("ecuyer", ladder)).toBeNull();
+    expect(weekRewardLine("page", null)).toBeNull();
   });
 });
 

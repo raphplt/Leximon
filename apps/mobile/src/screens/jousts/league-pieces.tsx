@@ -1,22 +1,11 @@
-import type { LeagueId, WeekMove } from "@leximon/contract";
+import type { WeekMove } from "@leximon/contract";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
-import { type JoustTournament, leagueNumeral, tournamentGain } from "@leximon/view-model";
+import { type JoustTournament, tournamentGain } from "@leximon/view-model";
 import { StyleSheet, Text, View } from "react-native";
-import Svg, { Defs, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Lettering } from "@/ui/toy";
+import { Crest } from "./crest";
 import { ink } from "./pieces";
-
-/** Each league in its matter, from paper to gold. */
-export const LEAGUE_MATTERS: Readonly<Record<LeagueId, keyof typeof toyMatters>> = {
-  page: "paper",
-  ecuyer: "green",
-  chevalier: "blue",
-  banneret: "red",
-  marechal: "dark",
-  connetable: "locked",
-  champion: "gold",
-};
 
 /** What a place gives at the end of the week, in a colour: green going up, red going down. */
 export const MOVE_COLORS: Readonly<Record<WeekMove, string>> = {
@@ -24,69 +13,6 @@ export const MOVE_COLORS: Readonly<Record<WeekMove, string>> = {
   stay: ink.pageInk,
   down: toyMatters.red.bottom,
 };
-
-/** A league's shield, in its matter, with the league's numeral; Champion wears a crown. */
-export function Shield({
-  league,
-  numeral,
-  size,
-}: {
-  readonly league: LeagueId;
-  readonly numeral: string | null;
-  readonly size: number;
-}) {
-  const matter = toyMatters[LEAGUE_MATTERS[league]];
-  const gradient = `shield-${league}`;
-  const numeralSize = numeral !== null && numeral.length > 2 ? 12 : 14;
-  return (
-    <Svg width={size} height={size * 1.15} viewBox="0 0 40 46" accessible={false}>
-      <Defs>
-        <LinearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={matter.top} />
-          <Stop offset="1" stopColor={matter.bottom} />
-        </LinearGradient>
-      </Defs>
-      <Path
-        d="M20 2 L37 8 V22 C37 33 29 40 20 44 C11 40 3 33 3 22 V8 Z"
-        fill={matter.edge}
-        stroke={toyValues.outline}
-        strokeWidth={2.4}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M20 4.5 L34.5 9.6 V21.5 C34.5 31 27.6 37 20 40.6 C12.4 37 5.5 31 5.5 21.5 V9.6 Z"
-        fill={`url(#${gradient})`}
-      />
-      <Path d="M8 11 L20 7 L32 11" fill="none" stroke={toyMatters.paper.top} strokeOpacity={0.55} />
-      {numeral === null ? (
-        <Path
-          d="M12 26 L14 17 L18 22 L20 15 L22 22 L26 17 L28 26 Z"
-          fill={toyMatters.paper.top}
-          stroke={toyValues.outline}
-          strokeWidth={1.6}
-          strokeLinejoin="round"
-        />
-      ) : (
-        // The outline first, then the numeral over it: react-native-svg has no paint order.
-        [toyValues.outline, toyMatters.paper.top].map((color, layer) => (
-          <SvgText
-            key={color}
-            x="20"
-            y="28"
-            textAnchor="middle"
-            fontFamily={fonts.displayBold}
-            fontSize={numeralSize}
-            fill={color}
-            stroke={layer === 0 ? toyValues.outline : "none"}
-            strokeWidth={layer === 0 ? 2.2 : 0}
-          >
-            {numeral}
-          </SvgText>
-        ))
-      )}
-    </Svg>
-  );
-}
 
 /** The Champion emblem, a small gold tag. */
 export function Emblem({ children }: { readonly children: string }) {
@@ -103,7 +29,7 @@ export function TournamentGain({ tournament }: { readonly tournament: JoustTourn
   return (
     <View style={styles.gain}>
       <View style={styles.gainTop}>
-        <Shield league={tournament.league} numeral={leagueNumeral(tournament.league)} size={28} />
+        <Crest league={tournament.league} size={28} />
         <Lettering size={fontSizes.subtitle}>{gain.points}</Lettering>
       </View>
       {gain.place !== null && (

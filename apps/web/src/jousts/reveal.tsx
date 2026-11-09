@@ -29,8 +29,9 @@ import { Icon } from "@/ui/icon";
 import { useStage } from "@/ui/stage";
 import { Lettering, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
+import { Crest } from "./crest";
 import styles from "./jousts.module.css";
-import { Shield, TournamentGain } from "./league-pieces";
+import { TournamentGain } from "./league-pieces";
 import { AnswerCards, type Duelist, DuelistFace, rise } from "./pieces";
 
 export interface RevealAnswer {
@@ -234,7 +235,7 @@ export function Reveal({
           {data.gains?.tournament != null && (
             <>
               <span className={styles.gain} style={{ "--i": 2 } as CSSProperties}>
-                <Shield league={data.gains.tournament.league} size={30} />
+                <Crest league={data.gains.tournament.league} size={30} />
                 <Lettering>{tournamentGain(data.gains.tournament).points}</Lettering>
               </span>
               <TournamentGain tournament={data.gains.tournament} />

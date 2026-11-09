@@ -59,6 +59,7 @@ import {
   sealedLine,
   standingHeader,
   weekFigures,
+  weekRewardLine,
   YOU,
   zoneChip,
 } from "@leximon/view-model";
@@ -152,7 +153,7 @@ export function Hall({
   return (
     <View style={styles.hall}>
       <Animated.View entering={rise(order++)}>
-        <Lice standing={jousts.standing} now={now}>
+        <Lice standing={jousts.standing} league={league} now={now}>
           <View style={styles.helpCorner}>
             <Toy
               matter="paper"
@@ -281,14 +282,17 @@ function More({ label, onPress }: { readonly label: string; readonly onPress: ()
 
 function Lice({
   standing,
+  league,
   now,
   children,
 }: {
   readonly standing: JoustStanding;
+  readonly league: LeagueResponse | null;
   readonly now: number;
   readonly children: ReactNode;
 }) {
   const header = standingHeader(standing, gameDayOf(now).key);
+  const reward = weekRewardLine(standing.league, league?.ladder ?? null);
   const group = standing.group;
   const figures = group === null ? null : weekFigures(group);
   return (
@@ -326,6 +330,7 @@ function Lice({
         </View>
       )}
       <Text style={styles.weekLine}>{header.line}</Text>
+      {reward !== null && <Text style={styles.weekReward}>{reward}</Text>}
       <View style={styles.clock}>
         <Icon name="clock" size={14} color={lettering.fill} />
         <Text style={styles.clockText}>{header.week}</Text>
@@ -508,7 +513,7 @@ export function Road({
   readonly league: LeagueResponse | null;
   readonly onOpen: () => void;
 }) {
-  const stops = leagueRoad(standing.league, league?.ladder ?? null);
+  const stops = leagueRoad(standing.league);
   const here = stops.findIndex((stop) => stop.state === "here");
   return (
     <Leaf style={pieces.leaf}>
@@ -552,12 +557,6 @@ export function Road({
               >
                 {stop.name}
               </Text>
-              {stop.ecus !== null && stop.ecus > 0 && (
-                <View style={styles.stopGain}>
-                  <ToyIcon name="ecu" size={13} />
-                  <Text style={styles.stopGainText}>{stop.ecus}</Text>
-                </View>
-              )}
             </View>
           ))}
         </Pressable>
@@ -1040,6 +1039,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: lettering.fill,
   },
+  weekReward: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.small,
+    color: lettering.kicker,
+  },
   clock: {
     flexDirection: "row",
     alignItems: "center",
@@ -1110,12 +1114,6 @@ const styles = StyleSheet.create({
     color: lettering.fill,
   },
   stopName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.caption, color: ink.pageInk },
-  stopGain: { flexDirection: "row", alignItems: "center", gap: space.s1 },
-  stopGainText: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    color: ink.pageInkMuted,
-  },
 
   // The leagues window.
   leagues: { gap: space.s4 },

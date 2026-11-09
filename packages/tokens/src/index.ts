@@ -3,6 +3,7 @@ export * from "./card-editions";
 export * from "./css";
 export * from "./effects";
 export * from "./icons";
+export * from "./league-crests";
 export * from "./level-badge";
 export * from "./library";
 export * from "./pack-looks";

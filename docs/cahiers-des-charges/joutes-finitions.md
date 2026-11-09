@@ -1,6 +1,7 @@
 # Cahier des charges · Les finitions des joutes
 
-- **Statut :** proposé le 2026-11-09, en attente des choix du propriétaire.
+- **Statut :** proposé et tranché le 2026-11-09.
+- **Choix du propriétaire, le 2026-11-09 :** toutes les recommandations, F1 à F11, avec une précision pour les blasons : un air ancien, d'enluminure (or, rouge vermillon, bleu lapis, rinceaux, filets), jamais un dessin moderne sans âme.
 - **Source :** le retour vocal du propriétaire du 2026-11-09, après avoir joué les lots 1 à 3 de [joutes-refonte.md](joutes-refonte.md), avec cinq captures (la partie, l'écran de fin, l'accueil, un défi, la fenêtre du deck).
 - **Règles liées :** P91 (joutes), P98 (ligues et tournoi de la semaine) ([regles-du-jeu.md](../regles-du-jeu.md)).
 - **Cahiers liés :** [joutes-refonte.md](joutes-refonte.md), [direction-artistique.md](direction-artistique.md).

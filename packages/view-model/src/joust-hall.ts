@@ -19,6 +19,7 @@ import {
   ZONE_DOWN,
   ZONE_UP,
 } from "./leagues";
+import { rewardsPhrase } from "./rewards";
 
 /** The jousts' hall: the lice, the road of the leagues, the group around the player, how it works. */
 
@@ -79,28 +80,26 @@ export interface LeagueRoadStop {
   readonly league: LeagueId;
   readonly name: string;
   readonly state: "past" | "here" | "ahead";
-  /** The écus a week in it gives; `null` while the ladder loads. */
-  readonly ecus: number | null;
 }
 
 /** Every league, lowest first, the player's own raised. */
-export function leagueRoad(
+export function leagueRoad(current: LeagueId): readonly LeagueRoadStop[] {
+  const here = LEAGUE_ORDER.indexOf(current);
+  return LEAGUE_ORDER.map((league, index) => ({
+    league,
+    name: LEAGUE_NAMES[league],
+    state: index < here ? "past" : index === here ? "here" : "ahead",
+  }));
+}
+
+/** What the player's league gives at the end of the week; `null` while the ladder loads. */
+export function weekRewardLine(
   current: LeagueId,
   ladder: LeagueResponse["ladder"] | null,
-): readonly LeagueRoadStop[] {
-  const here = LEAGUE_ORDER.indexOf(current);
-  return LEAGUE_ORDER.map((league, index) => {
-    const rewards = ladder?.find((step) => step.league === league)?.rewards;
-    return {
-      league,
-      name: LEAGUE_NAMES[league],
-      state: index < here ? "past" : index === here ? "here" : "ahead",
-      ecus:
-        rewards === undefined
-          ? null
-          : rewards.reduce((sum, reward) => sum + (reward.kind === "ecus" ? reward.amount : 0), 0),
-    };
-  });
+): string | null {
+  const rewards = ladder?.find((step) => step.league === current)?.rewards;
+  if (rewards === undefined || rewards.length === 0) return null;
+  return `Dimanche, ta semaine en ${LEAGUE_NAMES[current]} te rapporte ${rewardsPhrase(rewards)}.`;
 }
 
 /** What the road says to a screen reader. */

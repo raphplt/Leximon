@@ -10,7 +10,6 @@ import { alpha, lettering, toy as toyValues } from "@leximon/tokens";
 import {
   capitalize,
   formatPlayerCode,
-  leagueNumeral,
   memberSinceLabel,
   PROFILE_JOUSTS_TITLE,
   profileJoustTiles,
@@ -19,7 +18,7 @@ import {
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { Emblem } from "@/clan/emblem";
-import { Shield } from "@/screens/jousts/league-pieces";
+import { Crest } from "@/screens/jousts/crest";
 import { openCard } from "@/screens/trades/card-row";
 import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
@@ -158,7 +157,7 @@ export function JoustsPanel({ jousts }: { readonly jousts: ProfileJousts }) {
   return (
     <Panel paper>
       <View style={styles.joustsHead}>
-        <Shield league={jousts.league} numeral={leagueNumeral(jousts.league)} size={38} />
+        <Crest league={jousts.league} size={38} />
         <View>
           <Text style={styles.panelTitle}>{PROFILE_JOUSTS_TITLE}</Text>
           <Text style={styles.joustsLeague}>{league}</Text>
