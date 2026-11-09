@@ -410,6 +410,11 @@ export function joustSections(jousts: readonly JoustSummary[]): JoustSections {
 const kindWord = (joust: JoustSummary) =>
   joust.kind === "ranked" ? "Classée" : joust.kind === "free" ? "Libre" : "Amicale";
 
+/** Under a sealed result: « Classée · le résultat t'attend ». */
+export function sealedLine(joust: JoustSummary): string {
+  return `${kindWord(joust)} · le résultat t'attend`;
+}
+
 /** The short line of a joust in its section: « Classée · avant demain 9 h 05 ». */
 export function joustRowState(joust: JoustSummary, now: EpochMs, timeZone?: string): string {
   switch (joust.state) {

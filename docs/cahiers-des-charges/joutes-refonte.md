@@ -48,7 +48,7 @@ Dessous, les joutes classées du jour sous forme de 5 lances : une lance pleine 
 
 **4. Comment ça marche.** Trois étapes illustrées sur une bande : « Lance une joute », « Trouve 5 mots en 15 secondes chacun », « Gagne des points pour monter de ligue ». La bande se replie d'elle-même après les 3 premières joutes classées, et la bulle « ? » la rouvre.
 
-**5. Tes joutes.** Les résultats à découvrir deviennent des **plis scellés** : une lettre fermée d'un cachet de cire, avec le portrait de l'adversaire, qui s'ouvre d'un geste (la révélation existe déjà). Les joutes en attente montrent le sablier et l'heure limite. Les joutes terminées tiennent sur une ligne avec le score et une pastille Victoire ou Défaite.
+**5. Tes joutes.** Les résultats à découvrir deviennent des **plis scellés** : une lettre fermée d'un cachet de cire, avec le portrait de l'adversaire, qui s'ouvre d'un geste. Retour du propriétaire (2026-11-08) : ouvrir un pli ne mène pas à une autre page, la carte se retourne sur place et montre le résultat (score des deux joueurs, victoire ou défaite, points gagnés), avec un lien vers le détail. Les joutes en attente montrent le sablier et l'heure limite. Les joutes terminées tiennent sur une ligne avec le score et une pastille Victoire ou Défaite.
 
 **6. Ton deck.** L'éventail actuel, avec la pastille des doublons corrigée. « Modifier » ouvre une grande fenêtre au milieu de l'écran (sur le téléphone, un écran plein) : l'éventail en haut, la jauge des points, puis les cartes qu'on peut jouer, avec des filtres par rareté.
 

@@ -1,4 +1,5 @@
 import { type JoustDeckResponse, RARITY_LABELS } from "@leximon/contract";
+import type { Rarity } from "@leximon/core";
 import { cardSize, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   COMPLETE_DECK,
@@ -55,6 +56,7 @@ export function DeckBuilder({
   const [chosen, setChosen] = useState<readonly string[]>(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [rarity, setRarity] = useState<Rarity | null>(null);
   // The cards share the row's width, measured once laid out.
   const [rowWidth, setRowWidth] = useState(0);
   const share = (perRow: number, gap: number, fallback: number) =>
@@ -195,50 +197,77 @@ export function DeckBuilder({
       </View>
 
       <LeafKicker>Tes mots trouvés</LeafKicker>
-      {groups.map((group) => (
-        <View key={group.rarity} style={styles.poolGroup}>
-          <Text style={styles.poolHead}>
-            {`${RARITY_LABELS[group.rarity]} · ${plural(group.cost, "point", "points")}`}
-          </Text>
-          <View style={styles.pool}>
-            {group.cards.map((candidate) => {
-              const taken = chosen.includes(candidate.cardId);
-              const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
-              return (
-                <Pressable
-                  key={candidate.cardId}
-                  style={[{ width: poolWidth }, !taken && !fits && styles.poolOff]}
-                  disabled={!taken && !fits}
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: !taken && !fits, selected: taken }}
-                  accessibilityLabel={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
-                  onPress={() => toggle(candidate.cardId)}
-                >
-                  <MiniCard
-                    card={candidate.card}
-                    trapped={traps.get(candidate.cardId) ?? 0}
-                    width={poolWidth}
-                    style={taken && styles.poolTaken}
-                  />
-                  {taken && (
-                    <View style={styles.takenMark}>
-                      <View style={styles.takenSeal}>
-                        <Icon name="check" size={20} color={toyMatters.paper.top} />
-                      </View>
-                    </View>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
+      {groups.length > 1 && (
+        <View style={styles.filters} accessibilityLabel="Rareté">
+          {[null, ...groups.map((group) => group.rarity)].map((each) => (
+            <Toy
+              key={each ?? "all"}
+              matter={each === rarity ? "gold" : "paper"}
+              style={styles.filter}
+              bodyStyle={styles.filterBody}
+              accessibilityRole="button"
+              accessibilityState={{ selected: each === rarity }}
+              onPress={() => setRarity(each)}
+            >
+              <Text style={styles.filterText}>
+                {each === null ? ALL_RARITIES : RARITY_LABELS[each]}
+              </Text>
+            </Toy>
+          ))}
         </View>
-      ))}
+      )}
+      {groups
+        .filter((group) => rarity === null || group.rarity === rarity)
+        .map((group) => (
+          <View key={group.rarity} style={styles.poolGroup}>
+            <Text style={styles.poolHead}>
+              {`${RARITY_LABELS[group.rarity]} · ${plural(group.cost, "point", "points")}`}
+            </Text>
+            <View style={styles.pool}>
+              {group.cards.map((candidate) => {
+                const taken = chosen.includes(candidate.cardId);
+                const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
+                return (
+                  <Pressable
+                    key={candidate.cardId}
+                    style={[{ width: poolWidth }, !taken && !fits && styles.poolOff]}
+                    disabled={!taken && !fits}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !taken && !fits, selected: taken }}
+                    accessibilityLabel={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
+                    onPress={() => toggle(candidate.cardId)}
+                  >
+                    <MiniCard
+                      card={candidate.card}
+                      trapped={traps.get(candidate.cardId) ?? 0}
+                      width={poolWidth}
+                      style={taken && styles.poolTaken}
+                    />
+                    {taken && (
+                      <View style={styles.takenMark}>
+                        <View style={styles.takenSeal}>
+                          <Icon name="check" size={20} color={toyMatters.paper.top} />
+                        </View>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ))}
     </View>
   );
 }
 
+const ALL_RARITIES = "Toutes";
+
 const styles = StyleSheet.create({
   builder: { gap: space.s6 },
+  filters: { flexDirection: "row", flexWrap: "wrap", gap: space.s3 },
+  filter: { height: 34 },
+  filterBody: { paddingHorizontal: space.s5 },
+  filterText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInk },
   tray: {
     gap: space.s5,
     padding: space.s5,

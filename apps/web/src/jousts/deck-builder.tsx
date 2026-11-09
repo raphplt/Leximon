@@ -1,6 +1,7 @@
 "use client";
 
 import { type JoustDeckResponse, RARITY_LABELS } from "@leximon/contract";
+import type { Rarity } from "@leximon/core";
 import {
   COMPLETE_DECK,
   completeDeck,
@@ -21,6 +22,8 @@ import { catalogCard } from "@/trades/card-thumb";
 import { Toy } from "@/ui/toy";
 import styles from "./jousts.module.css";
 import { MiniCard } from "./pieces";
+
+const ALL_RARITIES = "Toutes";
 
 /**
  * The deck being composed: its places as real cards, the gauge of its points and what room is
@@ -43,6 +46,7 @@ export function DeckBuilder({
   const [chosen, setChosen] = useState<readonly string[]>(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [rarity, setRarity] = useState<Rarity | null>(null);
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const costOf = (cardId: string) => costs.get(cardId) ?? 0;
   const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
@@ -166,39 +170,56 @@ export function DeckBuilder({
       </section>
 
       <span className={desk.leafKicker}>Tes mots trouvés</span>
-      {groups.map((group) => (
-        <div key={group.rarity} className={styles.poolGroup}>
-          <span className={styles.poolHead}>
-            {RARITY_LABELS[group.rarity]} · {plural(group.cost, "point", "points")}
-          </span>
-          <ul className={styles.pool} style={{ "--w": `${poolWidth}px` } as CSSProperties}>
-            {group.cards.map((candidate) => {
-              const taken = chosen.includes(candidate.cardId);
-              const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
-              return (
-                <li key={candidate.cardId}>
-                  <button
-                    type="button"
-                    className={styles.poolCard}
-                    data-taken={taken || undefined}
-                    disabled={!taken && !fits}
-                    aria-pressed={taken}
-                    aria-label={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
-                    onClick={() => toggle(candidate.cardId)}
-                  >
-                    <MiniCard
-                      card={candidate.card}
-                      width={poolWidth}
-                      trapped={traps.get(candidate.cardId) ?? 0}
-                    />
-                    {taken && <span className={styles.takenMark}>Dans le deck</span>}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+      {groups.length > 1 && (
+        <fieldset className={styles.filters} aria-label="Rareté">
+          {[null, ...groups.map((group) => group.rarity)].map((each) => (
+            <Toy
+              key={each ?? "all"}
+              matter={each === rarity ? "gold" : "paper"}
+              className={styles.filter}
+              aria-pressed={each === rarity}
+              onClick={() => setRarity(each)}
+            >
+              {each === null ? ALL_RARITIES : RARITY_LABELS[each]}
+            </Toy>
+          ))}
+        </fieldset>
+      )}
+      {groups
+        .filter((group) => rarity === null || group.rarity === rarity)
+        .map((group) => (
+          <div key={group.rarity} className={styles.poolGroup}>
+            <span className={styles.poolHead}>
+              {RARITY_LABELS[group.rarity]} · {plural(group.cost, "point", "points")}
+            </span>
+            <ul className={styles.pool} style={{ "--w": `${poolWidth}px` } as CSSProperties}>
+              {group.cards.map((candidate) => {
+                const taken = chosen.includes(candidate.cardId);
+                const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
+                return (
+                  <li key={candidate.cardId}>
+                    <button
+                      type="button"
+                      className={styles.poolCard}
+                      data-taken={taken || undefined}
+                      disabled={!taken && !fits}
+                      aria-pressed={taken}
+                      aria-label={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
+                      onClick={() => toggle(candidate.cardId)}
+                    >
+                      <MiniCard
+                        card={candidate.card}
+                        width={poolWidth}
+                        trapped={traps.get(candidate.cardId) ?? 0}
+                      />
+                      {taken && <span className={styles.takenMark}>Dans le deck</span>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
     </div>
   );
 }

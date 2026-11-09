@@ -135,6 +135,11 @@
   color: var(--lx-color-ink-on-color);
 }
 
+.mini[data-seal-left] .trapSeal {
+  right: auto;
+  left: -7px;
+}
+
 .furet {
   display: flex;
   gap: 12px;
@@ -561,6 +566,22 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filter {
+  padding: 6px 12px;
+  color: var(--lx-color-paper-ink);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
 }
 
 .poolGroup {

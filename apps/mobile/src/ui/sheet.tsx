@@ -21,6 +21,7 @@ export function Sheet({
   onClose,
   children,
   footer,
+  tall = false,
 }: {
   readonly open: boolean;
   readonly title: string;
@@ -28,6 +29,8 @@ export function Sheet({
   readonly children: ReactNode;
   /** Stays at the bottom while the content scrolls: the action of a long list. */
   readonly footer?: ReactNode;
+  /** Takes nearly the whole screen, for a long editor such as the deck. */
+  readonly tall?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -39,7 +42,7 @@ export function Sheet({
           accessibilityLabel="Fermer"
           accessibilityRole="button"
         />
-        <Leaf style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+        <Leaf style={[styles.sheet, tall && styles.tall, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.head}>
             <Text style={styles.title} accessibilityRole="header" numberOfLines={2}>
               {title}
@@ -82,6 +85,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
+  tall: { height: "94%", maxHeight: "94%" },
   head: {
     flexDirection: "row",
     alignItems: "center",

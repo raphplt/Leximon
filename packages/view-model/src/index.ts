@@ -22,6 +22,7 @@ export * from "./gesture";
 export * from "./holo";
 export * from "./invitation";
 export * from "./joust-guide";
+export * from "./joust-hall";
 export * from "./jousts";
 export * from "./landing";
 export * from "./leagues";

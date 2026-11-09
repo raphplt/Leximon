@@ -10,13 +10,13 @@ import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
 import { QuestionCard } from "@/components/card";
 import { DefinitionText } from "@/components/definition-text";
+import { Crest } from "@/jousts/crest";
 import { MiniCard } from "@/jousts/pieces";
 import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { ParticleStage, useStage } from "@/ui/stage";
 import { Lettering, Toy, ToyIcon } from "@/ui/toy";
-import { Crest } from "./crest";
 import styles from "./lice-plate.module.css";
 
 /**

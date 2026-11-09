@@ -24,6 +24,7 @@ export function MiniCard({
   width,
   cost,
   trapped = 0,
+  sealLeft = false,
   className,
   style,
 }: {
@@ -32,6 +33,8 @@ export function MiniCard({
   readonly cost?: number | undefined;
   /** Opponents the card trapped, shown as a seal under it. */
   readonly trapped?: number;
+  /** In a fan, where the next card covers the right edge, the seal moves to the left. */
+  readonly sealLeft?: boolean;
   readonly className?: string | undefined;
   readonly style?: CSSProperties | undefined;
 }) {
@@ -39,6 +42,7 @@ export function MiniCard({
   return (
     <span
       className={`${styles.mini} ${className ?? ""}`}
+      data-seal-left={sealLeft || undefined}
       style={{ "--w": `${width}px`, ...style } as CSSProperties}
     >
       <Card

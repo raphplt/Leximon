@@ -1,0 +1,1117 @@
+/* The jousts' hall: the lice, the road of the leagues, the group, how it works, jousts and deck. */
+
+.hall {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+
+.hall > * {
+  animation: rise 460ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation-delay: calc(80ms + var(--rise, 0) * 80ms);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+.kicker {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.leaf {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
+  color: var(--lx-color-paper-ink);
+}
+
+.leafHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.leafText {
+  margin: 0;
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lx-color-paper-ink);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.more:hover {
+  text-decoration: underline;
+}
+
+.minor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  color: var(--lx-color-paper-ink);
+  font-weight: 800;
+}
+
+/* The lice: red leather in old gold, the league as a trophy, the week beside it. */
+.lice {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+  padding: 26px 30px;
+  border: 5px solid transparent;
+  border-radius: 24px;
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 70% 120% at 18% 30%,
+      var(--lx-gain-center) 0%,
+      var(--lx-gain-middle) 55%,
+      var(--lx-gain-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 2.5px var(--lx-toy-outline),
+    0 7px 0 2.5px var(--lx-toy-outline),
+    0 18px 34px var(--lx-toy-drop);
+  color: var(--lx-lettering-fill);
+}
+
+.lice::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1.5px solid var(--lx-gain-rule);
+  border-radius: 15px;
+  pointer-events: none;
+}
+
+/* An old print in light lines on the leather, faint, behind the week. */
+.engraving {
+  position: absolute;
+  right: -30px;
+  bottom: -50px;
+  width: 360px;
+  aspect-ratio: 1;
+  background: var(--lx-lettering-fill);
+  opacity: 0.13;
+  pointer-events: none;
+  mask: var(--ink) center / contain no-repeat;
+}
+
+.liceCrest {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  filter: drop-shadow(0 8px 0 var(--lx-toy-drop));
+  animation: hover 3.2s ease-in-out infinite;
+}
+
+@keyframes hover {
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+.crestGlow {
+  position: absolute;
+  inset: -30px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--lx-toy-gold-top) 55%, transparent) 0%,
+    transparent 65%
+  );
+  animation: glow 2.4s ease-in-out infinite;
+}
+
+@keyframes glow {
+  50% {
+    opacity: 0.55;
+    scale: 0.92;
+  }
+}
+
+/* The league's name on a ribbon across the foot of the crest. */
+.ribbon {
+  margin-top: -18px;
+  padding: 5px 22px 7px;
+  border: 2.5px solid var(--lx-toy-outline);
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    0 3px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-subtitle);
+  clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%, 6% 50%);
+}
+
+.week {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+.figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--lx-size-display);
+  line-height: 1;
+}
+
+.figure small {
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* The zone of the player's place: green climbs, paper holds, red falls. */
+.zone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 6px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-green-top), var(--lx-toy-green-bottom));
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+}
+
+.up {
+  rotate: -90deg;
+}
+
+.down {
+  rotate: 90deg;
+}
+
+.zone[data-move="stay"] {
+  background: linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
+  color: var(--lx-color-paper-ink);
+}
+
+.zone[data-move="down"] {
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+}
+
+.weekLine {
+  margin: 0;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.clock {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--lx-radius-pill);
+  background: color-mix(in srgb, var(--lx-toy-outline) 55%, transparent);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+}
+
+/* The ranked jousts left today, as lances: a spent one is greyed and lies down a little. */
+.lances {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.lance {
+  width: 14px;
+  height: 40px;
+  fill: var(--lx-toy-gold-top);
+  stroke: var(--lx-toy-outline);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 0 var(--lx-toy-outline));
+}
+
+.lance[data-spent] {
+  fill: var(--lx-toy-locked-bottom);
+  opacity: 0.6;
+  rotate: 18deg;
+  translate: 0 4px;
+}
+
+.lancesText {
+  margin-left: 8px;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+}
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.minorActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* The leagues' road: seven crests on a gilt path, the player's raised and named. */
+.road {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  padding: 26px 4px 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.roadLine {
+  position: absolute;
+  top: 60%;
+  left: 7%;
+  right: 7%;
+  height: 8px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(
+    90deg,
+    var(--lx-toy-gold-top) 0 calc(var(--reached) * 100%),
+    var(--lx-toy-paper-bottom) calc(var(--reached) * 100%) 100%
+  );
+}
+
+.stop {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  transition: translate 160ms ease-out;
+}
+
+.road:disabled {
+  cursor: default;
+}
+
+.road:hover .stop[data-state="ahead"] {
+  translate: 0 -2px;
+}
+
+.stop[data-state="here"] {
+  filter: drop-shadow(0 4px 0 var(--lx-toy-drop));
+  animation: hover 3.2s ease-in-out infinite;
+}
+
+.stop[data-state="ahead"] svg {
+  opacity: 0.85;
+}
+
+.stopName {
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+}
+
+.stop[data-state="ahead"] .stopName {
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.stopGain {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.youTag,
+.youInline {
+  padding: 2px 8px 3px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+  color: var(--lx-lettering-fill);
+  font-size: var(--lx-size-micro);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.youTag {
+  position: absolute;
+  top: -22px;
+}
+
+.youInline {
+  margin-left: 8px;
+  vertical-align: 2px;
+}
+
+/* The player's neighbours, the line of the climb drawn where it falls. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 34px 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 25%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lx-toy-paper-top) 70%, transparent);
+}
+
+.row[data-me] {
+  border-color: var(--lx-toy-outline);
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    0 3px 0 var(--lx-toy-outline);
+  scale: 1.02;
+}
+
+.rowPlace {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 900;
+  text-align: center;
+}
+
+.rowName {
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.botTag {
+  margin-left: 8px;
+  font-size: var(--lx-size-caption);
+  font-weight: 700;
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.rowPoints {
+  font-weight: 900;
+}
+
+.zoneLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  color: var(--lx-toy-green-bottom);
+  font-size: var(--lx-size-caption);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.zoneLine::before,
+.zoneLine::after {
+  content: "";
+  flex: 1;
+  height: 0;
+  border-top: 2.5px dashed var(--lx-toy-green-top);
+}
+
+/* How it works, in three illustrated steps. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 45%, transparent);
+  counter-increment: step;
+}
+
+.stepIcon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 58px;
+  height: 58px;
+  border: 2.5px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 40% 30%,
+    var(--lx-toy-paper-top),
+    var(--lx-toy-paper-bottom)
+  );
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+}
+
+.stepIcon::after {
+  content: counter(step);
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: var(--lx-toy-gold-top);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.stepText b {
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-paper-ink);
+}
+
+/* Results to discover: letters under a wax seal. */
+.letters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+/* The letter turns over where it lies: its sealed front, then the result on its back. */
+.letter {
+  perspective: 900px;
+  animation: nudge 3s ease-in-out infinite;
+}
+
+.letter[data-opened] {
+  animation: none;
+}
+
+.letterInner {
+  display: grid;
+  height: 100%;
+  min-height: 132px;
+  transform-style: preserve-3d;
+  transition: transform 640ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.letter[data-opened] .letterInner {
+  transform: rotateY(180deg);
+}
+
+.letterFace {
+  grid-area: 1 / 1;
+  position: relative;
+  overflow: hidden;
+  border: 2.5px solid var(--lx-toy-outline);
+  border-radius: 14px;
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-edge),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+  backface-visibility: hidden;
+}
+
+.letterFront {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 16px 16px 14px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: translate 140ms ease-out;
+}
+
+.letterFront:hover {
+  translate: 0 -3px;
+}
+
+.letterBack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 14px;
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+.letterBack[data-outcome="won"] {
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    radial-gradient(
+      ellipse at 50% 20%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 70%, var(--lx-toy-paper-top)),
+      var(--lx-toy-paper-bottom)
+    );
+}
+
+.letterOutcome {
+  font-size: var(--lx-size-title-large);
+  line-height: 1;
+}
+
+.letterBack[data-outcome="lost"] .letterOutcome {
+  --lx-lettering-fill: var(--lx-toy-locked-top);
+}
+
+.letterScore {
+  font-weight: 700;
+  font-size: var(--lx-size-small);
+}
+
+.letterGains {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.letterGain {
+  padding: 2px 10px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  font-weight: 900;
+  font-size: var(--lx-size-small);
+  animation: gainIn 360ms cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+}
+
+.letterGain:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.letterGain:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+@keyframes gainIn {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+.letterDetail {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 800;
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-paper-ink);
+}
+
+@keyframes nudge {
+  0%,
+  86%,
+  100% {
+    rotate: 0deg;
+  }
+  90% {
+    rotate: -1.2deg;
+  }
+  95% {
+    rotate: 1.2deg;
+  }
+}
+
+/* The envelope's flap, a fold of paper over the letter. */
+.letterFlap {
+  position: absolute;
+  inset: 0 0 50% 0;
+  background:
+    linear-gradient(
+      to bottom right,
+      transparent 49.5%,
+      color-mix(in srgb, var(--lx-toy-paper-edge) 45%, transparent) 50%,
+      transparent 51%
+    ),
+    linear-gradient(
+      to bottom left,
+      transparent 49.5%,
+      color-mix(in srgb, var(--lx-toy-paper-edge) 45%, transparent) 50%,
+      transparent 51%
+    );
+  pointer-events: none;
+}
+
+.seal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 62px;
+  height: 62px;
+  border-radius: 46% 54% 50% 50%;
+  background: radial-gradient(circle at 38% 32%, var(--lx-toy-red-top), var(--lx-toy-red-edge));
+  box-shadow:
+    0 0 0 2.5px var(--lx-toy-outline),
+    0 3px 0 2.5px var(--lx-toy-outline);
+}
+
+.letterText {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.letterText small {
+  color: var(--lx-color-paper-ink-muted);
+  font-weight: 700;
+}
+
+.letterGo {
+  position: relative;
+  padding: 6px 12px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+  font-weight: 900;
+}
+
+.listRow {
+  display: grid;
+  grid-template-columns: 38px auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 25%, transparent);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: translate 140ms ease-out;
+}
+
+.listRow:hover {
+  translate: 0 -2px;
+  border-color: var(--lx-toy-outline);
+}
+
+/* A joust the player owes an answer to stands out in gold. */
+.listRow[data-to-play] {
+  border-color: var(--lx-toy-outline);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 28%, transparent);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+}
+
+.listName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listState {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lx-color-paper-ink-muted);
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+}
+
+.outcome {
+  padding: 3px 10px 4px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-locked-top), var(--lx-toy-locked-bottom));
+  color: var(--lx-lettering-fill);
+  font-size: var(--lx-size-caption);
+  font-weight: 900;
+}
+
+.outcome[data-outcome="won"] {
+  background: linear-gradient(180deg, var(--lx-toy-green-top), var(--lx-toy-green-bottom));
+}
+
+.outcome[data-outcome="draw"] {
+  background: linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
+  color: var(--lx-color-paper-ink);
+}
+
+/* The deck, a fan of its ten cards; each trap seal shows below its own card. */
+.fan {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 26px;
+}
+
+.fanCard {
+  position: relative;
+  line-height: 0;
+  margin: 0 -22px;
+  rotate: var(--turn);
+  translate: 0 var(--lift);
+  transition:
+    translate 160ms ease-out,
+    rotate 160ms ease-out;
+}
+
+.fanCard:hover {
+  z-index: 1;
+  rotate: 0deg;
+  translate: 0 -14px;
+}
+
+/* The deck window. */
+.ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ladderRow {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 20%, transparent);
+  border-radius: 16px;
+}
+
+.ladderRow[data-here] {
+  border-color: var(--lx-toy-outline);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, transparent);
+}
+
+.ladderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ladderText b {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-subtitle);
+}
+
+.ladderText small {
+  color: var(--lx-color-paper-ink-muted);
+  font-weight: 600;
+}
+
+/* Said to screen readers; the lice speaks for itself on screen. */
+.title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.kickerLight {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lx-lettering-kicker);
+}
+
+.helpSlot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+}
+
+.help {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--lx-color-paper-ink);
+}
+
+/* Week rewards to claim, a gilt chip that leads to the leagues. */
+.waiting {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 6px 8px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  text-decoration: none;
+  animation: nudge 3s ease-in-out infinite;
+}
+
+.actionLine {
+  margin: 0;
+  font-size: var(--lx-size-small);
+  font-weight: 600;
+  text-align: center;
+}
+
+.notice {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lx-toy-outline) 45%, transparent);
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  text-align: center;
+}
+
+.automaton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
+  border-radius: 50%;
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.zoneLine[data-move="down"] {
+  color: var(--lx-toy-red-bottom);
+}
+
+.zoneLine[data-move="down"]::before,
+.zoneLine[data-move="down"]::after {
+  border-top-color: var(--lx-toy-red-top);
+}
+
+.guide {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lx-color-paper-ink);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group + .group {
+  margin-top: 8px;
+}
+
+.play {
+  padding: 6px 14px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  font-weight: 900;
+}
+
+.leagues {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--lx-color-paper-ink-muted);
+  font-size: var(--lx-size-small);
+}
+
+/* --- Narrow screens --- */
+
+@media (max-width: 859px) {
+  .lice {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 18px;
+    padding: 22px 18px;
+    text-align: center;
+  }
+
+  .week {
+    align-items: center;
+  }
+
+  .figures {
+    justify-content: center;
+  }
+
+  .clock,
+  .waiting {
+    align-self: center;
+  }
+
+  .actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 559px) {
+  .leaf {
+    padding: 16px 14px;
+  }
+
+  .road {
+    overflow-x: auto;
+    grid-template-columns: repeat(7, 74px);
+    padding-top: 30px;
+  }
+
+  .roadLine {
+    left: 30px;
+    right: auto;
+    width: calc(6 * 74px);
+  }
+
+  .fanCard {
+    margin: 0 -24px;
+  }
+
+  .row {
+    grid-template-columns: 26px 34px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 6px 10px;
+  }
+
+  .listRow {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    row-gap: 2px;
+  }
+
+  .listName {
+    grid-column: 2;
+  }
+
+  .listState {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .listRow > :nth-child(n + 4) {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+
+  .listRow > :first-child {
+    grid-row: 1 / 3;
+  }
+
+  .minorActions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hall > *,
+  .liceCrest,
+  .crestGlow,
+  .stop,
+  .letter,
+  .letterGain,
+  .waiting {
+    animation: none;
+  }
+
+  .letterInner {
+    transition: none;
+  }
+}
