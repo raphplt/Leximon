@@ -71,3 +71,37 @@ a {
   inherits: true;
   initial-value: 0deg;
 }
+
+/*
+ * Colors of the two-tone diamond desk (`Desk`): registered so that changing collection or
+ * desk palette cross-fades the diamonds smoothly.
+ */
+@property --desk-d1 {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@property --desk-d2 {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@property --desk-seam-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@property --desk-seam-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@property --desk-lamp {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}

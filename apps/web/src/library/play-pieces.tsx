@@ -20,13 +20,16 @@ import styles from "./play-pieces.module.css";
  */
 
 export type DeskTone =
-  | "acajou"
+  | "auto"
   | "emeraude"
   | "nuit"
   | "velours"
   | "ardoise"
+  | "acajou"
   | "ambre"
   | "cuir-vert";
+
+export type ResolvedDeskTone = Exclude<DeskTone, "auto">;
 
 export type DeskContrast = "subtle" | "balanced" | "bold";
 
@@ -36,14 +39,22 @@ interface DeskLook {
 }
 
 const DESK_TONES: readonly { readonly id: DeskTone; readonly label: string }[] = [
-  { id: "acajou", label: "Acajou & Noyer" },
-  { id: "emeraude", label: "Émeraude & Forêt" },
-  { id: "nuit", label: "Saphir Royal" },
-  { id: "velours", label: "Velours Pourpre" },
-  { id: "ardoise", label: "Obsidienne & Or" },
-  { id: "ambre", label: "Cuir Fauve" },
+  { id: "auto", label: "Auto (selon sachet)" },
+  { id: "emeraude", label: "Émeraude (niv. 1)" },
+  { id: "acajou", label: "Acajou (niv. 5)" },
+  { id: "nuit", label: "Saphir Royal (niv. 10)" },
+  { id: "velours", label: "Velours Pourpre (niv. 15)" },
+  { id: "ardoise", label: "Obsidienne & Or (niv. 20)" },
+  { id: "ambre", label: "Cuir Fauve (niv. 25)" },
   { id: "cuir-vert", label: "Cuir vert (ancien)" },
 ];
+
+const COLLECTION_TONES: Readonly<Record<string, ResolvedDeskTone>> = {
+  fondateurs: "nuit",
+  "betes-plantes": "emeraude",
+  metiers: "ardoise",
+  caracteres: "velours",
+};
 
 const DESK_CONTRASTS: readonly { readonly id: DeskContrast; readonly label: string }[] = [
   { id: "subtle", label: "Doux" },
@@ -51,7 +62,7 @@ const DESK_CONTRASTS: readonly { readonly id: DeskContrast; readonly label: stri
   { id: "bold", label: "Marqué" },
 ];
 
-let currentDeskLook: DeskLook = { tone: "acajou", contrast: "balanced" };
+let currentDeskLook: DeskLook = { tone: "auto", contrast: "balanced" };
 const deskListeners = new Set<() => void>();
 
 function setDeskLook(next: DeskLook): void {
@@ -71,12 +82,22 @@ function getDeskLook(): DeskLook {
 }
 
 /** The tooled desk under the lamp, with aged 3D two-tone diamonds. */
-export function Desk({ className }: { readonly className?: string | undefined }) {
+export function Desk({
+  className,
+  collectionId,
+}: {
+  readonly className?: string | undefined;
+  readonly collectionId?: string | undefined;
+}) {
   const { tone, contrast } = useSyncExternalStore(subscribeDeskLook, getDeskLook, getDeskLook);
+  const resolved: ResolvedDeskTone =
+    tone === "auto"
+      ? ((collectionId !== undefined ? COLLECTION_TONES[collectionId] : undefined) ?? "emeraude")
+      : tone;
   return (
     <div
       className={[styles.desk, className].filter(Boolean).join(" ")}
-      data-tone={tone}
+      data-tone={resolved}
       data-contrast={contrast}
       aria-hidden="true"
     >

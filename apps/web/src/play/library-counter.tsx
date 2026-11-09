@@ -129,7 +129,7 @@ export function LibraryCounter({
       {today !== null && <div className={`${styles.today} ${styles.fading}`}>{today}</div>}
       <div className={styles.stage}>
         <div className={styles.play}>
-          <Desk className={styles.desk} />
+          <Desk className={styles.desk} collectionId={choice.id} />
           <div className={`${styles.title} ${styles.fading}`}>
             <CollectionTitle
               kicker="Sachet"

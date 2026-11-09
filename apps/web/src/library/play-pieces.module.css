@@ -10,19 +10,25 @@
   position: relative;
   box-sizing: border-box;
   border-radius: 22px;
-  --base-a: var(--lx-color-sheet-light);
-  --base-b: color-mix(in srgb, var(--lx-color-sheet) 74%, var(--lx-room-floor));
-  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent);
-  --d1: color-mix(in srgb, var(--base-a) 74%, var(--base-b));
-  --d2: var(--base-b);
-  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--d1));
-  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--d2));
+  --base-a: var(--lx-desk-center);
+  --base-b: var(--lx-desk-edge);
+  --desk-lamp: color-mix(in srgb, var(--lx-color-success) 12%, transparent);
+  --desk-d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
+  --desk-d2: var(--base-b);
+  --desk-seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--desk-d1));
+  --desk-seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--desk-d2));
+  transition:
+    --desk-d1 420ms ease-out,
+    --desk-d2 420ms ease-out,
+    --desk-seam-light 420ms ease-out,
+    --desk-seam-dark 420ms ease-out,
+    --desk-lamp 420ms ease-out;
   background:
     var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     var(--lx-matter-cloth) 36px 48px / 192px 192px,
     radial-gradient(
       ellipse 85% 65% at 50% 34%,
-      var(--lamp-tint) 0%,
+      var(--desk-lamp) 0%,
       transparent 58%,
       color-mix(in srgb, var(--lx-color-shade) 54%, transparent) 100%
     ),
@@ -40,28 +46,33 @@
     31px 33px / 62px 66px,
     linear-gradient(
       133.21deg,
-      var(--d1) 23.6%,
-      var(--seam-light) 24.5%,
-      var(--seam-dark) 25.2%,
+      var(--desk-d1) 23.6%,
+      var(--desk-seam-light) 24.5%,
+      var(--desk-seam-dark) 25.2%,
       transparent 25.8%
     )
     0 0 / 62px 66px,
     linear-gradient(
       226.79deg,
-      var(--d1) 23.6%,
-      var(--seam-light) 24.5%,
-      var(--seam-dark) 25.2%,
+      var(--desk-d1) 23.6%,
+      var(--desk-seam-light) 24.5%,
+      var(--desk-seam-dark) 25.2%,
       transparent 25.8%
     )
     0 0 / 62px 66px,
-    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
-    62px 66px,
-    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
-    66px;
+    linear-gradient(313.21deg, var(--desk-d1) 23.8%, var(--desk-seam-dark) 24.8%, transparent 25.5%)
+    0 0 / 62px 66px,
+    linear-gradient(
+      46.79deg,
+      var(--desk-d1) 23.8%,
+      var(--desk-seam-dark) 24.8%,
+      var(--desk-d2) 25.5%
+    )
+    0 0 / 62px 66px;
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
     0 24px 44px var(--lx-toy-drop),
-    inset 0 0 0 5px color-mix(in srgb, var(--d2) 70%, transparent),
+    inset 0 0 0 5px color-mix(in srgb, var(--desk-d2) 70%, transparent),
     inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
     inset 0 0 50px var(--lx-desk-hollow);
 }
@@ -69,52 +80,52 @@
 .desk[data-tone="acajou"] {
   --base-a: var(--lx-color-sheet-light);
   --base-b: color-mix(in srgb, var(--lx-color-sheet) 74%, var(--lx-room-floor));
-  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent);
+  --desk-lamp: color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent);
 }
 
 .desk[data-tone="emeraude"] {
   --base-a: var(--lx-desk-center);
   --base-b: var(--lx-desk-edge);
-  --lamp-tint: color-mix(in srgb, var(--lx-color-success) 12%, transparent);
+  --desk-lamp: color-mix(in srgb, var(--lx-color-success) 12%, transparent);
 }
 
 .desk[data-tone="nuit"] {
   --base-a: color-mix(in srgb, var(--lx-mastery-ink-deep) 64%, var(--lx-room-floor));
   --base-b: color-mix(in srgb, var(--lx-mastery-ink-deep) 24%, var(--lx-room-floor));
-  --lamp-tint: color-mix(in srgb, var(--lx-mastery-ink) 16%, transparent);
+  --desk-lamp: color-mix(in srgb, var(--lx-mastery-ink) 16%, transparent);
 }
 
 .desk[data-tone="velours"] {
   --base-a: color-mix(in srgb, var(--lx-color-banner-start) 66%, var(--lx-room-floor));
   --base-b: color-mix(in srgb, var(--lx-color-danger-edge) 68%, var(--lx-room-floor));
-  --lamp-tint: color-mix(in srgb, var(--lx-toy-red-top) 14%, transparent);
+  --desk-lamp: color-mix(in srgb, var(--lx-toy-red-top) 14%, transparent);
 }
 
 .desk[data-tone="ardoise"] {
   --base-a: color-mix(in srgb, var(--lx-color-data) 34%, var(--lx-color-sheet));
   --base-b: color-mix(in srgb, var(--lx-color-data) 12%, var(--lx-room-floor));
-  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 14%, transparent);
+  --desk-lamp: color-mix(in srgb, var(--lx-toy-gold-top) 14%, transparent);
 }
 
 .desk[data-tone="ambre"] {
   --base-a: color-mix(in srgb, var(--lx-toy-gold-edge) 50%, var(--lx-color-sheet-light));
   --base-b: color-mix(in srgb, var(--lx-toy-gold-edge) 20%, var(--lx-room-floor));
-  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 16%, transparent);
+  --desk-lamp: color-mix(in srgb, var(--lx-toy-gold-top) 16%, transparent);
 }
 
 .desk[data-contrast="subtle"] {
-  --d1: color-mix(in srgb, var(--base-a) 55%, var(--base-b));
-  --d2: var(--base-b);
+  --desk-d1: color-mix(in srgb, var(--base-a) 55%, var(--base-b));
+  --desk-d2: var(--base-b);
 }
 
 .desk[data-contrast="balanced"] {
-  --d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
-  --d2: var(--base-b);
+  --desk-d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
+  --desk-d2: var(--base-b);
 }
 
 .desk[data-contrast="bold"] {
-  --d1: var(--base-a);
-  --d2: color-mix(in srgb, var(--base-b) 82%, var(--lx-color-shade));
+  --desk-d1: var(--base-a);
+  --desk-d2: color-mix(in srgb, var(--base-b) 82%, var(--lx-color-shade));
 }
 
 /* Original smooth green leather desk for side-by-side comparison. */
@@ -218,6 +229,16 @@
   border: 1px solid color-mix(in srgb, var(--lx-toy-sheen) 45%, transparent);
   transform: rotate(45deg) scale(0.82);
   flex-shrink: 0;
+}
+
+.devSwatch[data-tone="auto"] {
+  background: conic-gradient(
+    from 45deg,
+    var(--lx-desk-center) 0deg 90deg,
+    var(--lx-mastery-ink-deep) 90deg 180deg,
+    var(--lx-color-banner-start) 180deg 270deg,
+    var(--lx-color-sheet-light) 270deg 360deg
+  );
 }
 
 .devSwatch[data-tone="acajou"] {
