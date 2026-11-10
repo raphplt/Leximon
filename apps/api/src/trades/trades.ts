@@ -17,6 +17,7 @@ import {
 import { type Database, schema } from "@leximon/db";
 import { and, asc, desc, eq, gt, inArray, lt, or, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { readRestrictions } from "../moderation/restrictions";
 import { isBlockedEitherWay, readBadges } from "../profile/profile";
 import { addXpToPlayers } from "../progress/progress";
 import {
@@ -324,8 +325,8 @@ const recipientProgress = alias(userProgress, "recipient_progress");
  * One transaction: lock the offer, then the `user_cards` rows of both players for every card
  * involved, always in (user_id, card_id) order so that concurrent trades between the same players
  * cannot deadlock. Everything is checked again under these locks with the rules in force now,
- * then one copy of each card changes hands. Statements: BEGIN, lock offer, lock cards, combined
- * write (with the XP both players earn), COMMIT. Mastery (`user_mastery`) is never touched: it belongs to the player, not the copy.
+ * then one copy of each card changes hands. Statements: BEGIN, lock offer, the proposer's
+ * sanctions, lock cards, combined write (with the XP both players earn), COMMIT. Mastery (`user_mastery`) is never touched: it belongs to the player, not the copy.
  */
 export async function acceptTrade(
   db: Database,
@@ -366,6 +367,15 @@ export async function acceptTrade(
     }
     if (isExpired(record.expiresAt.getTime(), now)) {
       return { kind: "refused", reason: "trade_expired" };
+    }
+    // The recipient's sanctions are checked by the route; the proposer may have been sanctioned
+    // since the offer left. Their offer closes rather than wait for the sanction to end.
+    if (!(await readRestrictions(tx, proposerId, now)).canTrade) {
+      await tx
+        .update(trades)
+        .set({ status: "cancelled", resolvedAt: new Date(now) })
+        .where(eq(trades.id, tradeId));
+      return { kind: "refused", reason: "trade_not_pending" };
     }
 
     const parties = [proposerId, userId];

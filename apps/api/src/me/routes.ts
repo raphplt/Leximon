@@ -70,6 +70,7 @@ import { buyBanner } from "../profile/banners";
 import {
   blockPlayer,
   deleteAccount,
+  isAccountKept,
   listBlocks,
   readOwnProfile,
   readPreferences,
@@ -468,6 +469,10 @@ export function meRoutes(createBilling: BillingFactory) {
    */
   routes.delete("/account", async (c) => {
     const now = Date.now();
+    // Refused before the subscription and the clan are touched: neither would come back.
+    if (await isAccountKept(c.var.db, c.var.userId)) {
+      return c.json<{ error: DeleteAccountRefusal }>({ error: "admin_account" }, 409);
+    }
     // A deleted account is never billed again: without Stripe's answer, nothing is deleted.
     if (billingConfigured(c.env)) {
       try {

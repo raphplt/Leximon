@@ -908,6 +908,24 @@ export async function updatePreferences(
 
 export type DeleteAccountResult = { readonly kind: "deleted" } | { readonly kind: "admin_account" };
 
+async function hasAuditedActions(db: Pick<Database, "select">, userId: string): Promise<boolean> {
+  const [audited] = await db
+    .select({ id: adminActions.id })
+    .from(adminActions)
+    .where(eq(adminActions.adminId, userId))
+    .limit(1);
+  return audited !== undefined;
+}
+
+/**
+ * Whether `deleteAccount` would refuse this account. Asked before anything that cannot be undone
+ * (the subscription ended at Stripe, the clan left); `deleteAccount` checks again under its lock.
+ */
+export async function isAccountKept(db: Database, userId: string): Promise<boolean> {
+  const [me] = await db.select({ role: users.role }).from(users).where(eq(users.id, userId));
+  return me?.role === ADMIN_ROLE || (await hasAuditedActions(db, userId));
+}
+
 /**
  * Erases the player at once, in one transaction: the account, its sign-in methods and sessions,
  * the game (cards, mastery, profile, history of opens) by the cascades, and the guests it was
@@ -927,12 +945,9 @@ export async function deleteAccount(
       .where(eq(users.id, userId))
       .for("update");
     if (me === undefined) return { kind: "deleted" };
-    const [audited] = await tx
-      .select({ id: adminActions.id })
-      .from(adminActions)
-      .where(eq(adminActions.adminId, userId))
-      .limit(1);
-    if (me.role === ADMIN_ROLE || audited !== undefined) return { kind: "admin_account" };
+    if (me.role === ADMIN_ROLE || (await hasAuditedActions(tx, userId))) {
+      return { kind: "admin_account" };
+    }
 
     const guests = await tx
       .select({ guestId: guestLinks.guestId })

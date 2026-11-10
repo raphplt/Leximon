@@ -154,6 +154,12 @@ export function billingEventOf(raw: unknown): BillingEvent | null {
   return ignored;
 }
 
+/** What names an event in a log, and nothing of what it carries: no customer, no amount. */
+export function stripeEventLabel(raw: unknown): { id: string | null; type: string | null } {
+  const label = z.object({ id: z.string(), type: z.string() }).partial().safeParse(raw);
+  return { id: label.data?.id ?? null, type: label.data?.type ?? null };
+}
+
 /** `null` for an invoice without a line. */
 function paidInvoiceOf(
   invoice: z.infer<typeof invoiceSchema>,

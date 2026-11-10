@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   dnsOverHttpsResolver,
+  mailboxOf,
   mailDomainOf,
   verdictFromAddresses,
   verdictFromMx,
@@ -9,6 +10,23 @@ import {
 const MX = 15;
 const A = 1;
 const CNAME = 5;
+
+describe("mailboxOf", () => {
+  it("drops the tag and the case, on any domain", () => {
+    expect(mailboxOf(" Joueur+Leximon@Laposte.net ")).toBe("joueur@laposte.net");
+    expect(mailboxOf("joueur+a+b@example.com")).toBe("joueur@example.com");
+  });
+
+  it("drops the dots Gmail ignores, and only there", () => {
+    expect(mailboxOf("j.ou.eur+1@googlemail.com")).toBe("joueur@gmail.com");
+    expect(mailboxOf("j.oueur@laposte.net")).toBe("j.oueur@laposte.net");
+  });
+
+  it("leaves alone what is not an address, or starts with a plus", () => {
+    expect(mailboxOf("joueur")).toBe("joueur");
+    expect(mailboxOf("+tag@example.com")).toBe("+tag@example.com");
+  });
+});
 
 describe("mailDomainOf", () => {
   it("takes the part after the last @", () => {

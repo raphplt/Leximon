@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import { describe, expect, it } from "vitest";
 import { planOfLookupKey, subscriptionSnapshot } from "./billing";
-import { billingEventOf } from "./events";
+import { billingEventOf, stripeEventLabel } from "./events";
 
 const event = (type: string, object: unknown) => ({
   id: "evt_1",
@@ -95,6 +95,12 @@ describe("Stripe events", () => {
   it("refuse an event without the shape Stripe documents", () => {
     expect(billingEventOf(event("invoice.paid", { id: "in_1" }))).toBeNull();
     expect(billingEventOf({ type: "invoice.paid" })).toBeNull();
+  });
+
+  it("name a refused event by its id and type only", () => {
+    const refused = event("invoice.paid", { id: "in_1", customer: "cus_1" });
+    expect(stripeEventLabel(refused)).toEqual({ id: "evt_1", type: "invoice.paid" });
+    expect(stripeEventLabel(null)).toEqual({ id: null, type: null });
   });
 });
 

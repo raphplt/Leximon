@@ -3,6 +3,7 @@ import { schema } from "@leximon/db";
 import { sql } from "drizzle-orm";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
+import { mailboxOf } from "../account/mail-domain";
 import type { AppEnv } from "../context";
 import { readAuthEmail } from "./auth-email";
 
@@ -107,8 +108,9 @@ export const waitlistRateLimit = rateLimit("WAITLIST_RATE_LIMITER", clientIp);
 const encoder = new TextEncoder();
 
 /**
- * HMAC-SHA-256 of the normalised address with the server secret: unlike a plain hash, it cannot be
- * reversed by hashing a list of known addresses.
+ * HMAC-SHA-256 of the address's mailbox with the server secret: unlike a plain hash, it cannot be
+ * reversed by hashing a list of known addresses. Keyed on the mailbox, so that `a+1@`, `a+2@`…
+ * count as the one inbox they fill.
  */
 export async function emailKey(secret: string, email: string): Promise<string> {
   const key = await crypto.subtle.importKey(
@@ -118,6 +120,6 @@ export async function emailKey(secret: string, email: string): Promise<string> {
     false,
     ["sign"],
   );
-  const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(email.trim().toLowerCase()));
+  const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(mailboxOf(email)));
   return Array.from(new Uint8Array(mac), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }

@@ -539,6 +539,25 @@ describe("POST /trades/:id/accept", () => {
     expect(await response.json()).toEqual({ error: "trade_expired" });
   });
 
+  it("closes the offer of a proposer banned from trading since, without moving a card", async () => {
+    const { alice, bob, trade } = await pendingTrade();
+    await db.insert(schema.sanctions).values({
+      id: crypto.randomUUID(),
+      userId: alice.userId,
+      kind: "trade_ban",
+      reason: "Test",
+      until: new Date(Date.now() + DAY),
+      createdBy: bob.userId,
+      createdAt: new Date(),
+    });
+    const response = await post(bob, `/trades/${trade.id}/accept`);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "trade_not_pending" });
+    expect(await storedStatus(trade.id)).toBe("cancelled");
+    expect(await quantity(alice.userId, COMMON_1)).toBe(2);
+    expect(await quantity(bob.userId, COMMON_2)).toBe(3);
+  });
+
   it("concludes only once when the same offer is accepted concurrently", async () => {
     const { alice, bob, trade } = await pendingTrade();
     const responses = await Promise.all(
@@ -681,7 +700,7 @@ describe("POST /trades/:id/decline and /cancel", () => {
 });
 
 describe("accept latency", () => {
-  it("uses five statements: BEGIN, lock offer, lock cards, combined write, COMMIT", async () => {
+  it("uses six statements: BEGIN, lock offer, sanctions, lock cards, combined write, COMMIT", async () => {
     const alice = await player([{ cardId: COMMON_1, quantity: 2 }]);
     const bob = await player([{ cardId: COMMON_2, quantity: 2 }]);
     const trade = await offer(alice, bob, [COMMON_1], [COMMON_2]);
@@ -697,7 +716,7 @@ describe("accept latency", () => {
       });
       expect(result.kind).toBe("completed");
       // Each statement is one round trip, all while holding the locks.
-      expect(queries).toHaveLength(5);
+      expect(queries).toHaveLength(6);
     } finally {
       await counted.close();
     }

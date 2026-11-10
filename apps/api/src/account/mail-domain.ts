@@ -39,6 +39,25 @@ export function mailDomainOf(email: string): string | null {
   }
 }
 
+/** Domains whose mailboxes ignore the dots of the local part. */
+const DOTLESS_DOMAINS = new Set(["gmail.com", "googlemail.com"]);
+
+/**
+ * The mailbox an address is delivered to, as far as it can be told without asking: lowercase,
+ * without the `+tag` most providers ignore, and without Gmail's dots. Only for counting what one
+ * mailbox receives; never to compare accounts, since some domain may deliver `a+b` apart from `a`.
+ */
+export function mailboxOf(email: string): string {
+  const address = email.trim().toLowerCase();
+  const at = address.lastIndexOf("@");
+  if (at < 1) return address;
+  const domain = address.slice(at + 1);
+  const plus = address.indexOf("+");
+  const local = address.slice(0, plus > 0 && plus < at ? plus : at);
+  if (!DOTLESS_DOMAINS.has(domain)) return `${local}@${domain}`;
+  return `${local.replaceAll(".", "")}@gmail.com`;
+}
+
 /**
  * What the MX answer says. A domain that publishes only the null MX (`0 .`) declares it takes no
  * mail; a domain without MX may still take mail on its own address, so `null` asks for A/AAAA.

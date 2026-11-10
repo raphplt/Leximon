@@ -680,6 +680,17 @@ describe("deleting an account", () => {
     }
     expect(await rowOf(member.userId)).toBeDefined();
   });
+
+  it("leaves the subscription of an admin, whose account is refused", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    const subscription = subscribe(customerId, { status: "active" });
+    await checkoutCompleted(subscription);
+    await db.update(schema.users).set({ role: "admin" }).where(eq(schema.users.id, member.userId));
+
+    expect((await request(member, "DELETE", "/me/account")).status).toBe(409);
+    expect(stripe.cancelled).not.toContain(subscription.id);
+    expect(stripe.forgotten).not.toContain(customerId);
+  });
 });
 
 /** A member whose first month is paid. */

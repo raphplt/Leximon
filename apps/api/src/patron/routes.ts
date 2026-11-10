@@ -50,7 +50,7 @@ import {
   unlinkDiscord,
 } from "./discord";
 import { type EditionWriteResult, readEditions, setAlbumEdition, setCardEdition } from "./editions";
-import { billingEventOf, verifiedStripeEvent } from "./events";
+import { billingEventOf, stripeEventLabel, verifiedStripeEvent } from "./events";
 import {
   applyBillingEvent,
   claimCosmetic,
@@ -288,7 +288,12 @@ export function stripeWebhookRoutes(createBilling: BillingFactory) {
     );
     if (verified === null) return c.json({ error: "invalid_signature" }, 400);
     const event = billingEventOf(verified);
-    if (event === null) return c.json({ error: "invalid_request" }, 400);
+    if (event === null) {
+      // Stripe signed it, so the reading is at fault. Refused on purpose: Stripe sends it again
+      // for three days, the time to correct the reading without losing the event.
+      console.error("Stripe event with an unexpected shape", stripeEventLabel(verified));
+      return c.json({ error: "invalid_request" }, 400);
+    }
     const { result, userId } = await applyBillingEvent(
       c.var.db,
       createBilling(c.env),
