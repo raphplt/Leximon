@@ -234,6 +234,7 @@
 .guide {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   padding: 30px;
 }
@@ -313,6 +314,8 @@
 .training,
 .firstJoust {
   display: grid;
+  /* Never wider than the leaf: a long row inside wraps or scrolls instead of pushing it out. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -470,6 +473,7 @@
 }
 
 .tray {
+  container-type: inline-size;
   display: grid;
   gap: 14px;
   padding: 16px;
@@ -598,8 +602,8 @@
   gap: 10px 16px;
 }
 
-/* Wide enough, the ten places of the deck stand on one line. */
-@media (min-width: 1080px) {
+/* In a tray wide enough for them, the ten places of the deck stand on one line. */
+@container (min-width: 930px) {
   .slots {
     grid-template-columns: repeat(10, var(--w));
   }
