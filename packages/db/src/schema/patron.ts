@@ -70,7 +70,7 @@ export const patronPeriods = pgTable(
     plan: text().notNull(),
     startsAt: timestamp({ withTimezone: true }).notNull(),
     endsAt: timestamp({ withTimezone: true }).notNull(),
-    /** In cents of euro. */
+    /** In cents of euro; zero when a promotion code paid it all. */
     amountPaid: integer().notNull(),
     paidAt: timestamp({ withTimezone: true }).notNull(),
     refundedAt: timestamp({ withTimezone: true }),
@@ -78,7 +78,7 @@ export const patronPeriods = pgTable(
   (table) => [
     index("patron_periods_user_idx").on(table.userId, table.startsAt),
     check("patron_periods_plan_check", sql`${table.plan} in ('monthly', 'yearly')`),
-    check("patron_periods_amount_check", sql`${table.amountPaid} > 0`),
+    check("patron_periods_amount_check", sql`${table.amountPaid} >= 0`),
   ],
 );
 

@@ -64,6 +64,11 @@ describe("Stripe events", () => {
     });
   });
 
+  it("keep the period of an invoice a promotion code paid entirely", () => {
+    const offered = billingEventOf(event("invoice.paid", invoice({ amount_paid: 0 })));
+    expect(offered?.paidInvoice).toMatchObject({ amountPaid: 0 });
+  });
+
   it("find the subscription where older API versions put it", () => {
     const old = invoice({ parent: null, subscription: "sub_old" });
     expect(billingEventOf(event("invoice.paid", old))?.subscriptionId).toBe("sub_old");

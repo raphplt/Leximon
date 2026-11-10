@@ -14,11 +14,14 @@ export interface BillingEvent {
   readonly refundedPayment: string | null;
 }
 
-/** An invoice paid with money, and the months it pays for. */
+/**
+ * An invoice Stripe holds as paid, and the months it pays for. One of zero counts like any other:
+ * a subscription given with a promotion code makes a patron in full.
+ */
 export interface PaidInvoice {
   readonly id: string;
   readonly subscriptionId: string;
-  /** In cents of euro. */
+  /** In cents of euro; zero when a promotion code paid it all. */
   readonly amountPaid: number;
   readonly paidAt: EpochMs;
   readonly startsAt: EpochMs;
@@ -151,13 +154,13 @@ export function billingEventOf(raw: unknown): BillingEvent | null {
   return ignored;
 }
 
-/** `null` for an invoice of zero or without a line. */
+/** `null` for an invoice without a line. */
 function paidInvoiceOf(
   invoice: z.infer<typeof invoiceSchema>,
   subscriptionId: string,
 ): PaidInvoice | null {
   const paidAt = invoice.status_transitions.paid_at;
-  if (invoice.amount_paid === 0 || paidAt === null || invoice.lines.data.length === 0) return null;
+  if (paidAt === null || invoice.lines.data.length === 0) return null;
   // A change of plan bills what is left of the old period and the new one: the whole span.
   const starts = invoice.lines.data.map((line) => line.period.start);
   const ends = invoice.lines.data.map((line) => line.period.end);

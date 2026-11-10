@@ -66,7 +66,7 @@ export function PatronsScreen() {
   const refund = async (patron: AdminPatron) => {
     const who = patron.email;
     const amount =
-      patron.lastPayment === null || patron.lastPayment.refunded
+      patron.lastPayment === null || patron.lastPayment.refunded || patron.lastPayment.amount === 0
         ? "aucun paiement à rembourser"
         : `${formatEuros(patron.lastPayment.amount)} remboursés`;
     if (!window.confirm(`Arrêter tout de suite l'abonnement de ${who} (${amount}) ?`)) return;

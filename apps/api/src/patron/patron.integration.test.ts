@@ -486,25 +486,30 @@ describe("Stripe's webhook", () => {
     expect(periods[0]).toMatchObject({ plan: "monthly", amountPaid: 399 });
   });
 
-  it("counts no period for an invoice of zero", async () => {
+  it("makes a patron in full of a subscription a promotion code paid entirely", async () => {
     const { member, customerId } = await memberWithCustomer();
     const subscription = subscribe(customerId);
+    await checkoutCompleted(subscription);
+    const now = Date.now();
     const response = await sendEvent("invoice.paid", {
       id: `in_${crypto.randomUUID()}`,
       object: "invoice",
       customer: customerId,
       amount_paid: 0,
-      status_transitions: { paid_at: seconds(Date.now()) },
+      status_transitions: { paid_at: seconds(now) },
       parent: { subscription_details: { subscription: subscription.id } },
-      lines: { data: [{ period: { start: 1, end: 2 } }] },
+      lines: { data: [{ period: { start: seconds(now), end: seconds(now + 30 * DAY) } }] },
     });
     expect(await eventResult(response)).toBe("applied");
-    expect((await readPatron(member)).subscription?.standing).toBe("none");
+    const patron = await readPatron(member);
+    expect(patron.subscription?.standing).toBe("patron");
+    expect(patron.mark).toBe("patron");
     const periods = await db
       .select()
       .from(schema.patronPeriods)
       .where(eq(schema.patronPeriods.userId, member.userId));
-    expect(periods).toHaveLength(0);
+    expect(periods).toHaveLength(1);
+    expect(periods[0]).toMatchObject({ amountPaid: 0 });
   });
 
   it("applies an event once, even sent twice at the same time", async () => {

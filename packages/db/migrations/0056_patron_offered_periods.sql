@@ -1,0 +1,2 @@
+ALTER TABLE "patron_periods" DROP CONSTRAINT "patron_periods_amount_check";--> statement-breakpoint
+ALTER TABLE "patron_periods" ADD CONSTRAINT "patron_periods_amount_check" CHECK ("patron_periods"."amount_paid" >= 0);

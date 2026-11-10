@@ -176,7 +176,7 @@ export const adminPatronSchema = z.object({
     .object({
       invoiceId: z.string(),
       /** In cents of euro. */
-      amount: z.int().positive(),
+      amount: z.int().nonnegative(),
       paidAt: timestampSchema,
       refunded: z.boolean(),
     })
