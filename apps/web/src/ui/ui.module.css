@@ -169,9 +169,18 @@
     font-size: var(--lx-size-label);
   }
 
+  /* Its width is the row's, not its text's: a long label wraps instead of spilling out. */
   .wide {
     box-sizing: border-box;
     width: 100%;
+    padding-block: var(--lx-s3);
+    white-space: normal;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .wide > svg {
+    flex-shrink: 0;
   }
 
   /* A round icon button: back, close, mail. */

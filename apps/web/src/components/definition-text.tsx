@@ -3,9 +3,14 @@ import styles from "./definition-text.module.css";
 
 /**
  * A definition where words of the same family are hidden: each one is a dark band that says why,
- * so it never passes for the word to find.
+ * so it never passes for the word to find. One span holds it all, so that a flex parent keeps it
+ * as one flowing text instead of a column per piece.
  */
 export function DefinitionText({ text }: { readonly text: string }) {
+  return <span>{pieces(text)}</span>;
+}
+
+function pieces(text: string) {
   return definitionPieces(text).map((piece, index) =>
     piece.kind === "text" ? (
       piece.text
