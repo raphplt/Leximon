@@ -369,6 +369,10 @@ describe("checkout", () => {
 
   it("opens Stripe's page with the plan and the way back", async () => {
     const member = await signInAsMember(app, env, db);
+    await db
+      .update(schema.users)
+      .set({ email: "mecene@example.com" })
+      .where(eq(schema.users.id, member.userId));
     const response = await checkout(member, "yearly");
     expect(response.status).toBe(200);
     const { url: pageUrl } = patronRedirectResponseSchema.parse(await response.json());
@@ -376,6 +380,7 @@ describe("checkout", () => {
     const sent = stripe.checkouts.at(-1);
     expect(sent).toMatchObject({
       userId: member.userId,
+      email: "mecene@example.com",
       plan: "yearly",
       successUrl: "http://localhost:3000/mecene?merci",
       cancelUrl: "http://localhost:3000/mecene",

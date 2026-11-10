@@ -34,6 +34,8 @@ export type BillingFactory = (env: Env) => Billing;
 export interface CheckoutInput {
   readonly customerId: string;
   readonly userId: string;
+  /** Written on the customer before each checkout, so that Stripe's page shows the account's. */
+  readonly email: string | null;
   readonly plan: PatronPlan;
   readonly successUrl: string;
   readonly cancelUrl: string;
@@ -104,11 +106,12 @@ export const createStripeBilling: BillingFactory = (env) => {
     },
 
     async createCheckout(input) {
-      const prices = await stripe.prices.list({
-        lookup_keys: [PLAN_LOOKUP_KEYS[input.plan]],
-        active: true,
-        limit: 1,
-      });
+      const [prices] = await Promise.all([
+        stripe.prices.list({ lookup_keys: [PLAN_LOOKUP_KEYS[input.plan]], active: true, limit: 1 }),
+        input.email === null
+          ? null
+          : stripe.customers.update(input.customerId, { email: input.email }),
+      ]);
       const price = prices.data[0];
       if (price === undefined) throw new Error(`No active price for ${input.plan}`);
       const session = await stripe.checkout.sessions.create(

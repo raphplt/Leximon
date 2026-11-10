@@ -68,14 +68,19 @@ export function patronSales(env: Env): PatronSales {
 interface Buyer {
   readonly isGuest: boolean;
   readonly isAdmin: boolean;
+  readonly email: string | null;
 }
 
 async function readBuyer(db: Database, userId: string): Promise<Buyer> {
   const [user] = await db
-    .select({ isAnonymous: users.isAnonymous, role: users.role })
+    .select({ isAnonymous: users.isAnonymous, role: users.role, email: users.email })
     .from(users)
     .where(eq(users.id, userId));
-  return { isGuest: user?.isAnonymous !== false, isAdmin: user?.role === ADMIN_ROLE };
+  return {
+    isGuest: user?.isAnonymous !== false,
+    isAdmin: user?.role === ADMIN_ROLE,
+    email: user?.email ?? null,
+  };
 }
 
 /** Before sales open, admins may still buy: the real payment is tried before players see it. */
@@ -332,6 +337,7 @@ export async function openCheckout(
   const session = await billing.createCheckout({
     customerId: row.stripeCustomerId,
     userId: input.userId,
+    email: buyer.email,
     plan: input.plan,
     successUrl: `${input.webUrl}/mecene?merci`,
     cancelUrl: `${input.webUrl}/mecene`,
