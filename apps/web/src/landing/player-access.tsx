@@ -89,7 +89,7 @@ export function Closing({ door }: { readonly door: Door }) {
         </Lettering>
       </h2>
       <p className={styles.closingSub}>
-        Deux sachets gratuits dès ton arrivée pour tirer tes dix premiers mots rares.
+        Six sachets gratuits t'attendent pour tirer tes trente premiers mots rares.
       </p>
       <DoorAction door={door} />
     </section>
