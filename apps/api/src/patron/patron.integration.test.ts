@@ -95,8 +95,10 @@ function fakeStripe() {
   const cancelled: string[] = [];
   const forgotten: string[] = [];
   const refunds: string[] = [];
+  const refundedSubscriptions: string[] = [];
   const invoicesOfPayments = new Map<string, string>();
   let failing = false;
+  let held: { readonly reached: () => void; readonly release: Promise<void> } | null = null;
   const reachable = () => {
     if (failing) throw new Error("Stripe unreachable");
   };
@@ -127,6 +129,12 @@ function fakeStripe() {
       reachable();
       const subscription = subscriptions.get(subscriptionId);
       if (subscription === undefined) throw new Error(`No subscription ${subscriptionId}`);
+      const hold = held;
+      held = null;
+      if (hold !== null) {
+        hold.reached();
+        await hold.release;
+      }
       return subscription;
     },
     async cancelSubscription(subscriptionId) {
@@ -145,6 +153,10 @@ function fakeStripe() {
       reachable();
       refunds.push(invoiceId);
     },
+    async refundSubscription(subscriptionId) {
+      reachable();
+      refundedSubscriptions.push(subscriptionId);
+    },
     async invoiceOfPayment(paymentIntentId) {
       reachable();
       return invoicesOfPayments.get(paymentIntentId) ?? null;
@@ -159,7 +171,26 @@ function fakeStripe() {
     cancelled,
     forgotten,
     refunds,
+    refundedSubscriptions,
     invoicesOfPayments,
+    /**
+     * Makes Stripe slow for the next subscription read: its answer, already made, only leaves
+     * when `release` is called. `reached` settles once that read is waiting.
+     */
+    holdNextRetrieve() {
+      let release = () => {};
+      let reached = () => {};
+      const waiting = new Promise<void>((resolve) => {
+        reached = resolve;
+      });
+      held = {
+        reached,
+        release: new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+      };
+      return { reached: waiting, release };
+    },
     newSubscriptionId: () => id("sub"),
     setFailing: (value: boolean) => {
       failing = value;
@@ -572,7 +603,29 @@ describe("Stripe's webhook", () => {
     expect(await eventResult(await checkoutCompleted(second))).toBe("applied");
 
     expect(stripe.cancelled).toContain(second.id);
+    expect(stripe.refundedSubscriptions).toContain(second.id);
+    expect(stripe.refundedSubscriptions).not.toContain(first.id);
     expect((await rowOf(member.userId))?.stripeSubscriptionId).toBe(first.id);
+  });
+
+  it("keeps Stripe's latest state when two events are applied at the same time", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    const subscription = subscribe(customerId, { status: "incomplete" });
+    const slow = stripe.holdNextRetrieve();
+    const created = sendEvent("customer.subscription.created", {
+      id: subscription.id,
+      customer: customerId,
+    });
+    await slow.reached;
+    // The payment goes through while the first event still waits for Stripe's older answer.
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "active" });
+    const paid = invoicePaid(subscription);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    slow.release();
+    await Promise.all([created, paid]);
+
+    expect((await rowOf(member.userId))?.status).toBe("active");
+    expect((await readPatron(member)).subscription?.standing).toBe("patron");
   });
 
   it("leaves alone the customers of other products", async () => {

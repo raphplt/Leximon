@@ -423,10 +423,11 @@ export type EventResult =
   | "unknown_customer";
 
 /**
- * Applies a Stripe event. The subscription is read again from Stripe first, outside the
- * transaction, so that a late event never brings back an older state. The event's row is written
- * in the same transaction as its effect: an event Stripe sends again changes nothing, and one
- * that failed is applied when Stripe retries it.
+ * Applies a Stripe event. The subscription is read again from Stripe, so that a late event never
+ * brings back an older state, and read under the lock of the patron's row: of two events applied
+ * at the same time, the one that writes last has also read last. The event's row is written in
+ * the same transaction as its effect: an event Stripe sends again changes nothing, and one that
+ * failed is applied when Stripe retries it.
  */
 export async function applyBillingEvent(
   db: Database,
@@ -439,8 +440,6 @@ export async function applyBillingEvent(
     .from(stripeEvents)
     .where(eq(stripeEvents.id, event.id));
   if (seen !== undefined) return { result: "duplicate", userId: null };
-  const snapshot =
-    event.subscriptionId === null ? null : await billing.retrieveSubscription(event.subscriptionId);
   const refundedInvoice =
     event.refundedPayment === null ? null : await billing.invoiceOfPayment(event.refundedPayment);
 
@@ -452,14 +451,17 @@ export async function applyBillingEvent(
       .returning({ id: stripeEvents.id });
     const none = { surplus: null, userId: null };
     if (recorded === undefined) return { result: "duplicate" as const, ...none };
-    const customerId = snapshot?.customerId ?? event.customerId;
-    if (customerId === null) return { result: "ignored" as const, ...none };
+    if (event.customerId === null) return { result: "ignored" as const, ...none };
     const [row] = await tx
       .select()
       .from(patronSubscriptions)
-      .where(eq(patronSubscriptions.stripeCustomerId, customerId))
+      .where(eq(patronSubscriptions.stripeCustomerId, event.customerId))
       .for("update");
     if (row === undefined) return { result: "unknown_customer" as const, ...none };
+    const snapshot =
+      event.subscriptionId === null
+        ? null
+        : await billing.retrieveSubscription(event.subscriptionId);
 
     const change =
       snapshot === null ? { kind: "keep" as const } : subscriptionChange(row, snapshot);
@@ -519,9 +521,13 @@ export async function applyBillingEvent(
   });
 
   if (outcome.surplus !== null) {
-    // Two checkouts paid despite the older one being expired: the second subscription goes.
-    console.error("Second patron subscription cancelled", { subscriptionId: outcome.surplus });
+    // Two checkouts paid despite the older one being expired: the second subscription goes, and
+    // what it took is given back. Should Stripe fail here, its next event tries again.
+    console.error("Second patron subscription cancelled and refunded", {
+      subscriptionId: outcome.surplus,
+    });
     await billing.cancelSubscription(outcome.surplus);
+    await billing.refundSubscription(outcome.surplus);
   }
   return { result: outcome.result, userId: outcome.userId };
 }

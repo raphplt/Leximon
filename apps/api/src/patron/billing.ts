@@ -25,6 +25,8 @@ export interface Billing {
   forgetCustomer(customerId: string): Promise<void>;
   /** Refunds what an invoice was paid; refunded twice, Stripe makes it once. */
   refundInvoice(invoiceId: string): Promise<void>;
+  /** Refunds every invoice a subscription was paid; one never paid has nothing to refund. */
+  refundSubscription(subscriptionId: string): Promise<void>;
   /** The invoice a payment paid; `null` for a payment that paid none. */
   invoiceOfPayment(paymentIntentId: string): Promise<string | null>;
 }
@@ -96,6 +98,18 @@ function secondsToMs(seconds: number | null): EpochMs | null {
 /** The real thing. The Workers build of the library talks to Stripe with `fetch`. */
 export const createStripeBilling: BillingFactory = (env) => {
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 });
+  const refundInvoice = async (invoiceId: string) => {
+    const payments = await stripe.invoicePayments.list({ invoice: invoiceId, status: "paid" });
+    for (const { payment } of payments.data) {
+      const intent = payment.payment_intent;
+      const intentId = typeof intent === "string" ? intent : intent?.id;
+      if (intentId === undefined) continue;
+      await stripe.refunds.create(
+        { payment_intent: intentId },
+        { idempotencyKey: `refund-${invoiceId}-${intentId}` },
+      );
+    }
+  };
   return {
     async createCustomer(userId) {
       const customer = await stripe.customers.create(
@@ -163,16 +177,12 @@ export const createStripeBilling: BillingFactory = (env) => {
       await stripe.customers.update(customerId, { metadata: { userId: "" } });
     },
 
-    async refundInvoice(invoiceId) {
-      const payments = await stripe.invoicePayments.list({ invoice: invoiceId, status: "paid" });
-      for (const { payment } of payments.data) {
-        const intent = payment.payment_intent;
-        const intentId = typeof intent === "string" ? intent : intent?.id;
-        if (intentId === undefined) continue;
-        await stripe.refunds.create(
-          { payment_intent: intentId },
-          { idempotencyKey: `refund-${invoiceId}-${intentId}` },
-        );
+    refundInvoice,
+
+    async refundSubscription(subscriptionId) {
+      const invoices = await stripe.invoices.list({ subscription: subscriptionId, status: "paid" });
+      for (const invoice of invoices.data) {
+        if (invoice.id !== undefined && invoice.amount_paid > 0) await refundInvoice(invoice.id);
       }
     },
 
