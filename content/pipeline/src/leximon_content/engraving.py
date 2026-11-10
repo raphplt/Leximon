@@ -57,6 +57,8 @@ DOWNLOAD_WIDTH = 1280
 INK_BOX = (774, 480)
 #: Steep curve (R&D §4): at or below LOW is full ink, at or above HIGH is paper.
 INK_LOW, INK_HIGH = 110, 205
+#: Below this share of both sides, the ink box found by `trim` is a speck, not the subject.
+TRIM_MIN_SHARE = 0.1
 #: Share of the image area the flat colour covers, in percent.
 FILL_SHARE = 35
 #: Lowest density threshold (0–255): sparse line art (a sword, a plant) would otherwise set it
@@ -250,12 +252,16 @@ def flat_field(grey: Image.Image) -> Image.Image:
 
 
 def trim(grey: Image.Image, ink_level: int = 170, pad: float = 0.02) -> Image.Image:
-    """Crops to the ink's bounding box; the median filter ignores dust."""
+    """Crops to the ink's bounding box; the median filter ignores dust. A pale stippled drawing
+    may leave only a speck darker than `ink_level`: a box that small is not the subject, so the
+    image is kept whole."""
     ink = grey.filter(ImageFilter.MedianFilter(5)).point(lambda v: 255 if v < ink_level else 0)
     box = ink.getbbox()
     if box is None:
         return grey
     w, h = grey.size
+    if box[2] - box[0] < TRIM_MIN_SHARE * w and box[3] - box[1] < TRIM_MIN_SHARE * h:
+        return grey
     p = int(pad * max(w, h))
     return grey.crop(
         (max(0, box[0] - p), max(0, box[1] - p), min(w, box[2] + p), min(h, box[3] + p))

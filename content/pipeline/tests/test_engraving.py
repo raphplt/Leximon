@@ -208,6 +208,14 @@ def test_prepare_trims_the_margins_and_whitens_the_paper() -> None:
     assert a.min() < 30  # ink
 
 
+def test_a_pale_drawing_with_one_dark_speck_is_kept_whole() -> None:
+    image = Image.new("L", (300, 300), 255)
+    draw = ImageDraw.Draw(image)
+    draw.ellipse((40, 40, 260, 260), outline=190, width=4)  # paler than the trim threshold
+    draw.rectangle((150, 150, 160, 160), fill=60)
+    assert engraving.trim(image).size == (300, 300)
+
+
 def test_a_transparent_background_is_paper() -> None:
     rgba = Image.new("RGBA", (200, 200), (0, 0, 0, 0))
     ImageDraw.Draw(rgba).rectangle((80, 80, 120, 120), fill=(0, 0, 0, 255))
