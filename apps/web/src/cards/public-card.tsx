@@ -1,7 +1,8 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
-import { CARD_PAGE_ACTION } from "@leximon/view-model";
+import { CARD_PAGE_ACTION, CARD_PAGE_NEIGHBOURS, cardPath } from "@leximon/view-model";
+import Link from "next/link";
 import type { PackCollection } from "@/booster/pack-looks";
 import { CollectionSeal } from "@/components/collection-seal";
 import { EngravingCredit } from "@/components/engraving-credit";
@@ -12,6 +13,7 @@ import { ButtonLink } from "@/ui/button";
 import { BindingRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { CardFacts, CardOrigin, CardQuoteInFull } from "./card-facts";
+import type { CardLink } from "./catalog-server";
 import styles from "./public-card.module.css";
 
 /** A card as anyone sees it from a shared link: the card, what it says, and the way in. */
@@ -20,11 +22,13 @@ export function PublicCardView({
   collectionName,
   seal,
   pitch,
+  neighbours,
 }: {
   readonly card: CatalogCard;
   readonly collectionName: string;
   readonly seal: PackCollection | null;
   readonly pitch: string;
+  readonly neighbours: readonly CardLink[];
 }) {
   const narrow = useNarrow();
   const light = useHoloLight(true);
@@ -55,6 +59,18 @@ export function PublicCardView({
           <p>{pitch}</p>
           <ButtonLink href="/jouer">{CARD_PAGE_ACTION}</ButtonLink>
         </div>
+        {neighbours.length > 0 && (
+          <nav className={styles.neighbours} aria-label={CARD_PAGE_NEIGHBOURS}>
+            <span className={styles.neighboursTitle}>{CARD_PAGE_NEIGHBOURS}</span>
+            <ul>
+              {neighbours.map((link) => (
+                <li key={link.id}>
+                  <Link href={cardPath(link.id)}>{link.word}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </div>
     </div>
   );

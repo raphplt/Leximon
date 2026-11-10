@@ -63,6 +63,30 @@
   line-height: 1.45;
 }
 
+.neighbours {
+  margin-top: var(--lx-s12);
+  font-size: var(--lx-size-body);
+}
+
+.neighboursTitle {
+  display: block;
+  margin-bottom: var(--lx-s4);
+  color: var(--lx-color-page-ink-muted);
+}
+
+.neighbours ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s3) var(--lx-s8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.neighbours a {
+  color: inherit;
+}
+
 .missing {
   display: flex;
   flex-direction: column;

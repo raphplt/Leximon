@@ -22,6 +22,26 @@ export interface PublicCard {
   readonly seal: PackCollection;
   /** Cards in the whole catalogue, for the page's pitch. */
   readonly catalogSize: number;
+  /** The cards around it in its collection: the links search engines follow from card to card. */
+  readonly neighbours: readonly CardLink[];
+}
+
+export interface CardLink {
+  readonly id: string;
+  readonly word: string;
+}
+
+const NEIGHBOURS_EACH_SIDE = 3;
+
+/** The cards before and after this one in its collection, which is read as a ring. */
+function neighboursOf(cards: readonly CatalogCard[], at: number): CardLink[] {
+  const links = new Map<string, CardLink>();
+  for (let step = -NEIGHBOURS_EACH_SIDE; step <= NEIGHBOURS_EACH_SIDE; step++) {
+    const card = cards[(at + step + cards.length) % cards.length];
+    if (step !== 0 && card !== undefined) links.set(card.id, { id: card.id, word: card.word });
+  }
+  links.delete(cards[at]?.id ?? "");
+  return [...links.values()];
 }
 
 interface ServerCatalog {
@@ -49,10 +69,16 @@ const serverCatalog = cache(async (): Promise<ServerCatalog> => {
   const cards = new Map(
     collections.flatMap((collection) =>
       collection.cards.map(
-        (card) =>
+        (card, at) =>
           [
             card.id,
-            { card, collectionName: collection.name, seal: packOf(collection), catalogSize },
+            {
+              card,
+              collectionName: collection.name,
+              seal: packOf(collection),
+              catalogSize,
+              neighbours: neighboursOf(collection.cards, at),
+            },
           ] as const,
       ),
     ),

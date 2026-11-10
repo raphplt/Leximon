@@ -52,10 +52,13 @@ export function cardPagePitch(cardCount: number): string {
 export const CARD_PAGE_ACTION = "Ouvrir mon premier sachet";
 export const CARD_NOT_FOUND = "Cette carte est introuvable.";
 
-/** The title of a card's public page and of its shared link. */
+/** The title of a card's public page and of its shared link, worded as people search a word. */
 export function cardPageTitle(word: string): string {
-  return `${capitalize(word)} · Leximon`;
+  return `${capitalize(word)} : définition et origine · Leximon`;
 }
+
+/** Above the links to the cards next to this one in its collection. */
+export const CARD_PAGE_NEIGHBOURS = "Dans la même collection";
 
 /** "1 milliard", "1,5 milliard", "17 milliards": the noun takes an s from 2 on. */
 function largeCount(value: number, noun: string): string {

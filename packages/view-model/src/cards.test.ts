@@ -58,7 +58,7 @@ describe("card page", () => {
   });
 
   it("titles the page with the word", () => {
-    expect(cardPageTitle("talpinette")).toBe("Talpinette · Leximon");
+    expect(cardPageTitle("talpinette")).toBe("Talpinette : définition et origine · Leximon");
   });
 
   it("counts the catalogue in the pitch", () => {

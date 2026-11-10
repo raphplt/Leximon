@@ -9,6 +9,8 @@ import styles from "@/cards/public-card.module.css";
 import { ButtonLink } from "@/ui/button";
 import { Logo } from "@/ui/logo";
 
+const SITE = "https://leximon.fr";
+
 async function cardOf(params: Promise<{ id: string }>): Promise<PublicCard | null> {
   const id = slugSchema.safeParse((await params).id);
   return id.success ? readCatalogCard(id.data) : null;
@@ -27,7 +29,31 @@ export async function generateMetadata({ params }: PageProps<"/carte/[id]">): Pr
     title: cardPageTitle(found.card.word),
     description: found.card.definition,
     alternates: { canonical: `/carte/${found.card.id}` },
+    openGraph: {
+      type: "article",
+      url: `/carte/${found.card.id}`,
+      siteName: "Leximon",
+      locale: "fr_FR",
+      title: cardPageTitle(found.card.word),
+      description: found.card.definition,
+    },
   };
+}
+
+/**
+ * The word as a dictionary entry, for search engines. `<` is escaped so no text of the catalogue
+ * can close the script element.
+ */
+function definedTermJson({ card, collectionName }: PublicCard): string {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "DefinedTerm",
+    name: card.word,
+    description: card.definition,
+    inLanguage: "fr",
+    url: `${SITE}/carte/${card.id}`,
+    inDefinedTermSet: { "@type": "DefinedTermSet", name: `Leximon, ${collectionName}`, url: SITE },
+  }).replaceAll("<", "\\u003c");
 }
 
 /** A card's public page, the one a shared card leads to. */
@@ -62,11 +88,19 @@ async function CardContent({ params }: Pick<PageProps<"/carte/[id]">, "params">)
     );
   }
   return (
-    <PublicCardView
-      card={found.card}
-      collectionName={found.collectionName}
-      seal={found.seal}
-      pitch={cardPagePitch(found.catalogSize)}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue data, escaped below
+        dangerouslySetInnerHTML={{ __html: definedTermJson(found) }}
+      />
+      <PublicCardView
+        card={found.card}
+        collectionName={found.collectionName}
+        seal={found.seal}
+        pitch={cardPagePitch(found.catalogSize)}
+        neighbours={found.neighbours}
+      />
+    </>
   );
 }
