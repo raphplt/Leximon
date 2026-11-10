@@ -218,7 +218,7 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 - **Retour :**
 
 ### JTE-06 · Pas de joute sans deck
-- **Faire :** un compte neuf passe le temps « Ton deck » sans garder de deck, finit l'accueil guidé. Puis un compte qui a moins de 5 mots en Esquisse ouvre `/joutes`.
+- **Faire :** un compte neuf passe le temps « Ton deck » sans garder de deck, finit l'accueil guidé. Puis un compte qui a moins de 5 cartes ouvre `/joutes`.
 - **Attendu :** le premier voit « Composer mon deck » à la place de « Joute classée », avec « Compose ton deck pour jouter : ce sont tes mots que tes adversaires devront trouver. ». Le second a ce bouton grisé, avec « Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver. »
 - **Retour :**
 
