@@ -79,6 +79,29 @@ describe("api", () => {
     expect(other.headers.get("access-control-allow-origin")).toBeNull();
   });
 
+  it("refuses a write sent with the session cookie from a page that is not ours", async () => {
+    const write = (headers: Record<string, string>) =>
+      createApp().request("/nowhere", { method: "POST", headers }, testEnv());
+    const cookie = "session=abc";
+
+    const sibling = await write({ origin: "https://autre.leximon.fr", cookie });
+    expect(sibling.status).toBe(403);
+    expect(await sibling.json()).toEqual({ error: "forbidden" });
+    expect((await write({ origin: "null", cookie })).status).toBe(403);
+
+    // Ours, the mobile app (no Origin), and a signed link posted from a mail client (no cookie).
+    expect((await write({ origin: TEST_ORIGIN, cookie })).status).toBe(404);
+    expect((await write({ cookie })).status).toBe(404);
+    expect((await write({ origin: "https://mail.example" })).status).toBe(404);
+
+    const read = await createApp().request(
+      "/health",
+      { headers: { origin: "https://autre.leximon.fr", cookie } },
+      testEnv(),
+    );
+    expect(read.status).toBe(200);
+  });
+
   it("lets browsers keep a preflight answer for two hours", async () => {
     const response = await createApp().request(
       "/boosters/open",

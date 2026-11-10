@@ -40,6 +40,7 @@ import {
   signupRateLimit,
   waitlistRateLimit,
 } from "./middleware/rate-limit";
+import { trustedOrigin } from "./middleware/trusted-origin";
 import { type BillingFactory, createStripeBilling } from "./patron/billing";
 import { createDiscordApi, type DiscordFactory } from "./patron/discord";
 import { patronSales } from "./patron/patron";
@@ -115,6 +116,8 @@ export function createApp(options: AppOptions = {}) {
       maxAge: 7200,
     })(c, next),
   );
+
+  app.use(trustedOrigin);
 
   app.get("/health", (c) => c.json({ status: "ok" }));
   app.get("/app", (c) => {
