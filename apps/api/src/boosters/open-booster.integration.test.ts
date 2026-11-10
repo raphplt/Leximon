@@ -708,6 +708,14 @@ describe("guest limit", () => {
 
   it("does not limit a player with an account", async () => {
     const member = await signInAsPlayer();
+    // A full stock holds no more sachets than the guest limit: the one past it comes from the reserve.
+    await db.insert(schema.boosterWallets).values({
+      userId: member.userId,
+      stored: LIMIT,
+      progressMs: 0,
+      asOf: new Date(),
+      bonusBoosters: 1,
+    });
     for (let i = 0; i <= LIMIT; i++) {
       expect((await openBooster(member)).status).toBe(200);
     }
