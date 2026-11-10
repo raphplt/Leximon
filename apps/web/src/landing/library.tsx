@@ -11,11 +11,6 @@ import styles from "./landing-page.module.css";
 import type { Shelf } from "./showcase-cards";
 
 const BOOK_MATTERS: readonly ToyMatterName[] = ["blue", "red", "green"];
-const BOOK_BACKS: Readonly<Record<string, string>> = {
-  fondateurs: "night",
-  caracteres: "burgundy",
-  metiers: "green",
-};
 const BOOK_NOTES: Readonly<Record<string, string>> = {
   fondateurs: "Les grands mots rares et précieux de la langue française.",
   caracteres: "Portraits mordants, travers humains et vieilles piques.",
@@ -41,7 +36,7 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
       <div className={styles.sectionHead}>
         <Kicker>Le catalogue de lancement</Kicker>
         <h2 id="library-title" className={styles.sectionTitle}>
-          <Lettering>{`${displayCount(total)} mots, en trois collections`}</Lettering>
+          <Lettering>{`${displayCount(total)} mots en ${shelves.length} collections`}</Lettering>
         </h2>
         <p className={styles.sectionLead}>
           Chaque collection possède sa reliure, son sceau gravé et ses centaines de mots tirés du
@@ -54,6 +49,7 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
         <ul className={styles.books}>
           {shelves.map((shelf, at) => {
             const matter = BOOK_MATTERS[at % BOOK_MATTERS.length] ?? "blue";
+            const note = BOOK_NOTES[shelf.id] ?? shelf.tagline;
             return (
               <li key={shelf.id}>
                 <span
@@ -67,14 +63,12 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
                   }
                 >
                   <CollectionSeal
-                    collection={{ id: shelf.id, name: shelf.name, back: BOOK_BACKS[shelf.id] }}
+                    collection={{ id: shelf.id, name: shelf.name, back: shelf.back }}
                     size={76}
                   />
                   <span className={styles.bookText}>
                     <Lettering className={styles.bookName}>{shelf.name}</Lettering>
-                    {BOOK_NOTES[shelf.id] && (
-                      <span className={styles.bookNote}>{BOOK_NOTES[shelf.id]}</span>
-                    )}
+                    {note !== undefined && <span className={styles.bookNote}>{note}</span>}
                     <span className={styles.bookWords}>{formatCount(shelf.count)} mots</span>
                   </span>
                 </span>
@@ -100,8 +94,8 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
             ))}
           </span>
           <span className={styles.riddleText}>
-            Débloque les indices un par un : définition, époque, étymologie et citation. Jouable
-            immédiatement sans compte.
+            Tu as 7 essais, et chaque erreur dévoile un indice de plus. L'énigme se joue sans
+            compte.
           </span>
           <span className={desk.go}>Jouer l'énigme du jour ›</span>
         </Link>

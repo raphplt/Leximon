@@ -48,7 +48,7 @@ export function Guess({ cards }: { readonly cards: readonly ShowcaseCard[] }) {
     >
       <Tooling />
       <div className={styles.sectionHead}>
-        <Kicker>Défi en direct · Insultes et figures d'autrefois</Kicker>
+        <Kicker>Insultes et figures d'autrefois</Kicker>
         <h2 id="guess-title" className={styles.sectionTitle}>
           <Lettering>Sauras-tu démasquer ces quatre mots ?</Lettering>
         </h2>

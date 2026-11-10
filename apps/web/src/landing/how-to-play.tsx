@@ -38,8 +38,7 @@ export function HowToPlay({
           <Lettering>Tire, maîtrise et échange tes trésors</Lettering>
         </h2>
         <p className={styles.sectionLead}>
-          Une boucle de jeu complète, pensée pour le plaisir de la découverte et de la collection,
-          sans chronomètre punitif ni achat aléatoire.
+          Tout le jeu est gratuit. Aucun sachet ne s'achète et aucune carte ne se vend.
         </p>
         <TitleRule className={styles.sectionRule} />
       </div>
@@ -65,8 +64,8 @@ export function HowToPlay({
             </div>
             <Lettering className={styles.howTitle}>Ouvre tes sachets gratuits</Lettering>
             <p className={styles.howText}>
-              Deux sachets t'attendent dès l'arrivée, puis un nouveau se recharge toutes les
-              quelques heures. Chaque pli révèle cinq cartes gravées.
+              Six sachets t'attendent à l'arrivée, puis un nouveau arrive chaque heure. Chaque
+              sachet contient cinq cartes gravées.
             </p>
           </Leaf>
         </li>

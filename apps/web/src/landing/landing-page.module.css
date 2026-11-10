@@ -1021,6 +1021,8 @@
 .rungCard {
   display: flex;
   justify-content: center;
+  color: inherit;
+  text-decoration: none;
 }
 
 .rungTag {

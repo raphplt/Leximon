@@ -2,7 +2,13 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { effects, openingTimes, rarityLights } from "@leximon/tokens";
-import { frequencyLine, LANDING_PITCH, LANDING_TITLE, stagingFor } from "@leximon/view-model";
+import {
+  formatCount,
+  frequencyLine,
+  LANDING_PITCH,
+  LANDING_TITLE,
+  stagingFor,
+} from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
 import { play } from "@/booster/feedback";
 import type { PackCollection } from "@/booster/pack-looks";
@@ -26,12 +32,16 @@ const SIDE_PACKS: readonly [PackCollection, PackCollection] = [
   { id: "metiers", name: "Métiers et objets disparus", back: "green" },
 ];
 
-const HERO_STATS = [
-  { figure: "2 065", label: "mots rares du Littré" },
-  { figure: "6", label: "paliers de rareté" },
-  { figure: "4", label: "collections illustrées" },
-  { figure: "0 €", label: "de hasard payant" },
-] as const;
+/** The ribbon of figures, counted on the published catalogue. */
+function heroStats(shelves: Showcase["shelves"]) {
+  const words = shelves.reduce((sum, shelf) => sum + shelf.count, 0);
+  return [
+    { figure: formatCount(words).replaceAll("\u202f", "\u00a0"), label: "mots rares du Littré" },
+    { figure: "6", label: "raretés" },
+    { figure: String(shelves.length), label: "collections illustrées" },
+    { figure: "0 €", label: "de hasard payant" },
+  ];
+}
 
 /** Where the seam of the sachet runs, from its top: the sparks of the charge leak from there. */
 const SEAM_AT = 0.13;
@@ -54,11 +64,13 @@ export function Hero({
   words,
   collectionNames,
   pack,
+  shelves,
 }: {
   readonly door: Door;
   readonly words: readonly CatalogCard[];
   readonly collectionNames: Readonly<Record<string, string>>;
   readonly pack: Showcase["pack"];
+  readonly shelves: Showcase["shelves"];
 }) {
   const stage = useStage();
   const narrow = useNarrow();
@@ -176,7 +188,7 @@ export function Hero({
           {phase.name === "sealed" || phase.name === "opening" ? (
             <>
               <div className={styles.counterHead} data-gone={phase.name === "opening" || undefined}>
-                <Kicker>Table d'ouverture en direct</Kicker>
+                <Kicker>Un sachet à l'essai</Kicker>
                 <Lettering className={styles.counterName}>
                   {pack?.name ?? "Les Fondateurs"}
                 </Lettering>
@@ -262,7 +274,7 @@ export function Hero({
       </div>
 
       <dl className={styles.statRibbon} aria-label="En quelques chiffres">
-        {HERO_STATS.map((stat) => (
+        {heroStats(shelves).map((stat) => (
           <Leaf key={stat.label} className={styles.statPlaque}>
             <GiltCorners />
             <dd className={styles.statFigure}>

@@ -1,4 +1,5 @@
-import { frequencyLine } from "@leximon/view-model";
+import { cardPath, frequencyLine } from "@leximon/view-model";
+import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Card } from "@/components/card";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
@@ -24,8 +25,8 @@ export function Ladder({ ladder }: { readonly ladder: readonly ShowcaseCard[] })
           <Lettering>Six raretés calées sur la vraie rareté du mot</Lettering>
         </h2>
         <p className={styles.sectionLead}>
-          Plus un mot s'est fait rare dans les livres imprimés, plus sa carte est précieuse : du
-          papier crème des Communes jusqu'à l'or et au prisme des Légendaires.
+          La rareté d'une carte vient de la fréquence du mot dans les livres imprimés, mesurée par
+          Google Books. Les cartes Courantes sont sur papier crème, les Légendaires brillent d'or.
         </p>
         <TitleRule className={styles.sectionRule} />
       </div>
@@ -33,9 +34,9 @@ export function Ladder({ ladder }: { readonly ladder: readonly ShowcaseCard[] })
       <ol className={styles.ladder}>
         {ladder.map(({ card, collectionName }, at) => (
           <li key={card.id} className={styles.rung} style={{ "--at": at } as CSSProperties}>
-            <div className={styles.rungCard}>
+            <Link href={cardPath(card.id)} className={styles.rungCard}>
               <Card card={card} collectionName={collectionName} width={156} />
-            </div>
+            </Link>
             <span className={styles.rungTag}>
               <span className={styles.rungRarity}>
                 <RarityIcon rarity={card.rarity} size="14px" />

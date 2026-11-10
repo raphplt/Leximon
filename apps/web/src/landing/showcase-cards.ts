@@ -55,6 +55,8 @@ export interface Shelf {
   readonly id: string;
   readonly name: string;
   readonly count: number;
+  readonly tagline: string | undefined;
+  readonly back: string | undefined;
 }
 
 export interface ShowcaseCard {
@@ -92,7 +94,13 @@ export function showcaseOf(collections: readonly CatalogCollectionFile[]): Showc
     card,
     collectionName: nameOf(card.collectionId),
   });
-  const shelves = collections.map((c) => ({ id: c.id, name: c.name, count: c.cards.length }));
+  const shelves = collections.map((c) => ({
+    id: c.id,
+    name: c.name,
+    count: c.cards.length,
+    tagline: c.tagline,
+    back: c.back,
+  }));
   const first = collections[0];
   return {
     heroWords: pickShowcase(cardsById, HERO_WORD_IDS),

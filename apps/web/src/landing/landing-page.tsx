@@ -42,6 +42,7 @@ export async function LandingPage() {
             words={showcase.heroWords}
             collectionNames={collectionNames}
             pack={showcase.pack}
+            shelves={showcase.shelves}
           />
           <Guess cards={showcase.guess} />
           <HowToPlay pack={showcase.pack} trade={showcase.trade} quiz={showcase.heroWords} />

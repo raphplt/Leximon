@@ -36,8 +36,14 @@ describe("showcaseOf", () => {
       showcase.ladder.map(({ card: found, collectionName }) => [found.id, collectionName]),
     ).toEqual([["jobard", "Les Fondateurs"]]);
     expect(showcase.shelves).toEqual([
-      { id: "fondateurs", name: "Les Fondateurs", count: 2 },
-      { id: "metiers", name: "Métiers et objets disparus", count: 2 },
+      { id: "fondateurs", name: "Les Fondateurs", count: 2, tagline: undefined, back: "night" },
+      {
+        id: "metiers",
+        name: "Métiers et objets disparus",
+        count: 2,
+        tagline: undefined,
+        back: undefined,
+      },
     ]);
     expect(showcase.pack).toEqual({ id: "fondateurs", name: "Les Fondateurs", back: "night" });
     expect(
