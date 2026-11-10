@@ -1,5 +1,6 @@
 import {
   type AdminContestsResponse,
+  type AdminJoustSuspectsResponse,
   type AdminReportsResponse,
   contestRequestSchema,
   createSanctionRequestSchema,
@@ -12,6 +13,7 @@ import {
 import { Hono } from "hono";
 import { z } from "zod";
 import type { AppEnv } from "../context";
+import { listJoustSuspects } from "./joust-suspects";
 import {
   contestSanction,
   createSanction,
@@ -116,6 +118,10 @@ export function adminModerationRoutes() {
 
   routes.get("/contests", async (c) =>
     c.json<AdminContestsResponse>({ contests: await listOpenContests(c.var.db, Date.now()) }),
+  );
+
+  routes.get("/joust-suspects", async (c) =>
+    c.json<AdminJoustSuspectsResponse>(await listJoustSuspects(c.var.db, Date.now())),
   );
 
   routes.post("/sanctions/:id/contest", async (c) => {

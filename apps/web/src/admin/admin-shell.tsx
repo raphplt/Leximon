@@ -19,6 +19,7 @@ const LINKS = [
   { href: "/admin/mecenes", label: "Mécènes" },
   { href: "/admin/signalements", label: "Signalements" },
   { href: "/admin/contestations", label: "Contestations" },
+  { href: "/admin/joutes", label: "Joutes à vérifier" },
   { href: "/admin/cartes", label: "Cartes" },
   { href: "/admin/catalogue", label: "Collections" },
   { href: "/admin/journal", label: "Journal" },

@@ -14,6 +14,7 @@ export * from "./friend/friend";
 export * from "./joust/glicko";
 export * from "./joust/joust";
 export * from "./joust/leagues";
+export * from "./joust/suspicion";
 export * from "./mastery/challenge";
 export * from "./mastery/formats";
 export * from "./mastery/mastery";

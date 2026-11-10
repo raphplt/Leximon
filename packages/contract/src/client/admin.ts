@@ -16,6 +16,7 @@ import {
   type AdminFeedbackResponse,
   type AdminGrantBonusResponse,
   type AdminInvite,
+  type AdminJoustSuspectsResponse,
   type AdminMeasures,
   type AdminMeasuresQuery,
   type AdminOverview,
@@ -43,6 +44,7 @@ import {
   adminGrantBonusResponseSchema,
   adminInviteSchema,
   adminInvitesResponseSchema,
+  adminJoustSuspectsResponseSchema,
   adminMeasuresSchema,
   adminMeSchema,
   adminOverviewSchema,
@@ -324,5 +326,8 @@ export function adminRoutes(http: Http) {
     async resolveContest(id: string, outcome: "upheld" | "revoked"): Promise<void> {
       await postJson(`/admin/sanctions/${segment(id)}/contest`, { outcome });
     },
+
+    fetchJoustSuspects: (): Promise<AdminJoustSuspectsResponse> =>
+      getJson("/admin/joust-suspects", adminJoustSuspectsResponseSchema),
   };
 }

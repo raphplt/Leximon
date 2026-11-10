@@ -1,3 +1,4 @@
+import { SUSPICION_REASONS } from "@leximon/core";
 import { z } from "zod";
 import { timestampSchema } from "./common";
 import { playerBadgeSchema } from "./profile";
@@ -114,3 +115,25 @@ export const adminModerationRefusalSchema = z.enum([
   "already_resolved",
   "admin_target",
 ]);
+
+/** A jouster whose ranked answers of the last days are worth a look, for the back office. */
+export const adminJoustSuspectSchema = z.object({
+  userId: z.string(),
+  player: playerBadgeSchema.nullable(),
+  /** Ranked questions shown over the window, answered or not. */
+  served: z.int().nonnegative(),
+  correct: z.int().nonnegative(),
+  medianMs: z.int().nonnegative(),
+  /** Between the 10th and the 90th percentile of the answer times. */
+  spreadMs: z.int().nonnegative(),
+  reasons: z.array(z.enum(SUSPICION_REASONS)).min(1),
+  banned: z.boolean(),
+});
+export type AdminJoustSuspect = z.infer<typeof adminJoustSuspectSchema>;
+
+/** `GET /admin/joust-suspects`, 200: the fastest first. */
+export const adminJoustSuspectsResponseSchema = z.object({
+  windowDays: z.int().positive(),
+  suspects: z.array(adminJoustSuspectSchema),
+});
+export type AdminJoustSuspectsResponse = z.infer<typeof adminJoustSuspectsResponseSchema>;

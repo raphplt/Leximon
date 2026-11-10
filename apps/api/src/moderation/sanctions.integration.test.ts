@@ -1,5 +1,6 @@
 import {
   adminContestsResponseSchema,
+  adminJoustSuspectsResponseSchema,
   adminReportsResponseSchema,
   clanJoinResultSchema,
   clanMessageSchema,
@@ -333,5 +334,70 @@ describe("the back office", () => {
       .where(eq(moderationReports.messageId, messageId));
     expect((await send(team, "POST", `/admin/reports/${report?.id}/dismiss`)).status).toBe(200);
     expect((await send(team, "POST", `/admin/reports/${report?.id}/dismiss`)).status).toBe(409);
+  });
+});
+
+describe("jousters worth a look", () => {
+  const CARD = `${STARTER_COLLECTION}-common-1`;
+
+  /** Thirty ranked questions `who` answered, each after the time `msOf` gives its position. */
+  async function rankedAnswers(
+    who: Player,
+    msOf: (position: number) => number,
+    wrongAt: readonly number[] = [],
+  ) {
+    const other = await player();
+    const [joust] = await db
+      .insert(schema.jousts)
+      .values({
+        kind: "ranked",
+        challengerId: who.userId,
+        opponentId: other.userId,
+        launchKey: crypto.randomUUID(),
+        createdAt: new Date(),
+      })
+      .returning({ id: schema.jousts.id });
+    if (joust === undefined) throw new Error("No joust row");
+    const servedAt = Date.now() - HOUR;
+    await db.insert(schema.joustQuestions).values(
+      Array.from({ length: 30 }, (_, position) => ({
+        joustId: joust.id,
+        answererId: who.userId,
+        position,
+        cardId: CARD,
+        choices: [CARD],
+        servedAt: new Date(servedAt),
+        answeredAt: new Date(servedAt + msOf(position)),
+        chosenCardId: CARD,
+        correct: !wrongAt.includes(position),
+      })),
+    );
+  }
+
+  it("lists the scripted jouster with the reasons, and leaves the others out", async () => {
+    const team = await admin();
+    const script = await player();
+    const human = await player();
+    await rankedAnswers(script, () => 300);
+    await rankedAnswers(human, (position) => 2_500 + position * 250, [3, 9, 14, 20, 27]);
+
+    const response = await request(team, "/admin/joust-suspects");
+    expect(response.status).toBe(200);
+    const { suspects, windowDays } = adminJoustSuspectsResponseSchema.parse(await response.json());
+    expect(windowDays).toBe(7);
+    expect(suspects.find((suspect) => suspect.userId === script.userId)).toMatchObject({
+      player: { pseudo: script.pseudo },
+      served: 30,
+      correct: 30,
+      medianMs: 300,
+      spreadMs: 0,
+      reasons: ["fast", "regular"],
+      banned: false,
+    });
+    expect(suspects.some((suspect) => suspect.userId === human.userId)).toBe(false);
+  });
+
+  it("is closed to anyone but the team", async () => {
+    expect((await request(await player(), "/admin/joust-suspects")).status).toBe(403);
   });
 });
