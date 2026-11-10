@@ -214,7 +214,7 @@ export function launchRefusalText(reason: LaunchRefusal | "account_locked", leve
     case "not_open":
       return `Les joutes ouvrent au niveau ${level}, avec un compte et un pseudo.`;
     case "deck_too_small":
-      return "Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver.";
+      return "Il te faut au moins 5 cartes pour faire un deck. Ouvre des sachets pour en trouver.";
     case "deck_not_saved":
       return "Compose ton deck avant ta première joute : ce sont tes mots que l'autre devra trouver.";
     case "too_many_waiting":
@@ -257,7 +257,7 @@ export function deckSummary(cards: number, size: number, cost: number, budget: n
 }
 
 export const DECK_RULES =
-  "Ton deck compte de 5 à 10 cartes, prises parmi tes mots trouvés au moins une fois. Chaque rareté coûte des points, de 1 pour une carte Courante à 6 pour une Légendaire, et le deck en dépense 25 au plus. Chaque joute en tire 5 au hasard.";
+  "Ton deck compte de 5 à 10 cartes, prises dans ton album. Chaque rareté coûte des points, de 1 pour une carte Courante à 6 pour une Légendaire, et le deck en dépense 25 au plus. Chaque joute en tire 5 au hasard.";
 
 export const DECK_AUTO =
   "Le jeu a composé ce deck avec tes mots les plus rares. Change-le quand tu veux.";

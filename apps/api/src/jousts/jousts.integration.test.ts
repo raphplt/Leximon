@@ -684,16 +684,16 @@ describe("the routes", () => {
     expect(again?.at).toEqual(row?.at);
   });
 
-  it("offer for the deck only the words found at least once, and keep what they offer", async () => {
+  it("offer for the deck every card owned, a word never reviewed too, and keep what they offer", async () => {
     const a = await jouster({ deck: false });
-    const unfound = `${STARTER_COLLECTION}-rare-1`;
-    await setOwnedCards(db, a.userId, [{ cardId: unfound, quantity: 1 }]);
+    const unreviewed = `${STARTER_COLLECTION}-rare-1`;
+    await setOwnedCards(db, a.userId, [{ cardId: unreviewed, quantity: 1 }]);
     const deck = joustDeckResponseSchema.parse(
       await (await app.request("/jousts/deck", { headers: headers(a) }, env)).json(),
     );
     const offered = deck.candidates.map((candidate) => candidate.cardId);
-    expect(offered).toHaveLength(6);
-    expect(offered).not.toContain(unfound);
+    expect(offered).toHaveLength(7);
+    expect(offered).toContain(unreviewed);
     const saved = await app.request(
       "/jousts/deck",
       { method: "PUT", headers: headers(a), body: JSON.stringify({ cardIds: offered }) },

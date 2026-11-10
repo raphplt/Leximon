@@ -45,13 +45,12 @@ describe("the deck", () => {
     expect(deckProblem(rules, [...ids.slice(0, 9), "c0"], commons)).toBe("duplicate");
     expect(deckProblem(rules, [...ids.slice(0, 9), "unknown"], commons)).toBe("not_eligible");
     const blank = [...commons.slice(0, 9), candidate("b", "common", "blank")];
-    expect(
-      deckProblem(
-        rules,
-        blank.map((c) => c.cardId),
-        blank,
-      ),
-    ).toBe("not_eligible");
+    const blankIds = blank.map((c) => c.cardId);
+    // Any card owned enters a deck; a rule asking for a reviewed word would still refuse it.
+    expect(deckProblem(rules, blankIds, blank)).toBeNull();
+    expect(deckProblem({ ...rules, minimumMastery: "sketch" }, blankIds, blank)).toBe(
+      "not_eligible",
+    );
     const rich = [
       ...["l1", "l2", "l3", "l4"].map((id) => candidate(id, "legendary")),
       ...commons.slice(0, 6),
@@ -74,9 +73,10 @@ describe("the deck", () => {
       candidate("r2", "rare"),
       candidate("x", "legendary", "blank"),
     ];
+    // A word never reviewed stays out only under a rule that asks for a reviewed one.
+    expect(composeDeck({ ...rules, minimumMastery: "sketch" }, pool)).not.toContain("x");
     const deck = composeDeck(rules, pool);
     expect(deck).toHaveLength(10);
-    expect(deck).not.toContain("x");
     expect(deckProblem(rules, deck, pool)).toBeNull();
     const spent = deckCost(
       rules,

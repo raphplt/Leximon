@@ -242,7 +242,7 @@ export function DeckBuilder({
         </View>
       </View>
 
-      <LeafKicker>Tes mots trouvés</LeafKicker>
+      <LeafKicker>Tes cartes</LeafKicker>
       {groups.length > 1 && (
         <View style={styles.filters} accessibilityLabel="Rareté">
           {[null, ...groups.map((group) => group.rarity)].map((each) => (

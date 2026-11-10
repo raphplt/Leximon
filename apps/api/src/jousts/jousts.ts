@@ -327,9 +327,9 @@ async function gameOpponents(
       ${rankedRules}
       and (select count(distinct uc.card_id) from user_cards uc
         join cards c on c.id = uc.card_id and c.definition is not null
-        join user_mastery um on um.user_id = uc.user_id and um.card_id = uc.card_id
-          and um.level::text in (${deckLevels(rules)})
-        where uc.user_id = p.user_id and uc.quantity > 0) >= ${rules.drawn}
+        left join user_mastery um on um.user_id = uc.user_id and um.card_id = uc.card_id
+        where uc.user_id = p.user_id and uc.quantity > 0
+          and coalesce(um.level::text, 'blank') in (${deckLevels(rules)})) >= ${rules.drawn}
     order by ${ranked ? sql`(${lastLeague} <> ${league}),` : sql``}
       abs(coalesce(r.rating, ${rules.glicko.initial.rating}) - ${rating}), p.user_id
     limit ${NEAREST_OPPONENTS}`);

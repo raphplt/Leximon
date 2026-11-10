@@ -210,7 +210,7 @@ export function DeckBuilder({
         </div>
       </section>
 
-      <span className={desk.leafKicker}>Tes mots trouvés</span>
+      <span className={desk.leafKicker}>Tes cartes</span>
       <div className={styles.poolTools}>
         {groups.length > 1 && (
           <fieldset className={styles.filters} aria-label="Rareté">

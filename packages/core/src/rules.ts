@@ -546,6 +546,36 @@ export const JOUST_SCHEDULE: JoustSchedule = [
       periodDays: 7,
     },
   },
+  // Any card owned enters a deck: a player answers on the other's words, never on their own,
+  // and the card just drawn is the one they most want to play.
+  {
+    startsAt: Date.UTC(2026, 10, 9, 23),
+    openToAll: true,
+    deckSize: 10,
+    drawn: 5,
+    deckBudget: 25,
+    cost: { common: 1, uncommon: 2, rare: 3, precious: 4, epic: 5, legendary: 6 },
+    minimumMastery: "blank",
+    choices: 4,
+    answerMs: 15_000,
+    graceMs: 2_000,
+    runMs: 5 * MINUTE,
+    startMs: 24 * 60 * MINUTE,
+    replyMs: 24 * 60 * MINUTE,
+    maxWaiting: 5,
+    maxToPlay: 3,
+    seenWithinMs: 24 * 60 * MINUTE,
+    pairCooldownMs: 24 * 60 * MINUTE,
+    xpPlayed: 20,
+    xpWon: 20,
+    rewardedPerDay: 5,
+    firstWinBoosters: 1,
+    glicko: {
+      initial: { rating: 1500, deviation: 350, volatility: 0.06 },
+      tau: 0.5,
+      periodDays: 7,
+    },
+  },
 ];
 
 // Leagues of ranked jousts, a tournament each week in groups of 30 filled by automatons. The

@@ -272,10 +272,10 @@ async function readDrawContext(
         where ${players.userId} = ${userId}), false) as joust_access,
       (select count(*)::int from ${userCards}
         join ${cards} on ${cards.id} = ${userCards.cardId} and ${cards.definition} is not null
-        join ${userMastery} on ${userMastery.userId} = ${userCards.userId}
+        left join ${userMastery} on ${userMastery.userId} = ${userCards.userId}
           and ${userMastery.cardId} = ${userCards.cardId}
         where ${userCards.userId} = ${userId} and ${userCards.quantity} > 0
-          and ${userMastery.level}::text in (${deckLevels})) as deck_cards,
+          and coalesce(${userMastery.level}::text, 'blank') in (${deckLevels})) as deck_cards,
       (select count(distinct (played.at at time zone 'Europe/Paris')::date)::int from (
         select ${jousts.challengerDoneAt} as at from ${jousts}
         where ${jousts.challengerId} = ${userId} and ${jousts.challengerDoneAt} >= ${since}
