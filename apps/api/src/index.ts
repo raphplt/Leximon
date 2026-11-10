@@ -87,8 +87,15 @@ export default {
     const { db, close } = createDb(env.HYPERDRIVE.connectionString, { maxConnections: 1 });
     try {
       const now = Date.now();
-      const report = await runMaintenance(db, now);
-      console.info("Maintenance done", report);
+      // A failed step must not silence what follows: the summary is how the failure gets seen.
+      let maintenanceError: unknown = null;
+      try {
+        const report = await runMaintenance(db, now);
+        console.info("Maintenance done", report);
+      } catch (error) {
+        maintenanceError = error;
+        console.error("Maintenance failed", errorSummary(error));
+      }
       // Mends the patrons' roles a lost message or a lapsed payment left behind.
       if (discordConfigured(env)) {
         const adrift = await discordRolesAdrift(db);
@@ -106,6 +113,7 @@ export default {
         return "failed";
       });
       if (digest === "not_delivered") console.error("Daily digest refused by Discord");
+      if (maintenanceError !== null) throw maintenanceError;
     } finally {
       ctx.waitUntil(close());
     }

@@ -399,7 +399,7 @@ Le retour en arrière ne touche que le code. Les migrations sont additives, donc
 
 ## Après la mise en ligne
 
-**Mettre en prod : `pnpm deploy:prod`.** Le script ([infra/prod/deploy.sh](../infra/prod/deploy.sh)) refuse de partir hors de `main` ou avec des fichiers non commités, qui partiraient en ligne. Il lance ensuite `pnpm check`, les migrations, le catalogue si une version plus récente que celle en ligne existe, l'API, le web, puis contrôle que les deux répondent. La chaîne de la base vient de `DATABASE_URL`, sinon de `~/.config/leximon/home-db-url` (droits 600), et le script ouvre seul le tunnel SSH vers le conteneur. Les commandes ci-dessous restent pour un geste isolé.
+**Mettre en prod : `pnpm deploy:prod`.** Le script ([infra/prod/deploy.sh](../infra/prod/deploy.sh)) refuse de partir hors de `main` ou avec des fichiers non commités, qui partiraient en ligne. Il lance ensuite `pnpm check` et `pnpm test:integration` (Docker lancé, base `leximon_test`), les migrations, le catalogue si une version plus récente que celle en ligne existe, l'API, le web, puis contrôle que les deux répondent. La chaîne de la base vient de `DATABASE_URL`, sinon de `~/.config/leximon/home-db-url` (droits 600), et le script ouvre seul le tunnel SSH vers le conteneur. Les commandes ci-dessous restent pour un geste isolé.
 
 **Thèmes des cartes :** le serveur lit les thèmes dans `card_themes`, écrits à la publication du catalogue. Le déploiement ne republie que si une version plus récente existe : après l'ajout de cette écriture, lancer une fois `pnpm catalog:publish:prod`, sans quoi les révisions par thème restent vides jusqu'au prochain catalogue.
 

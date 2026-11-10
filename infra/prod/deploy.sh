@@ -24,6 +24,8 @@ echo "Commit déployé : $(git log --oneline -1)"
 
 step "Vérifications"
 pnpm check
+# Locks and idempotency are only proven against a real Postgres (the local test database).
+pnpm test:integration
 
 if [ -z "${DATABASE_URL:-}" ]; then
   url_file="$HOME/.config/leximon/home-db-url"
