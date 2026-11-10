@@ -118,6 +118,7 @@ export const createStripeBilling: BillingFactory = (env) => {
           client_reference_id: input.userId,
           line_items: [{ price: price.id, quantity: 1 }],
           payment_method_collection: "always",
+          allow_promotion_codes: true,
           locale: "fr",
           subscription_data: { metadata: { userId: input.userId } },
           success_url: input.successUrl,
