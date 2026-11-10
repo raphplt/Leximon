@@ -341,7 +341,7 @@ Une sauvegarde ratée ne supprime aucune ancienne : la rotation ne passe qu'apr�
 
 Si le serveur est perdu, le jeu repart sur Neon, en sommeil et gratuit, depuis le dernier fichier de R2. Le projet garde la base `neondb` d'avant la bascule, gelée en lecture seule : la nouvelle copie va dans une base vide.
 
-1. Cloudflare → **R2** → `leximon-backups` → `hourly/` → télécharger le fichier le plus récent.
+1. Cloudflare → **R2** → `leximon-backups` → `hourly/` → télécharger le fichier le plus récent, puis le déchiffrer avec la clé privée du gestionnaire de mots de passe (D-061), copiée dans un fichier le temps du geste : `age --decrypt --identity cle.txt --output leximon-AAAAMMJJ-HHMMSS.dump leximon-AAAAMMJJ-HHMMSS.dump.age`. Les fichiers d'avant le chiffrement finissent par `.dump` et se restaurent tels quels.
 2. Neon → **Databases** → **New database**, nommée `leximon`, puis récupérer sa chaîne directe.
 3. Restaurer : `docker run --rm -v "$PWD:/backups" postgres:18.6-alpine pg_restore --no-owner --no-privileges --exit-on-error -d "postgresql://…nouvelle chaîne…" /backups/leximon-AAAAMMJJ-HHMMSS.dump`.
 4. Vérifier les données, puis faire pointer l'ancienne configuration Hyperdrive dessus : `pnpm --filter @leximon/api exec wrangler hyperdrive update 43b07b65f2ab4ed797bc424b4e32e632 --connection-string="…"`.
@@ -358,6 +358,7 @@ La production tourne ici depuis le 2026-10-30 (D-053), jusqu'à ce que les méc�
 - Tunnel Cloudflare `leximon-db` (service `cloudflared` du conteneur), service Workers VPC `leximon-db` et configuration Hyperdrive `leximon-db-nas`, sans cache. Aucun port n'est ouvert et la base n'a aucun nom public.
 - Certificat Cloudflare Origin pour `db.leximon.fr`, valable jusqu'en 2041 et vérifié par Workers VPC. Sa clé n'a jamais quitté le conteneur. Le nom n'existant pas en public, le petit résolveur `leximon-dns` du conteneur (`infra/home-db/leximon-dns.service`) le donne à `cloudflared`.
 - Bucket R2 `leximon-backups`, en juridiction UE, rempli par `leximon-backup.timer` : `hourly/` gardé 3 jours, et `daily/` gardé 30 jours pour le dump de 3 h UTC.
+- Les dumps partent chiffrés par `age` (D-061) pour la clé publique de `/etc/leximon/backup-recipients`. La clé privée n'est pas sur le serveur : elle est dans le gestionnaire de mots de passe du propriétaire, avec une copie sur papier. Sans clé publique, la sauvegarde s'arrête et l'alerte Discord part au bout de 3 heures.
 - Toutes les 5 minutes, le Worker de production essaie la base et regarde l'âge du dernier dump. Il prévient sur Discord à la deuxième base muette ou au-delà de 3 heures sans dump, puis au retour à la normale. Son état vit dans le KV `leximon-watchdog`.
 - L'API de staging reste sur la branche Neon `charge` ([rnd/charge.md](rnd/charge.md)), pour qu'un test de charge ne touche jamais la production.
 - Mot de passe de la base : `~/.config/leximon/home-db-url` sur le PC du propriétaire, écrit pour le tunnel SSH de l'étape 7.
@@ -369,6 +370,18 @@ ssh pve pct exec 102 -- systemctl start leximon-backup.service        # une sauv
 ssh pve pct exec 102 -- journalctl -u leximon-backup.service -n 20    # « backup ok: … »
 ssh -t pve pct exec 102 -- /usr/local/bin/leximon-set-r2-keys         # changer les clés R2
 ```
+
+**Mettre le chiffrement en place, ou changer de clé.** Dans cet ordre, sinon les sauvegardes s'arrêtent :
+
+```bash
+age-keygen                                  # sur le PC (paquet `age`) : affiche la clé privée (AGE-SECRET-KEY-…) et la publique (age1…)
+ssh pve pct exec 102 -- apt-get install -y age
+ssh pve pct exec 102 -- sh -c 'echo "age1…" > /etc/leximon/backup-recipients && chmod 644 /etc/leximon/backup-recipients'
+ssh pve pct exec 102 -- sh -c 'cat > /usr/local/bin/leximon-backup' < infra/home-db/backup.sh
+ssh pve pct exec 102 -- systemctl start leximon-backup.service
+```
+
+La clé privée va dans le gestionnaire de mots de passe et sur papier, nulle part ailleurs. Après un changement de clé, garder l'ancienne 30 jours, le temps que ses dumps expirent. Une fois par mois, avec le test de restauration de l'étape 15, télécharger le dernier fichier de `hourly/`, le déchiffrer et lancer `pg_restore --list` dessus : une clé qu'on n'a jamais essayée n'est pas une sauvegarde.
 
 **Si le serveur tombe :** l'alerte arrive sur Discord en 10 minutes environ. Un redémarrage rend l'API en 2 minutes, sans rien à faire. Si le serveur ne revient pas, suivre « Restaurer pour de vrai » : on perd au plus une heure de parties.
 

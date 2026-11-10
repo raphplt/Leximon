@@ -564,3 +564,11 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** le Markdown d'une campagne accepte une image seule sur sa ligne, `![description](https://leximon.fr/….png)`, en PNG, JPG ou GIF, sans paramètre dans l'adresse. Le reste de D-036 ne change pas : rendu maison, rien d'autre que ce Markdown, aucun HTML brut.
 - **Pourquoi :** un e-mail de lancement se lit mieux avec ce qu'il annonce sous les yeux. Une adresse unique pour tous les destinataires ne dit à personne qui a ouvert quoi, donc la promesse « aucun pixel, aucun lien pisté » de `/confidentialite` tient.
 - **Conséquences :** les images d'une campagne vivent dans `apps/web/public/email/<date>/`, en cache immuable, et doivent être en ligne avant l'envoi du test. Ni WebP (Outlook) ni SVG (Gmail). La version texte les omet.
+
+## D-061 · Dumps de R2 : chiffrés par `age`, la clé privée hors du serveur
+
+- **Statut :** Acceptée (2026-11-10), choisie par le propriétaire. Complète D-053.
+- **Choix :** chaque dump est chiffré par `age` avant de partir sur R2, pour une clé publique posée sur le serveur. La clé privée vit dans le gestionnaire de mots de passe du propriétaire, avec une copie sur papier.
+- **Pourquoi :** le dump contient les adresses e-mail des joueurs. Avec une clé publique, ni le serveur ni les clés R2 volés ne lisent un dump, et il n'y a aucun secret de plus à garder sur le serveur.
+- **Conséquences :** `age` est installé sur le conteneur ; sans clé publique, la sauvegarde échoue plutôt que de partir en clair. Perdre la clé privée, c'est perdre les dumps de R2 : il reste le `pg_dump` nocturne, en clair sur le disque `tank`. La clé s'essaie une fois par mois. Procédure : [mise-en-ligne.md](mise-en-ligne.md), étape 15 bis.
+
