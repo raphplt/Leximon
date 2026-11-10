@@ -565,10 +565,9 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Pourquoi :** un e-mail de lancement se lit mieux avec ce qu'il annonce sous les yeux. Une adresse unique pour tous les destinataires ne dit à personne qui a ouvert quoi, donc la promesse « aucun pixel, aucun lien pisté » de `/confidentialite` tient.
 - **Conséquences :** les images d'une campagne vivent dans `apps/web/public/email/<date>/`, en cache immuable, et doivent être en ligne avant l'envoi du test. Ni WebP (Outlook) ni SVG (Gmail). La version texte les omet.
 
-## D-061 · Dumps de R2 : chiffrés par `age`, la clé privée hors du serveur
+## D-061 · Dumps de R2 : non chiffrés pour l'instant
 
 - **Statut :** Acceptée (2026-11-10), choisie par le propriétaire. Complète D-053.
-- **Choix :** chaque dump est chiffré par `age` avant de partir sur R2, pour une clé publique posée sur le serveur. La clé privée vit dans le gestionnaire de mots de passe du propriétaire, avec une copie sur papier.
-- **Pourquoi :** le dump contient les adresses e-mail des joueurs. Avec une clé publique, ni le serveur ni les clés R2 volés ne lisent un dump, et il n'y a aucun secret de plus à garder sur le serveur.
-- **Conséquences :** `age` est installé sur le conteneur ; sans clé publique, la sauvegarde échoue plutôt que de partir en clair. Perdre la clé privée, c'est perdre les dumps de R2 : il reste le `pg_dump` nocturne, en clair sur le disque `tank`. La clé s'essaie une fois par mois. Procédure : [mise-en-ligne.md](mise-en-ligne.md), étape 15 bis.
-
+- **Choix :** les dumps partent sur R2 tels quels. Le bucket est privé, en juridiction UE, et R2 chiffre au repos.
+- **Pourquoi :** le gain est modeste (qui prend le compte Cloudflare atteint déjà la base par le Worker) et une clé de plus à ne pas perdre met les sauvegardes en danger.
+- **Conséquences :** un jeton R2 volé ou un bucket rendu public par erreur donne les adresses e-mail des joueurs. À reprendre avec `age` et une clé privée hors du serveur si le nombre de joueurs le justifie : le script chiffrant est dans le commit 53eb675.
