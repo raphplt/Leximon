@@ -40,7 +40,6 @@
 
 /* --- The review, across the screen --- */
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .review {
   position: relative;
   display: grid;

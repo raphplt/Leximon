@@ -11,7 +11,6 @@
 }
 
 /* In a corner, the drawing fills its piece. */
-.tooledCorner .drawing,
 .fleuron .drawing,
 .bindingCorner .drawing,
 .giltCorner .drawing {
@@ -144,92 +143,16 @@
 }
 
 @layer pieces {
-  /* --- Gilt tooling on the leather: lines and beads pressed in gold, a little sunk --- */
+  /* --- Gilt tooling on the leather: one fine fillet, a little sunk --- */
 
   .tooling {
     position: absolute;
     inset: 11px;
+    border: 1px solid color-mix(in srgb, var(--lx-toy-gold-edge) 55%, transparent);
+    border-radius: 12px;
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent);
     pointer-events: none;
-    filter: drop-shadow(0 -1px 0 color-mix(in srgb, var(--lx-toy-outline) 55%, transparent))
-      drop-shadow(0 1px 0 color-mix(in srgb, var(--lx-toy-sheen) 35%, transparent));
   }
-
-  .tooled {
-    position: absolute;
-    --line: linear-gradient(0deg, var(--lx-toy-gold-bottom), var(--lx-toy-gold-bottom));
-    --bead: radial-gradient(circle, var(--lx-toy-gold-top) 1.1px, transparent 1.6px);
-  }
-}
-
-.tooled.top,
-.tooled.bottom {
-  left: 32px;
-  right: 32px;
-  height: 10px;
-}
-
-.tooled.top {
-  top: 0;
-}
-
-.tooled.bottom {
-  bottom: 0;
-}
-
-.tooled.left,
-.tooled.right {
-  top: 32px;
-  bottom: 32px;
-  width: 10px;
-}
-
-.tooled.left {
-  left: 0;
-}
-
-.tooled.right {
-  right: 0;
-}
-
-.tooled.top {
-  background:
-    var(--line) 0 0 / 100% 2px no-repeat,
-    var(--line) 0 9px / 100% 1px no-repeat,
-    var(--bead) 0 0 / 6px 11px repeat-x;
-}
-
-.tooled.bottom {
-  background:
-    var(--line) 0 8px / 100% 2px no-repeat,
-    var(--line) 0 0 / 100% 1px no-repeat,
-    var(--bead) 0 -1px / 6px 11px repeat-x;
-}
-
-.tooled.left {
-  background:
-    var(--line) 0 0 / 2px 100% no-repeat,
-    var(--line) 9px 0 / 1px 100% no-repeat,
-    var(--bead) 0 0 / 11px 6px repeat-y;
-}
-
-.tooled.right {
-  background:
-    var(--line) 8px 0 / 2px 100% no-repeat,
-    var(--line) 0 0 / 1px 100% no-repeat,
-    var(--bead) -1px 0 / 11px 6px repeat-y;
-}
-
-@layer pieces {
-  .tooledCorner {
-    position: absolute;
-    display: block;
-    width: 32px;
-    height: 32px;
-  }
-}
-
-.tooledCorner .drawing {
-  filter: none;
 }
 
 @layer pieces {
@@ -350,13 +273,7 @@
     stroke-linejoin: round;
   }
 
-  /* On a phone, the tooling and the fleurons shrink with the cards. */
-  @media (max-width: 759px) {
-    .tooling {
-      zoom: 0.7;
-    }
-  }
-
+  /* On a phone, the fleurons shrink with the cards. */
   @media (max-width: 600px) {
     .fleuron {
       width: 48px;

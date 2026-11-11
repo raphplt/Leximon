@@ -32,7 +32,7 @@ import { editions } from "@/player/state";
 import { alpha, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { useInk } from "@/ui/ink";
-import { BindingRule, Fleurons, ORNAMENT_PADDING, Tailpiece, TitleRule } from "@/ui/ornaments";
+import { LEAF_PADDING, Tailpiece, TitleRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { Leaf } from "@/ui/toy";
@@ -49,7 +49,6 @@ export function CabinetScreen({ cardId }: { readonly cardId: string }) {
     <Page {...(state.kind === "ready" ? { kicker: CABINET_TITLE } : {})} title={title}>
       {access === null ? null : !access.cabinet ? (
         <Panel paper style={styles.door}>
-          <Fleurons small />
           <Paragraph>{CABINET_LOCKED}</Paragraph>
           <Button label={CABINET_LOCKED_ACTION} secondary onPress={() => router.push("/mecene")} />
         </Panel>
@@ -75,7 +74,6 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
   return (
     <>
       <Leaf style={styles.section}>
-        <BindingRule />
         <SectionTitle>{CABINET_USAGE_TITLE}</SectionTitle>
         <Text style={styles.lead}>{usageLine(cabinet.usage)}</Text>
         {cabinet.usage !== null && <UsageChart usage={cabinet.usage} />}
@@ -84,7 +82,6 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
 
       {cabinet.articles.length > 0 && (
         <Leaf style={styles.section}>
-          <BindingRule />
           <SectionTitle>{CABINET_LITTRE_TITLE}</SectionTitle>
           {cabinet.articles.map((article, index) => (
             // Homographs keep the Littré's order, which never changes within a file.
@@ -96,7 +93,6 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
 
       {groups.length > 0 && (
         <Leaf style={styles.section}>
-          <BindingRule />
           <SectionTitle>{CABINET_FAMILY_TITLE}</SectionTitle>
           {groups.map((group) => (
             <View key={group.relation} style={styles.familyRow}>
@@ -260,8 +256,8 @@ function Citations({ citations }: { readonly citations: readonly CabinetCitation
 }
 
 const styles = StyleSheet.create({
-  section: { gap: space.s5, padding: ORNAMENT_PADDING.binding },
-  door: { padding: ORNAMENT_PADDING.fleurons },
+  section: { gap: space.s5, padding: LEAF_PADDING.panel },
+  door: { padding: LEAF_PADDING.fleurons },
   titled: { gap: space.s3 },
   heading: {
     fontFamily: fonts.display,

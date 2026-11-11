@@ -17,7 +17,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { editions } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { Icon } from "@/ui/icon";
-import { BindingRule, TitleRule } from "@/ui/ornaments";
+import { TitleRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { PinPicker } from "./pin-picker";
 import styles from "./profile.module.css";
@@ -63,7 +63,6 @@ export function PinnedCardsEditor({
       className={`${ui.panel} ${styles.panel} ${styles.framed}`}
       aria-labelledby="pinned-title"
     >
-      <BindingRule />
       <div className={styles.panelHead}>
         <div className={styles.titled}>
           <h2 id="pinned-title" className={`${ui.display} ${styles.panelTitle}`}>

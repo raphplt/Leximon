@@ -32,7 +32,7 @@ import { openCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { BindingRule, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
+import { LEAF_PADDING, TitleRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
@@ -239,7 +239,6 @@ function PinnedCards({
 
   return (
     <Panel paper style={styles.framed}>
-      <BindingRule />
       <View style={styles.panelHead}>
         <View style={styles.titled}>
           <Text style={styles.panelTitle}>Cartes épinglées</Text>
@@ -358,7 +357,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: ink.pageInk,
   },
-  framed: { padding: ORNAMENT_PADDING.binding },
+  framed: { padding: LEAF_PADDING.panel },
   titled: { gap: space.s3 },
   panelHead: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },

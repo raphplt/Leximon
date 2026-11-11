@@ -17,7 +17,7 @@ import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { LoadFailed } from "@/ui/load-failed";
-import { BindingRule, TitleRule } from "@/ui/ornaments";
+import { TitleRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { CardRow, catalogCard } from "./card-thumb";
 import styles from "./trades.module.css";
@@ -75,7 +75,6 @@ export function WishesPanel({
         className={`${styles.history} ${styles.wishPanel} ${ui.leaf}`}
         aria-labelledby="wish-seekers"
       >
-        <BindingRule />
         <div className={styles.titled}>
           <h2 id="wish-seekers" className={styles.wishTitle}>
             {WISH_SEEKERS_TITLE}
@@ -111,7 +110,6 @@ export function WishesPanel({
         className={`${styles.history} ${styles.wishPanel} ${ui.leaf}`}
         aria-labelledby="wishes"
       >
-        <BindingRule />
         <div className={styles.titled}>
           <h2 id="wishes" className={styles.wishTitle}>
             {WISHES_TITLE}

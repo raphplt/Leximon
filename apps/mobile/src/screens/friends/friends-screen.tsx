@@ -32,7 +32,7 @@ import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
-import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
+import { LEAF_PADDING } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { OnPaper, Panel } from "@/ui/panel";
 import { SearchField } from "@/ui/search-field";
@@ -63,7 +63,7 @@ export function FriendsScreen({
   if (view.guest) {
     return (
       <Page inTab={inTab} title={FRIENDS_TITLE}>
-        <OnPaper ornament="fleurons">
+        <OnPaper>
           <Paragraph>{FRIENDS_GUEST}</Paragraph>
           <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
         </OnPaper>
@@ -96,7 +96,6 @@ export function FriendsScreen({
     </>
   ) : (
     <Panel paper style={styles.tile}>
-      <GiltCorners />
       <Text style={styles.hint}>{FRIENDS_PSEUDO_FIRST}</Text>
       <Button label="Choisir mon pseudo" onPress={() => setPseudoOpen(true)} />
     </Panel>
@@ -308,7 +307,6 @@ function FriendLink({
   const places = betaPlacesLabel(placesLeft);
   return (
     <Panel paper style={styles.tile}>
-      <GiltCorners />
       <Text style={styles.kicker}>Ton lien d'ami</Text>
       <Text style={styles.line}>
         Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
@@ -341,7 +339,6 @@ function AddByPseudo() {
 
   return (
     <Panel paper style={styles.tile}>
-      <GiltCorners />
       <TextField
         label="Ajouter par pseudo"
         value={pseudo}
@@ -497,7 +494,7 @@ function FriendActions({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  tile: { padding: ORNAMENT_PADDING.corners },
+  tile: { padding: LEAF_PADDING.tile },
   count: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.label,

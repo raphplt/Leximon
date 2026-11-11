@@ -1,4 +1,3 @@
-/* Gilt corners on the tile: the padding keeps the text clear of them. */
 .panel {
   position: relative;
   display: flex;

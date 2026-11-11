@@ -528,7 +528,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-056 · Direction artistique : « La Bibliothèque », une seule allure
 
-- **Statut :** Acceptée (2026-11-02), choisie par le propriétaire sur la maquette A2 (`rnd/da-jeu/bibliotheque.html`) après avoir refusé les planches de Le Livre. Remplace D-055. Bascule faite le 2026-11-04 à la demande du propriétaire : l'ancienne allure et le réglage sont retirés du web et du mobile.
+- **Statut :** Acceptée (2026-11-02), choisie par le propriétaire sur la maquette A2 (`rnd/da-jeu/bibliotheque.html`) après avoir refusé les planches de Le Livre. Remplace D-055. Bascule faite le 2026-11-04 à la demande du propriétaire : l'ancienne allure et le réglage sont retirés du web et du mobile. Habillage allégé par D-062.
 - **Choix :** on joue dans une salle de lecture le soir : rayonnages, lampe, sous-main de cuir vert et or. Les commandes sont des objets épais et arrondis, en cuir et or vieilli, qui s'enfoncent et rebondissent ; la lecture se fait sur des feuilles de papier clair ; lumière et particules accompagnent les gains, avec retenue. Une seule allure, sans thème clair ni nuit. Polices des cartes (Fraunces, Newsreader, Bricolage Grotesque). Particules en canvas 2D sur le web et en `@shopify/react-native-skia` sur le mobile. Détail : [direction-artistique.md](cahiers-des-charges/direction-artistique.md).
 - **Pourquoi :** Le Livre faisait « site web », pas jeu. Le propriétaire vise Hearthstone et Supercell, en restant sobre et ancien dans le ton.
 - **Conséquences :** le socle de Le Livre reste (réglage de bascule, couleurs par rôle, `/planches`), sa forme part (palettes clair et nuit, coins carrés, polices, ornements anciens) ; Skia est une dépendance nouvelle, qui demande un build natif et une mesure de taille ; le lettrage cerné du mobile se fait sans contour natif de texte ; le rythme de l'ouverture (P45) ne change pas.
@@ -571,3 +571,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** les dumps partent sur R2 tels quels. Le bucket est privé, en juridiction UE, et R2 chiffre au repos.
 - **Pourquoi :** le gain est modeste (qui prend le compte Cloudflare atteint déjà la base par le Worker) et une clé de plus à ne pas perdre met les sauvegardes en danger.
 - **Conséquences :** un jeton R2 volé ou un bucket rendu public par erreur donne les adresses e-mail des joueurs. À reprendre avec `age` et une clé privée hors du serveur si le nombre de joueurs le justifie : le script chiffrant est dans le commit 53eb675.
+
+## D-062 · Habillage des encadrés : l'or réservé aux moments
+
+- **Statut :** Acceptée (2026-11-11), validée par le propriétaire sur l'écran Jouer avant d'être étendue. Précise D-056.
+- **Choix :** un encadré d'information n'a que son papier, son contour et son épaisseur, sans coins dorés ni filet de relieur. Le cadre fleuri marque un seul moment par écran (récompense, accueil, fin de série), les coins dorés restent au podium, et le sous-main ne garde qu'un filet doré fin au lieu du filet perlé. Web et mobile.
+- **Pourquoi :** un joueur de la bêta trouvait l'ensemble chargé, le graphisme prenant le pas sur l'information ; le propriétaire situe la charge dans les bordures ajoutées aux encadrés plutôt que dans les fonds.
+- **Conséquences :** `BindingRule` ne sert plus qu'à la planche des ornements du web et disparaît du mobile ; `Tooling` dessine le filet fin ; un nouvel écran ne pose pas d'ornement sur un encadré qui ne marque pas un moment.

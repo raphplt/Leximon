@@ -41,7 +41,6 @@
 
 /* --- A leaf of the column --- */
 
-/* Gilt corners on the leaf: the padding keeps the text clear of them. */
 .leaf {
   position: relative;
   display: flex;

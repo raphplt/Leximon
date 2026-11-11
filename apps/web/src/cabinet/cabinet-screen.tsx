@@ -26,7 +26,7 @@ import { useShell } from "@/shell/shell-context";
 import { ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
-import { BindingRule, Fleurons, Tailpiece, TitleRule } from "@/ui/ornaments";
+import { Tailpiece, TitleRule } from "@/ui/ornaments";
 import { ParticleStage } from "@/ui/stage";
 import { Leaf, Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -67,7 +67,6 @@ function BackLink() {
 function Locked() {
   return (
     <Leaf className={`${styles.section} ${styles.door}`}>
-      <Fleurons />
       <p className={styles.lead}>{CABINET_LOCKED}</p>
       <ButtonLink href="/mecene" variant="secondary">
         {CABINET_LOCKED_ACTION}
@@ -97,7 +96,6 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
       </header>
 
       <Leaf className={`${styles.section} ${styles.framed}`}>
-        <BindingRule />
         <SectionTitle>{CABINET_USAGE_TITLE}</SectionTitle>
         <p className={styles.lead}>{usageLine(cabinet.usage)}</p>
         {cabinet.usage !== null && <UsageChart usage={cabinet.usage} />}
@@ -106,7 +104,6 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
 
       {cabinet.articles.length > 0 && (
         <Leaf className={`${styles.section} ${styles.framed}`}>
-          <BindingRule />
           <SectionTitle>{CABINET_LITTRE_TITLE}</SectionTitle>
           {cabinet.articles.map((article, index) => (
             <Article
@@ -122,7 +119,6 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
 
       {groups.length > 0 && (
         <Leaf className={`${styles.section} ${styles.framed}`}>
-          <BindingRule />
           <SectionTitle>{CABINET_FAMILY_TITLE}</SectionTitle>
           <dl className={styles.family}>
             {groups.map((group) => (

@@ -35,7 +35,7 @@ import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { BindingRule, TitleRule, Tooling } from "@/ui/ornaments";
+import { TitleRule, Tooling } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -274,7 +274,6 @@ export function ClanPage({
         <div className={`${styles.column} ${styles.clanSide}`}>
           {goal !== null && bar !== null && (
             <section className={`${ui.panel} ${styles.card} ${styles.framed} ${styles.onClan}`}>
-              <BindingRule />
               <div className={styles.cardHead}>
                 <div>
                   <p className={ui.kicker}>Objectif de la semaine</p>
@@ -331,7 +330,6 @@ export function ClanPage({
           )}
 
           <section className={`${ui.panel} ${styles.card} ${styles.framed} ${styles.onClan}`}>
-            <BindingRule />
             <p className={ui.kicker}>Bibliothèque du clan</p>
             <p className={styles.libraryLine}>
               <em>{libraryHeadline(rows)}</em>

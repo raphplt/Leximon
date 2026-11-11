@@ -28,7 +28,7 @@ import { Crest } from "@/jousts/crest";
 import { useNarrow } from "@/lib/use-narrow";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
-import { BindingRule, TitleRule } from "@/ui/ornaments";
+import { TitleRule } from "@/ui/ornaments";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
@@ -173,7 +173,6 @@ export function PinnedCards({
       className={`${ui.panel} ${styles.panel} ${styles.framed}`}
       aria-labelledby="pinned-title"
     >
-      <BindingRule />
       <div className={styles.panelHead}>
         <div className={styles.titled}>
           <h2 id="pinned-title" className={`${ui.display} ${styles.panelTitle}`}>
@@ -233,7 +232,6 @@ export function JoustsPanel({ jousts }: { readonly jousts: ProfileJousts }) {
       className={`${ui.panel} ${styles.panel} ${styles.framed}`}
       aria-labelledby="jousts-title"
     >
-      <BindingRule />
       <div className={styles.joustsHead}>
         <Crest league={jousts.league} size={42} />
         <div>
@@ -264,7 +262,6 @@ export function StatsPanel({ stats }: { readonly stats: ProfileStats }) {
       className={`${ui.panel} ${styles.panel} ${styles.framed}`}
       aria-labelledby="stats-title"
     >
-      <BindingRule />
       <h2 id="stats-title" className={`${ui.display} ${styles.panelTitle}`}>
         En chiffres
       </h2>

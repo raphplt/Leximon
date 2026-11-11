@@ -187,7 +187,6 @@
 
 /* --- Word slipping away, below the button --- */
 
-/* Gilt corners on the leaf: the padding keeps the card and the text clear of them. */
 .slipping {
   position: relative;
   box-sizing: border-box;

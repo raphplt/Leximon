@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { CollectionSeal } from "@/components/collection-seal";
 import desk from "@/play/desk-columns.module.css";
-import { GiltCorners, TitleRule, Tooling } from "@/ui/ornaments";
+import { TitleRule, Tooling } from "@/ui/ornaments";
 import { Kicker, Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./landing-page.module.css";
@@ -78,7 +78,6 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
         </ul>
 
         <Link href="/enigme" className={`${ui.leaf} ${desk.leaf} ${styles.riddle}`}>
-          <GiltCorners />
           <span className={desk.leafKicker}>Énigme du jour · Accès libre</span>
           <span className={styles.riddleTitle}>Un mot mystère à débusquer chaque jour</span>
           <span

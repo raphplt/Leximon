@@ -13,7 +13,7 @@ import { api } from "@/api/client";
 import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { useInk } from "@/ui/ink";
-import { BindingRule, ORNAMENT_PADDING, Tailpiece } from "@/ui/ornaments";
+import { LEAF_PADDING, Tailpiece } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { PatronBadge } from "@/ui/patron-badge";
@@ -53,7 +53,6 @@ export function PatronsScreen() {
         <>
           {groups.map((group) => (
             <Leaf key={group.title} style={styles.group}>
-              <BindingRule />
               <View style={styles.heading}>
                 <Text style={styles.title} accessibilityRole="header">
                   {group.title}
@@ -85,7 +84,7 @@ export function PatronsScreen() {
 
 const styles = StyleSheet.create({
   intro: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.body, lineHeight: 22 },
-  group: { gap: space.s5, padding: ORNAMENT_PADDING.binding },
+  group: { gap: space.s5, padding: LEAF_PADDING.panel },
   heading: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   title: {
     fontFamily: fonts.ui.extrabold,

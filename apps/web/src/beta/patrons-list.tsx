@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PatronBadge } from "@/components/patron-badge";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
-import { BindingRule, Tailpiece } from "@/ui/ornaments";
+import { Tailpiece } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import styles from "./patrons-list.module.css";
 
@@ -48,7 +48,6 @@ export function PatronsList() {
     <>
       {groups.map((group) => (
         <section key={group.title} className={`${styles.group} ${styles.framed} ${ui.leaf}`}>
-          <BindingRule />
           <h2 className={styles.heading}>
             {group.title}
             <PatronBadge mark={group.founder ? "founder" : "patron"} compact />

@@ -25,7 +25,6 @@ import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
-import { GiltCorners } from "@/ui/ornaments";
 import { ParticleStage } from "@/ui/stage";
 import { Leaf, Lettering, Lettrine, Toy, ToyBody } from "@/ui/toy";
 import styles from "./find-screen.module.css";
@@ -198,7 +197,6 @@ function WordRow({
   return (
     <li>
       <Leaf className={styles.word}>
-        <GiltCorners />
         <div className={styles.wordHead}>
           <span className={styles.wordName}>{word.word}</span>
           {word.partOfSpeech !== null && <span className={styles.pos}>{word.partOfSpeech}</span>}

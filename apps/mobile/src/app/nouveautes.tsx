@@ -6,7 +6,7 @@ import { OnPaper } from "@/ui/panel";
 export default function NewsRoute() {
   return (
     <Page title="Nouveautés">
-      <OnPaper ornament="binding">
+      <OnPaper>
         <NewsEntries entries={CHANGELOG} />
       </OnPaper>
     </Page>

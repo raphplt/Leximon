@@ -25,7 +25,6 @@ import { useShared } from "@/player/resource";
 import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { LoadFailed } from "@/ui/load-failed";
-import { Fleurons } from "@/ui/ornaments";
 import { ParticleStage } from "@/ui/stage";
 import { Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -104,7 +103,6 @@ function JoustsHall() {
       <main className={`${styles.page} ${styles.hallPage}`}>
         <ChallengeHalves current="jousts" />
         <section className={`${ui.leaf} ${styles.closed}`}>
-          <Fleurons />
           <Lettering className={styles.homeTitle}>{JOUSTS_TITLE}</Lettering>
           <p className={styles.line}>{closed}</p>
           {jousts.access === "account_required" && (

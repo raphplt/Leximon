@@ -42,7 +42,7 @@ import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { KeyboardLift } from "@/ui/keyboard-lift";
-import { BindingRule, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
+import { LEAF_PADDING, TitleRule } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
@@ -270,7 +270,6 @@ export function ClanPage({
           )}
 
           <Panel paper style={styles.framed}>
-            <BindingRule />
             <Text style={styles.kicker}>Bibliothèque du clan</Text>
             <Text style={styles.libraryLine}>{libraryHeadline(rows)}</Text>
             {rows.map((row) => (
@@ -431,7 +430,6 @@ function GoalPanel({
   const hint = contributionHint(goal);
   return (
     <Panel paper style={styles.framed}>
-      <BindingRule />
       <View style={styles.goalHead}>
         <View style={styles.goalTitles}>
           <Text style={styles.kicker}>Objectif de la semaine</Text>
@@ -483,7 +481,7 @@ function GoalPanel({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  framed: { padding: ORNAMENT_PADDING.binding },
+  framed: { padding: LEAF_PADDING.panel },
   screen: { flex: 1 },
   failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
   hint: {

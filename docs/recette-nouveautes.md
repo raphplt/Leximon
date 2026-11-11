@@ -173,6 +173,17 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
   - Dis si « Exigeant » reste clair sans son explication.
 - **Retour :**
 
+## Finitions · 7. Habillage allégé
+
+### FIN-14 · Les encadrés sans dorures
+- **Faire :** sur le web puis sur le téléphone, passe par Jouer, Album, Défis et Joutes (accueil, ligue, guide), Échanges, Profil, Clan, Amis et Compte. Ouvre ensuite un sachet, finis une série de défis et ouvre un coffret de niveau.
+- **Attendu :**
+  - Les encadrés de lecture (missions, défi du jour, énigme, statistiques, offres, historique) n'ont plus de coins dorés ni de double filet doré.
+  - Le sous-main et les bandeaux de cuir n'ont qu'un filet doré fin, sans perles ni rosaces dans les coins.
+  - Le cadre fleuri reste seulement sur la fin d'une série, le résultat scellé d'une joute, le coffret à ouvrir, l'invitation, le lien d'ami et le haut de l'accueil du site. Les coins dorés restent sur le podium des amis.
+  - Aucun texte ne colle au bord de son encadré.
+- **Retour :**
+
 ---
 
 ## Joutes · 1. La porte

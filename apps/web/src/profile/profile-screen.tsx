@@ -21,7 +21,6 @@ import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
 import { NewTag } from "@/ui/new-tag";
-import { BindingRule } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -132,7 +131,6 @@ export function ProfileScreen() {
           />
         ) : (
           <section className={`${styles.panel} ${styles.framed} ${ui.leaf}`}>
-            <BindingRule />
             <p className={styles.muted}>
               Avec un compte, tu peux épingler tes plus belles cartes ici.{" "}
               <Link href="/compte">Créer mon compte</Link>

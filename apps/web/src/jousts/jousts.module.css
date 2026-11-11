@@ -44,7 +44,6 @@
   line-height: 1.45;
 }
 
-/* A closed door, framed in fleurons: the padding keeps the text clear of them. */
 .closed {
   position: relative;
   display: flex;
@@ -230,7 +229,6 @@
 
 /* --- 1. The guided first visit --- */
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .guide {
   position: relative;
   display: grid;
@@ -860,8 +858,7 @@
   padding: 18px 20px;
 }
 
-/* The sealed letter wears the fleurons and the reveal after it the bookbinder's rule, so that two
-   screens in a row do not both wear the richest frame. The padding keeps the text clear of them. */
+/* The sealed letter wears the fleurons; the reveal after it stays plain. */
 .illuminated {
   position: relative;
   padding: 40px 38px;

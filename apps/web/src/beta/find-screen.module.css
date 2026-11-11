@@ -96,7 +96,6 @@
   list-style: none;
 }
 
-/* Gilt corners on each word: the padding keeps the text clear of them. */
 .word {
   position: relative;
   display: grid;

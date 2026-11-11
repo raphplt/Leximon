@@ -245,7 +245,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "member" && (
-        <OnPaper ornament="binding">
+        <OnPaper>
           {notice !== null && <Text style={styles.notice}>{notice}</Text>}
           <Paragraph>
             Connecté avec <Text style={styles.email}>{step.email}</Text>
@@ -271,7 +271,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "email" && (
-        <OnPaper ornament="fleurons">
+        <OnPaper>
           <EmailForm
             intent={intent}
             onIntent={(next) => {
@@ -297,7 +297,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "googleAge" && (
-        <OnPaper ornament="binding">
+        <OnPaper>
           <GoogleAge
             busy={busy}
             newsOptIn={newsOptIn}
@@ -314,7 +314,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "googleLoss" && (
-        <OnPaper ornament="binding">
+        <OnPaper>
           <Paragraph>{step.step.text}</Paragraph>
           {step.step.warning !== null && <Text style={styles.warning}>{step.step.warning}</Text>}
           <Button label="Garder ma partie" disabled={busy} onPress={() => go({ kind: "email" })} />
@@ -328,7 +328,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "code" && (
-        <OnPaper ornament="binding">
+        <OnPaper>
           <CodeForm
             email={step.email}
             busy={busy}
@@ -340,7 +340,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "confirm" && (
-        <OnPaper ornament="binding">
+        <OnPaper>
           <Confirm
             preview={step.preview}
             intent={intent}

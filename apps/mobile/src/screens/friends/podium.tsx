@@ -13,7 +13,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
-import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
+import { GiltCorners, LEAF_PADDING } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 
@@ -100,7 +100,7 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  tile: { padding: ORNAMENT_PADDING.corners },
+  tile: { padding: LEAF_PADDING.tile },
   head: {
     flexDirection: "row",
     alignItems: "center",

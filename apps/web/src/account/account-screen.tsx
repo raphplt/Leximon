@@ -46,7 +46,6 @@ import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
 import { Icon } from "@/ui/icon";
-import { BindingRule, Fleurons } from "@/ui/ornaments";
 import { Switch } from "@/ui/switch";
 import { Segmented } from "@/ui/tabs";
 import ui from "@/ui/ui.module.css";
@@ -318,7 +317,6 @@ export function AccountScreen() {
       {step.kind === "member" && (
         <>
           <div className={`${styles.panel} ${styles.ruled} ${ui.leaf}`}>
-            <BindingRule />
             {notice !== null && <p className={styles.notice}>{notice}</p>}
             <p className={styles.text}>
               Connecté avec <strong className={styles.email}>{step.email}</strong>
@@ -521,7 +519,6 @@ function EmailForm({
   };
   return (
     <form className={`${styles.panel} ${styles.framed} ${ui.leaf}`} onSubmit={submit}>
-      <Fleurons />
       <Segmented
         label="Ce que tu veux faire"
         options={ACCOUNT_INTENTS}
@@ -635,7 +632,6 @@ function CodeForm({
   };
   return (
     <form className={`${styles.panel} ${styles.ruled} ${ui.leaf}`} onSubmit={submit}>
-      <BindingRule />
       <p className={styles.text}>
         Code envoyé à <strong className={styles.email}>{email}</strong>.
       </p>
@@ -764,7 +760,6 @@ function GoogleAge({
   const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
   return (
     <div className={`${styles.panel} ${styles.ruled} ${ui.leaf}`}>
-      <BindingRule />
       <p className={styles.text}>{GOOGLE_AGE_TEXT}</p>
       <AgeBracketField value={ageBracket} onChange={setAgeBracket} />
       <label className={styles.check}>
@@ -798,7 +793,6 @@ function GoogleLoss({
 }) {
   return (
     <div className={`${styles.panel} ${styles.ruled} ${ui.leaf}`}>
-      <BindingRule />
       <p className={styles.text}>{step.text}</p>
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
       <div className={styles.actions}>
@@ -844,7 +838,6 @@ function Confirm({
   if (step.closed) {
     return (
       <div className={`${styles.panel} ${styles.ruled} ${ui.leaf}`}>
-        <BindingRule />
         <h2 className={styles.subtitle}>{step.title}</h2>
         <p className={styles.text}>{step.text}</p>
         <button
@@ -860,7 +853,6 @@ function Confirm({
   }
   return (
     <div className={`${styles.panel} ${styles.ruled} ${ui.leaf}`}>
-      <BindingRule />
       <h2 className={styles.subtitle}>{step.title}</h2>
       <p className={styles.text}>{step.text}</p>
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}

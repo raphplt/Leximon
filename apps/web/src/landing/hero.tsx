@@ -17,7 +17,7 @@ import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { PaperAction } from "@/library/play-pieces";
-import { Fleurons, GiltCorners, Tooling } from "@/ui/ornaments";
+import { Fleurons, Tooling } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
 import { Kicker, Leaf, Lettering, ToyIcon } from "@/ui/toy";
 import { DiscordLink } from "./discord";
@@ -276,7 +276,6 @@ export function Hero({
       <dl className={styles.statRibbon} aria-label="En quelques chiffres">
         {heroStats(shelves).map((stat) => (
           <Leaf key={stat.label} className={styles.statPlaque}>
-            <GiltCorners />
             <dd className={styles.statFigure}>
               <Lettering>{stat.figure}</Lettering>
             </dd>

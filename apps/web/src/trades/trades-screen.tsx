@@ -33,7 +33,6 @@ import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { BindingRule, GiltCorners } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -402,7 +401,6 @@ function NoOffer({
       className={`${styles.empty} ${styles.framed} ${ui.leaf}`}
       aria-labelledby="trade-guide"
     >
-      <BindingRule />
       <p className={styles.emptyText}>
         <em>{text}</em>
       </p>
@@ -517,7 +515,6 @@ function ReceivedOffer({
 
   return (
     <article className={`${ui.panel} ${styles.offer}`} aria-label={`Offre de ${name}`}>
-      <GiltCorners />
       <header className={styles.offerHeader}>
         <Counterpart player={sides.counterpart} />
         <p className={styles.timeLeft}>

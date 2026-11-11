@@ -255,7 +255,6 @@ a.clan:hover {
   min-width: 0;
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .panel.framed,
 .layout > .panel.framed,
 .side > .panel.framed {

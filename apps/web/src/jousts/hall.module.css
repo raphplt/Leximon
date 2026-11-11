@@ -25,7 +25,6 @@
   color: var(--lx-color-paper-ink-muted);
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .leaf {
   position: relative;
   display: flex;

@@ -36,7 +36,7 @@ import { alpha, colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
-import { Fleurons, ORNAMENT_PADDING } from "@/ui/ornaments";
+import { Fleurons, LEAF_PADDING } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { ToyIcon } from "@/ui/toy";
 
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   recap: {
     alignItems: "center",
     gap: space.s10,
-    paddingVertical: ORNAMENT_PADDING.fleurons + space.s2,
+    paddingVertical: LEAF_PADDING.fleurons + space.s2,
     // Three climbed cards still fit in a row, clear of the fleurons' rule.
     paddingHorizontal: space.s10,
   },

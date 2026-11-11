@@ -229,7 +229,6 @@
   grid-column: span 2;
 }
 
-/* Framed in gilt: the padding keeps the text clear of the fleurons. */
 .perkCard {
   position: relative;
   display: flex;

@@ -80,7 +80,7 @@ export function WishesPanel({
 
   return (
     <>
-      <OnPaper ornament="binding">
+      <OnPaper>
         <View style={styles.section}>
           <View style={styles.titled}>
             <Text style={styles.title} accessibilityRole="header">
@@ -107,7 +107,7 @@ export function WishesPanel({
         </View>
       </OnPaper>
 
-      <OnPaper ornament="binding">
+      <OnPaper>
         <View style={styles.section}>
           <View style={styles.titled}>
             <Text style={styles.title} accessibilityRole="header">

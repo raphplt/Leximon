@@ -8,7 +8,6 @@ import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
-import { GiltCorners } from "@/ui/ornaments";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { refusalText } from "./chat";
@@ -86,7 +85,6 @@ export function FindClan({
         <ClanList join={join} />
 
         <aside className={`${ui.panel} ${styles.codePanel}`}>
-          <GiltCorners />
           <p className={ui.kicker}>Un code d'invitation</p>
           <p className={styles.small}>Il ouvre n'importe quel clan, même sur invitation.</p>
           <form className={styles.codeForm} onSubmit={enterByCode}>

@@ -29,7 +29,7 @@ import { catalogCard } from "@/screens/trades/card-row";
 import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
-import { ORNAMENT_PADDING } from "@/ui/ornaments";
+import { LEAF_PADDING } from "@/ui/ornaments";
 import { FuretMedallion } from "./furet-medallion";
 
 /** What the leaves hold is read on paper. */
@@ -397,9 +397,9 @@ export const pieces = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   leaf: { padding: space.s6, gap: space.s6 },
-  /** A leaf the player reads, inside its binding rule. */
-  framed: { padding: ORNAMENT_PADDING.binding },
+  /** A leaf the player reads. */
+  framed: { padding: LEAF_PADDING.panel },
   /** A leaf of a moment, a sealed result or a closed door, inside its fleurons. */
-  illuminated: { padding: ORNAMENT_PADDING.fleurons },
+  illuminated: { padding: LEAF_PADDING.fleurons },
   actions: { alignSelf: "stretch", alignItems: "center", gap: space.s4 },
 });

@@ -43,6 +43,12 @@ Ce que les joueurs de la bêta fermée ont dit du jeu, surtout sur Reddit (r/jeu
 | Dans les QCM, des mauvais choix de la même nature que le mot (verbe, nom…), sinon on trouve par élimination | Formulaire, 2026-10-31 | Fait le 2026-11-08 : même nature partout, joutes comprises (P32, P91) |
 | En révisant un thème (religion), des mauvais choix du même thème | Formulaire, 2026-10-31 | Fait le 2026-11-08 : le thème révisé d'abord, puis la collection (P81) |
 
+## Allure
+
+| Retour | Qui | Ce qu'on en fait |
+|---|---|---|
+| L'ensemble est un peu chargé : le motif en losanges et certains fonds attirent l'œil au détriment de l'information. La direction artistique est cohérente, les joutes et le classement excellents | Retour transmis au propriétaire, 2026-11-11 | Le propriétaire situe la charge dans les bordures des encadrés : coins dorés et filets retirés, or réservé aux moments (D-062, web et mobile). Les losanges et les fonds restent ; à revoir si le retour revient |
+
 ## Son
 
 | Retour | Qui | Ce qu'on en fait |

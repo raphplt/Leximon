@@ -30,7 +30,7 @@ import { ownedCards } from "@/player/collection";
 import { friends } from "@/player/friends";
 import { useShared } from "@/player/resource";
 import { LevelMedal } from "@/ui/level-bits";
-import { BindingRule, TitleRule } from "@/ui/ornaments";
+import { TitleRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
@@ -311,7 +311,6 @@ export function ProposeTrade({
         className={`${styles.panel} ${styles.framed} ${ui.leaf}`}
         aria-labelledby="propose-title"
       >
-        <BindingRule />
         <div className={styles.titled}>
           <h2 id="propose-title" className={styles.sectionTitle}>
             Proposer un échange
@@ -336,7 +335,6 @@ export function ProposeTrade({
       className={`${styles.panel} ${styles.framed} ${ui.leaf}`}
       aria-labelledby="propose-title"
     >
-      <BindingRule />
       <div className={styles.titled}>
         <h2 id="propose-title" className={styles.sectionTitle}>
           Proposer un échange

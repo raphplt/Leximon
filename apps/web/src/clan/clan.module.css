@@ -308,7 +308,6 @@
   padding: var(--lx-s10);
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .card.framed {
   position: relative;
   padding: 30px;
@@ -1005,7 +1004,7 @@
   overflow-wrap: anywhere;
 }
 
-/* A side tile: gilt corners, and room enough to keep the text clear of them. */
+/* A side tile. */
 .codePanel {
   position: relative;
   display: flex;

@@ -75,7 +75,7 @@ import { useShell } from "@/shell/shell-context";
 import { catalogCard } from "@/trades/card-thumb";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
-import { BindingRule, Tooling } from "@/ui/ornaments";
+import { Tooling } from "@/ui/ornaments";
 import { Lettering, Toy, ToyIcon } from "@/ui/toy";
 import { Crest } from "./crest";
 import { DeckBuilder } from "./deck-builder";
@@ -171,7 +171,6 @@ export function Hall({
 
       {glimpse !== null && (
         <section className={styles.leaf} style={rise(order++)}>
-          <BindingRule />
           <header className={styles.leafHead}>
             <span className={styles.kicker}>
               {MY_GROUP} · {LEAGUE_NAMES[jousts.standing.league]}
@@ -202,7 +201,6 @@ export function Hall({
 
       {howOpen && (
         <section className={styles.leaf} style={rise(order++)}>
-          <BindingRule />
           <header className={styles.leafHead}>
             <span className={styles.kicker}>{HOW_TITLE}</span>
             <button type="button" className={styles.more} onClick={() => setHowChoice(false)}>
@@ -448,7 +446,6 @@ export function Road({
   const here = stops.findIndex((stop) => stop.state === "here");
   return (
     <section className={styles.leaf} style={style}>
-      <BindingRule />
       <header className={styles.leafHead}>
         <span className={styles.kicker}>{LEAGUE_ROAD}</span>
         <button type="button" className={styles.more} disabled={league === null} onClick={onOpen}>
@@ -549,7 +546,6 @@ function JoustLists({
   const [allEnded, setAllEnded] = useState(false);
   return (
     <section className={styles.leaf} style={style}>
-      <BindingRule />
       {jousts.length === 0 && <p className={styles.leafText}>{NO_JOUSTS}</p>}
       {sections.toPlay.length > 0 && (
         <Group title="À toi de jouer">
@@ -774,7 +770,6 @@ function DeckLeaf({
   const middle = (deck.cardIds.length - 1) / 2;
   return (
     <section className={styles.leaf} style={style}>
-      <BindingRule />
       <header className={styles.leafHead}>
         <span className={styles.kicker}>Ton deck</span>
         <Toy matter="paper" className={styles.minor} onClick={onEdit}>

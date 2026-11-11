@@ -18,7 +18,6 @@ import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
-import { BindingRule } from "@/ui/ornaments";
 import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -71,7 +70,6 @@ export function FriendFeed({ now }: { readonly now: number }) {
 
   return (
     <section className={`${ui.panel} ${styles.card} ${styles.framed}`}>
-      <BindingRule />
       <p className={ui.kicker}>Le fil des amis</p>
       {events === null ? (
         failed ? (

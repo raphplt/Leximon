@@ -233,7 +233,7 @@
   list-style: none;
 }
 
-/* An offer is a tile of the list: gilt corners, and room enough to keep the text clear of them. */
+/* An offer is a tile of the list. */
 .offer {
   position: relative;
   padding: 20px 22px 22px;
@@ -333,7 +333,6 @@
   padding: var(--lx-s16) var(--lx-s16) var(--lx-s20);
 }
 
-/* Framed in the bookbinder's rule, which the padding above already clears. */
 .empty.framed {
   position: relative;
 }
@@ -554,7 +553,6 @@
   margin: 0;
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .panel.framed {
   position: relative;
   padding: 30px;

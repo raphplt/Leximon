@@ -1,4 +1,3 @@
-import { GiltCorners } from "@/ui/ornaments";
 import { Leaf, Lettering } from "@/ui/toy";
 import styles from "./landing-page.module.css";
 
@@ -28,7 +27,6 @@ export function Testimonials() {
         {TESTIMONIALS.map(({ quote, author }) => (
           <li key={author}>
             <Leaf className={styles.voice}>
-              <GiltCorners />
               <blockquote className={styles.voiceQuote}>« {quote} »</blockquote>
               <p className={styles.voiceAuthor}>{author}, de la bêta fermée</p>
             </Leaf>

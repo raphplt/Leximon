@@ -64,7 +64,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Matter } from "@/ui/matter";
-import { BindingRule, GiltCorners, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
+import { LEAF_PADDING, TitleRule } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import { ChallengeHalves } from "./challenge-halves";
@@ -199,7 +199,6 @@ function Review({
   const disabled = busy || action === null || action.disabled;
   return (
     <Panel paper style={styles.review}>
-      <BindingRule />
       <View style={styles.reviewHead}>
         <PaperKicker>Ta révision</PaperKicker>
         <Text style={styles.title} accessibilityRole="header">
@@ -404,7 +403,6 @@ function DailyLeaf({
   const label = `${DESK_TEXTS.daily}. ${view.title}. ${view.text}`;
   const content = (
     <Panel paper style={styles.leaf}>
-      <GiltCorners />
       <View style={styles.leafHead}>
         <LeafBadge>
           <Lettrine icon="challenge" matter="red" size={24} />
@@ -456,7 +454,6 @@ function RiddleLeaf({ riddle }: { readonly riddle: RiddleResponse }) {
       style={({ pressed }) => pressed && styles.pressed}
     >
       <Panel paper style={styles.leaf}>
-        <GiltCorners />
         <View style={styles.leafHead}>
           <LeafBadge>
             <Lettrine icon="ink" matter="gold" size={24} />
@@ -720,7 +717,6 @@ function MemoryLeaf({
   const streak = streakLine(summary.streak);
   return (
     <Panel paper style={styles.leaf}>
-      <GiltCorners />
       <PaperKicker>Ta mémoire</PaperKicker>
       <LevelBar levels={summary.levels} />
       <View style={styles.tierFigures}>
@@ -787,7 +783,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: ink.danger,
   },
-  review: { gap: space.s8, padding: ORNAMENT_PADDING.binding },
+  review: { gap: space.s8, padding: LEAF_PADDING.panel },
   head: { gap: space.s2 },
   reviewHead: { gap: space.s2, paddingRight: 52 },
   wells: { flexDirection: "row", gap: space.s5 },
@@ -839,7 +835,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.label,
     color: toyValues.outline,
   },
-  leaf: { gap: space.s6, padding: ORNAMENT_PADDING.corners },
+  leaf: { gap: space.s6, padding: LEAF_PADDING.tile },
   pressed: { transform: [{ translateY: 2 }] },
   leafHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   badge: { width: 46, height: 46, alignItems: "center", justifyContent: "center" },

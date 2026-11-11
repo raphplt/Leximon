@@ -10,7 +10,6 @@ import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { useNarrow } from "@/lib/use-narrow";
 import { ButtonLink } from "@/ui/button";
-import { BindingRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { CardFacts, CardOrigin, CardQuoteInFull } from "./card-facts";
 import type { CardLink } from "./catalog-server";
@@ -44,7 +43,6 @@ export function PublicCardView({
         <EngravingCredit card={card} />
       </div>
       <div className={`${styles.facts} ${ui.leaf}`}>
-        <BindingRule />
         <h1 className={`${ui.display} ${styles.word}`}>{card.word}</h1>
         <CardFacts card={card} />
         <p className={styles.chips}>

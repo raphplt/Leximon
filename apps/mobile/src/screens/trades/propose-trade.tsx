@@ -32,7 +32,7 @@ import { Button } from "@/ui/button";
 import { LevelMedal } from "@/ui/level";
 import { TitleRule } from "@/ui/ornaments";
 import { FormError } from "@/ui/page";
-import { ON_BOUND_PAPER_INSET, OnPaper } from "@/ui/panel";
+import { ON_PAPER_INSET, OnPaper } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { CardRow, cardLabel, catalogCard, openCard } from "./card-row";
@@ -61,7 +61,7 @@ const NOUN = PACK_NOUNS.sachet;
 const COLUMNS = 3;
 const GAP = 10;
 /** The screen's side padding, on each side. */
-const GUTTER = 16 + ON_BOUND_PAPER_INSET;
+const GUTTER = 16 + ON_PAPER_INSET;
 const REVIEW_THUMB = 92;
 const CONNECTION_ERROR = "Ça n'a pas marché. Vérifie ta connexion.";
 
@@ -301,7 +301,7 @@ export function ProposeTrade({
 
   if (blocked !== null) {
     return (
-      <OnPaper ornament="binding">
+      <OnPaper>
         <View style={styles.section}>
           <View style={styles.titled}>
             <Text style={styles.sectionTitle}>Proposer un échange</Text>
@@ -320,7 +320,7 @@ export function ProposeTrade({
   const partnerName = partner === null ? "" : playerName(partner.badge);
 
   return (
-    <OnPaper ornament="binding">
+    <OnPaper>
       <View style={styles.section}>
         <View style={styles.titled}>
           <Text style={styles.sectionTitle} accessibilityRole="header">

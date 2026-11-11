@@ -54,7 +54,7 @@ export function ReferrerScreen({ code }: { readonly code: string | null }) {
   const referrer = state.kind === "found" ? state.referrer : null;
   return (
     <Page title={referrer === null ? "Lien d'ami" : referrerTitle(referrer.player.pseudo)}>
-      <OnPaper ornament="fleurons">
+      <OnPaper fleurons>
         {state.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
         {state.kind === "failed" && (
           <>

@@ -5,7 +5,6 @@
   padding: var(--lx-s10) var(--lx-s12);
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .group.framed {
   position: relative;
   padding: 34px 36px;

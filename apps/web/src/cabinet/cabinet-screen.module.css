@@ -42,13 +42,12 @@
   padding: var(--lx-s16) var(--lx-s16) var(--lx-s24);
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .framed {
   position: relative;
   padding: 30px 30px 32px;
 }
 
-/* The door to the cabinet, illuminated: the fleurons need a wider margin. */
+/* The door to the cabinet. */
 .door {
   position: relative;
   padding: 40px 38px;

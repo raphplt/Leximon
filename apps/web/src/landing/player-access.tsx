@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/resource";
-import { Fleurons, Tooling } from "@/ui/ornaments";
+import { Tooling } from "@/ui/ornaments";
 import { Kicker, Lettering, toyClass } from "@/ui/toy";
 import type { Door } from "./door";
 import styles from "./landing-page.module.css";
@@ -71,7 +71,7 @@ export function DoorAction({ door }: { readonly door: Door }) {
   );
 }
 
-/** Grand Finale banner: sculpted diamond cabinet with Fleurons and the main call to action. */
+/** Grand Finale banner: sculpted diamond cabinet with the main call to action. */
 export function Closing({ door }: { readonly door: Door }) {
   const playing = useShared(hasGame) === true;
   return (
@@ -81,7 +81,6 @@ export function Closing({ door }: { readonly door: Door }) {
       aria-labelledby="closing-title"
     >
       <Tooling />
-      <Fleurons />
       <Kicker>Entrer dans la Bibliothèque</Kicker>
       <h2 id="closing-title" className={styles.closingTitle}>
         <Lettering>

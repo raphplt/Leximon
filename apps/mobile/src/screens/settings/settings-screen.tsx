@@ -31,7 +31,7 @@ import { colors, fontSizes, fonts, paperColors, space, switchColors } from "@/th
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { BindingRule, ORNAMENT_PADDING } from "@/ui/ornaments";
+import { LEAF_PADDING } from "@/ui/ornaments";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
@@ -277,10 +277,7 @@ function Group({ title, children }: { readonly title: string; readonly children:
   return (
     <View style={styles.group}>
       <Text style={styles.kicker}>{title}</Text>
-      <Leaf style={styles.leafRows}>
-        <BindingRule />
-        {children}
-      </Leaf>
+      <Leaf style={styles.leafRows}>{children}</Leaf>
     </View>
   );
 }
@@ -485,10 +482,10 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     color: colors.pageInkMuted,
   },
-  // The rows keep their own height: the leaf adds only what the binding rule needs.
+  // The rows keep their own height: the leaf adds only its padding around them.
   leafRows: {
-    paddingHorizontal: ORNAMENT_PADDING.binding,
-    paddingVertical: ORNAMENT_PADDING.binding - space.s5,
+    paddingHorizontal: LEAF_PADDING.panel,
+    paddingVertical: LEAF_PADDING.panel - space.s5,
   },
   row: {
     flexDirection: "row",

@@ -33,7 +33,6 @@ import { wallet } from "@/player/player";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
-import { BindingRule } from "@/ui/ornaments";
 import { ParticleStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
 import { ToyIcon } from "@/ui/toy";
@@ -98,7 +97,6 @@ function LeagueFlow() {
         />
         <Boards league={league} style={rise(order++)} />
         <section className={hall.leaf} style={rise(order++)}>
-          <BindingRule />
           <span className={hall.kicker}>Tes joutes classées</span>
           <p className={styles.line}>{weekRecord(league.stats)}</p>
           <p className={hall.leafText}>{ratingLine(league.stats)}</p>
@@ -169,7 +167,6 @@ function Claim({
   }
   return (
     <section className={hall.leaf} style={style}>
-      <BindingRule />
       <span className={hall.kicker}>{CLIMB_KICKER}</span>
       <div className={styles.claim}>
         <span className={styles.claimText}>
@@ -237,7 +234,6 @@ function Boards({
 
   return (
     <section className={hall.leaf} style={style}>
-      <BindingRule />
       <header className={styles.boardHead}>
         <span className={hall.kicker}>
           {shown.state === "ready" && shown.board.league !== null

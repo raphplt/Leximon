@@ -30,7 +30,7 @@
   margin-top: var(--lx-s9);
 }
 
-/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+/* A framed section: the padding keeps the text clear of the invitation's fleurons. */
 .section.framed {
   position: relative;
   padding: 34px 36px;

@@ -17,7 +17,7 @@ import { openCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Chip } from "@/ui/chip";
-import { BindingRule, ORNAMENT_PADDING } from "@/ui/ornaments";
+import { LEAF_PADDING } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
@@ -68,7 +68,6 @@ export function FriendFeed({ now }: { readonly now: number }) {
 
   return (
     <Panel paper style={styles.framed}>
-      <BindingRule />
       <Text style={styles.kicker}>LE FIL DES AMIS</Text>
       {events === null ? (
         <Text style={styles.small}>{failed ? "Le fil ne répond pas." : "Un instant…"}</Text>
@@ -130,7 +129,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  framed: { padding: ORNAMENT_PADDING.binding },
+  framed: { padding: LEAF_PADDING.panel },
   kicker: {
     fontFamily: fonts.displayBold,
     fontSize: fontSizes.body,

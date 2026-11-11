@@ -7,7 +7,6 @@ import {
   type OrnamentPaint,
   tailpiece,
   titleRule,
-  tooling,
 } from "@leximon/tokens";
 import styles from "./ornaments.module.css";
 
@@ -95,20 +94,9 @@ export function BindingRule() {
   );
 }
 
-/** Gilt tooling on the leather of the desk: two lines and a row of beads, turned at each corner. */
+/** A single fine gilt fillet pressed into the leather, a little in from its edge. */
 export function Tooling() {
-  return (
-    <span className={styles.tooling} aria-hidden="true">
-      {RUNS.map((run) => (
-        <span key={run} className={`${styles.tooled} ${styles[run]}`} />
-      ))}
-      {CORNERS.map((corner) => (
-        <span key={corner} className={`${styles.tooledCorner} ${styles[corner]}`}>
-          <Drawing ornament={tooling.corner} />
-        </span>
-      ))}
-    </span>
-  );
+  return <span className={styles.tooling} aria-hidden="true" />;
 }
 
 /** A gilt square in each corner of a small tile, without a rule between them. */

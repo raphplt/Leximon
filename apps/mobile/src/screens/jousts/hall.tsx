@@ -92,7 +92,7 @@ import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
 import { Matter } from "@/ui/matter";
-import { BindingRule, Tooling } from "@/ui/ornaments";
+import { Tooling } from "@/ui/ornaments";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { Leaf, Lettering, Toy, ToyIcon } from "@/ui/toy";
@@ -188,7 +188,6 @@ export function Hall({
       {glimpse !== null && (
         <Animated.View entering={rise(order++)}>
           <Leaf style={[pieces.leaf, pieces.framed]}>
-            <BindingRule />
             <View style={styles.leafHead}>
               <View style={styles.flex}>
                 <LeafKicker>{`${MY_GROUP} · ${LEAGUE_NAMES[jousts.standing.league]}`}</LeafKicker>
@@ -213,7 +212,6 @@ export function Hall({
       {howOpen && (
         <Animated.View entering={rise(order++)}>
           <Leaf style={[pieces.leaf, pieces.framed]}>
-            <BindingRule />
             <View style={styles.leafHead}>
               <View style={styles.flex}>
                 <LeafKicker>{HOW_TITLE}</LeafKicker>
@@ -528,7 +526,6 @@ export function Road({
   const here = stops.findIndex((stop) => stop.state === "here");
   return (
     <Leaf style={[pieces.leaf, pieces.framed]}>
-      <BindingRule />
       <View style={styles.leafHead}>
         <View style={styles.flex}>
           <LeafKicker>{LEAGUE_ROAD}</LeafKicker>
@@ -682,7 +679,6 @@ function JoustLists({
   const [allEnded, setAllEnded] = useState(false);
   return (
     <Leaf style={[pieces.leaf, pieces.framed]}>
-      <BindingRule />
       {jousts.length === 0 && <Text style={pieces.line}>{NO_JOUSTS}</Text>}
       {sections.toPlay.length > 0 && (
         <Group title="À toi de jouer">
@@ -987,7 +983,6 @@ function DeckLeaf({
       : Math.min(FAN_CARD * 0.8, (fanWidth - FAN_CARD - 8) / (deck.cardIds.length - 1));
   return (
     <Leaf style={[pieces.leaf, pieces.framed]}>
-      <BindingRule />
       <View style={styles.leafHead}>
         <View style={styles.flex}>
           <LeafKicker>Ton deck</LeafKicker>

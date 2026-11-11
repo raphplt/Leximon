@@ -5,7 +5,7 @@ import type { ToyMatterName } from "@leximon/tokens";
 import { useEffect, useState } from "react";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
-import { Fleurons, TitleRule, Tooling } from "@/ui/ornaments";
+import { TitleRule, Tooling } from "@/ui/ornaments";
 import { Kicker, Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
 import styles from "./landing-page.module.css";
 import type { Showcase, ShowcaseCard } from "./showcase-cards";
@@ -46,7 +46,6 @@ export function HowToPlay({
       <ol className={styles.how}>
         <li>
           <Leaf className={styles.howLeaf}>
-            <Fleurons />
             <div className={styles.howArt} data-tone="emeraude">
               <span className={styles.howStep} aria-hidden="true">
                 <Lettering>I</Lettering>
@@ -72,7 +71,6 @@ export function HowToPlay({
 
         <li>
           <Leaf className={styles.howLeaf}>
-            <Fleurons />
             <div className={styles.howArt} data-tone="nuit">
               <span className={styles.howStep} aria-hidden="true">
                 <Lettering>II</Lettering>
@@ -102,7 +100,6 @@ export function HowToPlay({
 
         <li>
           <Leaf className={styles.howLeaf}>
-            <Fleurons />
             <div className={styles.howArt} data-tone="velours">
               <span className={styles.howStep} aria-hidden="true">
                 <Lettering>III</Lettering>

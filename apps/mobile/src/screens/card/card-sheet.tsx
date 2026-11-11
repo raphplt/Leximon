@@ -197,7 +197,7 @@ function SheetBody({
         <EngravingCredit card={card} />
       </View>
 
-      <OnPaper ornament="binding">
+      <OnPaper>
         <RarityName rarity={card.rarity} color={ink.pageInk} />
         {card.pronunciation != null && <Text style={styles.ipa}>/{card.pronunciation.ipa}/</Text>}
         <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>

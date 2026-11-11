@@ -58,7 +58,7 @@ export function InvitationScreen({ code }: { readonly code: string | null }) {
   const closed = "status" in state && state.status !== "open";
   return (
     <Page title={closed ? CLOSED_TITLE : INVITED_TITLE}>
-      <OnPaper ornament="fleurons">
+      <OnPaper fleurons>
         {"kind" in state && state.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
         {"kind" in state && state.kind === "failed" && (
           <>
@@ -110,7 +110,7 @@ export function InvitationRequiredScreen() {
   return (
     <Page title={LANDING_TITLE} closable={false}>
       <DoorSachet />
-      <OnPaper ornament="fleurons">
+      <OnPaper fleurons>
         <Paragraph>{LANDING_PITCH}</Paragraph>
         <Paragraph>{INVITATION_REQUIRED_TEXT}</Paragraph>
         <TextField

@@ -23,7 +23,6 @@ import { ChallengeHalves } from "@/screens/challenges/challenge-halves";
 import { fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
-import { Fleurons } from "@/ui/ornaments";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Sheet } from "@/ui/sheet";
 import { ParticleStage } from "@/ui/stage";
@@ -109,7 +108,6 @@ function JoustsHall() {
       <Page title={JOUSTS_TITLE}>
         <ChallengeHalves current="jousts" />
         <Leaf style={[pieces.leaf, pieces.illuminated]}>
-          <Fleurons small />
           <Text style={pieces.line}>{closed}</Text>
           {jousts.access === "account_required" && (
             <Button label="Créer mon compte" onPress={() => router.push("/compte")} />

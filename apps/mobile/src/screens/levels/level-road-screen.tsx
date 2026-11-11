@@ -50,7 +50,7 @@ import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
-import { Fleurons, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
+import { Fleurons, LEAF_PADDING, TitleRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Leaf, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
@@ -1094,7 +1094,7 @@ const styles = StyleSheet.create({
   },
   detail: { padding: space.s7 },
   /** A coffret waiting is a reward: the leaf takes the fleurons, and the room they need. */
-  detailReward: { padding: ORNAMENT_PADDING.fleurons },
+  detailReward: { padding: LEAF_PADDING.fleurons },
   detailInside: { gap: space.s5 },
   detailTitle: {
     fontFamily: fonts.display,

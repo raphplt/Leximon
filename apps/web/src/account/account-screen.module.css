@@ -132,8 +132,6 @@
   padding: var(--lx-s8);
 }
 
-/* The way in wears the fleurons, the steps after it the bookbinder's rule; the padding keeps the
-   text clear of them. */
 .framed {
   position: relative;
   padding: 40px 38px;
