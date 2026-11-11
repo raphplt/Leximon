@@ -372,6 +372,8 @@ ssh -t pve pct exec 102 -- /usr/local/bin/leximon-set-r2-keys         # changer 
 
 **Si le serveur tombe :** l'alerte arrive sur Discord en 10 minutes environ. Un redémarrage rend l'API en 2 minutes, sans rien à faire. Si le serveur ne revient pas, suivre « Restaurer pour de vrai » : on perd au plus une heure de parties.
 
+Un serveur allumé mais muet, même sur le réseau local, avec le voyant de sa prise réseau fixe et sans activité, a sans doute la carte réseau bloquée. C'est arrivé le 2026-11-11 de 15 h 48 à 16 h 12 : la puce Intel I219-LM s'est figée (`e1000e … Detected Hardware Unit Hang` dans `journalctl -b -1 -k`) pendant que Proxmox et la base tournaient encore. Depuis, le découpage des paquets par la carte (TSO et GSO) est coupé par une ligne `post-up` sous `iface nic0` dans `/etc/network/interfaces` de `pve`. Si le blocage revient malgré ce réglage, remplacer la puce intégrée par une carte PCIe Intel i210 ou i226.
+
 **Limites connues :** un seul SSD d'entrée de gamme, pas d'onduleur, disque non chiffré (à faire), Workers VPC encore en bêta. À 5 itérations par seconde, le p95 de l'ouverture d'un sachet est à 188 ms, au-dessus du budget de 150 ms, sans cause établie.
 
 **Matériel à acheter plus tard**, par ordre d'utilité, pour le HP ProDesk 600 G6 Microtower (4 emplacements de mémoire dont 1 occupé, 2 emplacements M.2 2280 de stockage dont 1 occupé d'après HP) :
