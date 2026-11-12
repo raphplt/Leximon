@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@/api/client";
 import { useNow, useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
@@ -27,6 +28,7 @@ export function SanctionHost() {
   const all = useShared(sanctions);
   const now = useNow(60_000);
   const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [closed, setClosed] = useState(false);
   const unseen = all?.filter((sanction) => !sanction.seen) ?? [];
 
@@ -45,7 +47,15 @@ export function SanctionHost() {
       onRequestClose={close}
     >
       <KeyboardLift style={styles.backdrop}>
-        <View style={styles.centered}>
+        <View
+          style={[
+            styles.centered,
+            {
+              paddingTop: Math.max(space.s24, insets.top + space.s4),
+              paddingBottom: Math.max(space.s24, insets.bottom + space.s4),
+            },
+          ]}
+        >
           <Leaf style={[styles.leaf, { width: Math.min(400, window.width - 32) }]}>
             <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
               <Text style={styles.title} accessibilityRole="header">

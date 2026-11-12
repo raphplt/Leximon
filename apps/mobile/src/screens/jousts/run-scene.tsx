@@ -322,8 +322,8 @@ export function RunScene({
       : null;
   // As large as the screen allows with the board above and the four words below still in view.
   const cardWidth = Math.max(
-    160,
-    Math.min(250, Math.round(window.width * 0.6), Math.round((window.height - 600) / 1.4)),
+    window.height < 700 ? 120 : 150,
+    Math.min(250, Math.round(window.width * 0.6), Math.round((window.height - 540) / 1.4)),
   );
 
   return (
@@ -703,7 +703,7 @@ function Ring({
 }
 
 const styles = StyleSheet.create({
-  arena: { padding: DESK_PADDING, gap: space.s6, minHeight: 560 },
+  arena: { padding: DESK_PADDING, gap: space.s6, minHeight: 440 },
   kicker: {
     fontFamily: fonts.displayBold,
     textAlign: "center",

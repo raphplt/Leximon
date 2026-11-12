@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useMemo, useState } from "react";
 import { Modal, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePlayerView } from "@/player/use-player-view";
 import { alpha, colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -34,6 +35,7 @@ function writeSeen(date: string): void {
 export function NewsHost() {
   const level = usePlayerView().progress?.level ?? null;
   const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [seen, setSeen] = useState(readSeen);
   const news = useMemo(() => (level === null ? null : newsToShow(seen, level)), [seen, level]);
 
@@ -57,7 +59,15 @@ export function NewsHost() {
       statusBarTranslucent
       onRequestClose={close}
     >
-      <View style={styles.backdrop}>
+      <View
+        style={[
+          styles.backdrop,
+          {
+            paddingTop: Math.max(space.s24, insets.top + space.s4),
+            paddingBottom: Math.max(space.s24, insets.bottom + space.s4),
+          },
+        ]}
+      >
         <Leaf style={[styles.leaf, { width: Math.min(420, window.width - 32) }]}>
           <ScrollView contentContainerStyle={styles.inner}>
             <Text style={styles.title} accessibilityRole="header">

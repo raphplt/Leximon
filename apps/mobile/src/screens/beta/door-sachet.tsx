@@ -2,7 +2,7 @@ import type { CatalogCard, CatalogCollectionFile } from "@leximon/contract";
 import { lettering } from "@leximon/tokens";
 import { frequencyLine } from "@leximon/view-model";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Card } from "@/cards/card";
 import { loadCatalog } from "@/cards/catalog";
 import { play } from "@/feedback/feedback";
@@ -20,9 +20,13 @@ const CARD_WIDTH = 140;
  * collection comes out, drawn here for show. Nothing is asked of the server and nothing is kept.
  */
 export function DoorSachet() {
+  const window = useWindowDimensions();
   const [collection, setCollection] = useState<CatalogCollectionFile | null>(null);
   const [card, setCard] = useState<CatalogCard | null>(null);
   const [round, setRound] = useState(0);
+  const narrow = window.width < 375;
+  const sachetWidth = Math.min(SACHET_WIDTH, Math.round(window.width * 0.48));
+  const cardWidth = Math.min(CARD_WIDTH, Math.max(96, Math.floor((window.width - 112) * 0.45)));
 
   useEffect(() => {
     let live = true;
@@ -60,7 +64,7 @@ export function DoorSachet() {
             collection={collection}
             state="sealed"
             active
-            width={SACHET_WIDTH}
+            width={sachetWidth}
             refill={null}
             refillLabel={null}
             onTearStart={() => undefined}
@@ -72,8 +76,8 @@ export function DoorSachet() {
         </>
       )}
       {collection !== null && card !== null && (
-        <View style={styles.revealed}>
-          <Card card={card} collectionName={collection.name} width={CARD_WIDTH} />
+        <View style={[styles.revealed, narrow && styles.revealedNarrow]}>
+          <Card card={card} collectionName={collection.name} width={cardWidth} />
           <View style={styles.revealedText}>
             <RarityName rarity={card.rarity} color={lettering.fill} />
             <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>
@@ -99,7 +103,11 @@ const styles = StyleSheet.create({
     gap: space.s8,
     paddingHorizontal: space.s8,
   },
-  revealedText: { flex: 1, alignItems: "flex-start", gap: space.s6 },
+  revealedNarrow: {
+    gap: space.s5,
+    paddingHorizontal: space.s5,
+  },
+  revealedText: { flex: 1, minWidth: 0, alignItems: "flex-start", gap: space.s6 },
   frequency: {
     color: lettering.fill,
     fontFamily: fonts.ui.bold,

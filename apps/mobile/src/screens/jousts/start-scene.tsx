@@ -250,16 +250,23 @@ function Side({
         {duelistMeta(side)}
       </Text>
       <View style={styles.backs} importantForAccessibility="no-hide-descendants">
-        {side.rarities.map((_, index) => (
-          <Animated.View
-            // biome-ignore lint/suspicious/noArrayIndexKey: the run's cards, in order
-            key={index}
-            entering={FadeIn.delay(400 + index * 70)}
-            style={[styles.back, { transform: [{ rotate: `${(index - middle) * 6}deg` }] }]}
-          >
-            <CardBack width={30} tone={tone} />
-          </Animated.View>
-        ))}
+        {side.rarities.map((_, index) => {
+          const many = side.rarities.length > 5;
+          return (
+            <Animated.View
+              // biome-ignore lint/suspicious/noArrayIndexKey: the run's cards, in order
+              key={index}
+              entering={FadeIn.delay(400 + index * 70)}
+              style={[
+                styles.back,
+                many && styles.backTight,
+                { transform: [{ rotate: `${(index - middle) * 6}deg` }] },
+              ]}
+            >
+              <CardBack width={many ? 22 : 28} tone={tone} />
+            </Animated.View>
+          );
+        })}
       </View>
     </>
   );
@@ -310,8 +317,9 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.caption,
     color: alpha(lettering.fill, 0.85),
   },
-  backs: { flexDirection: "row", marginTop: space.s3 },
+  backs: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", marginTop: space.s3 },
   back: { marginHorizontal: -3 },
+  backTight: { marginHorizontal: -6 },
   vs: {
     width: 56,
     height: 56,

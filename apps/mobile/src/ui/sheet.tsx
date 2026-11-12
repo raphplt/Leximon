@@ -35,7 +35,10 @@ export function Sheet({
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView style={styles.backdrop} behavior="padding">
+      <KeyboardAvoidingView
+        style={[styles.backdrop, { paddingTop: insets.top + 12 }]}
+        behavior="padding"
+      >
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={onClose}
@@ -77,6 +80,9 @@ const ink = paperColors;
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: alpha(colors.scrim, 0.6) },
   sheet: {
+    width: "100%",
+    maxWidth: 560,
+    alignSelf: "center",
     maxHeight: "88%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

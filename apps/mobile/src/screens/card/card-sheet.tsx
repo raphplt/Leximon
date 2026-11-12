@@ -188,7 +188,7 @@ function SheetBody({
           <HoloCard
             card={card}
             collectionName={collection}
-            width={Math.min(CARD_MAX, window.width - (run === null ? 48 : 136))}
+            width={Math.max(140, Math.min(CARD_MAX, window.width - (run === null ? 70 : 162)))}
             edition={quantity > 0 ? editionOfCard(printed, card.id) : null}
           />
           {run !== null && <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} />}

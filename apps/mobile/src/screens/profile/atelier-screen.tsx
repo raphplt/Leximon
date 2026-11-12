@@ -80,8 +80,9 @@ export function AtelierScreen() {
       ? []
       : draftItems(atelierItems(tab, me, now), (item) => item.id === chosenIn(tab, look));
   const columns = tab === "banners" ? 2 : COLUMNS[tab];
-  // The page's side margins, then the gaps between the columns.
-  const itemWidth = Math.floor((window.width - 48 - GAP * (columns - 1)) / columns);
+  // The page's side margins (desk + inset + content padding), then the gaps between columns.
+  const contentWidth = Math.max(200, window.width - 70);
+  const itemWidth = Math.floor((contentWidth - GAP * (columns - 1)) / columns);
   const previewSize = tab === "titles" ? 72 : itemWidth - 28;
 
   const bar = changed ? (
@@ -139,7 +140,7 @@ export function AtelierScreen() {
           <Paragraph muted>Un instant…</Paragraph>
         )
       ) : tab === "banners" ? (
-        <BannerPanel me={me} now={now} look={look} onLook={setDraft} width={window.width - 48} />
+        <BannerPanel me={me} now={now} look={look} onLook={setDraft} width={contentWidth} />
       ) : (
         <View style={styles.grid}>
           {items.map((item) => {

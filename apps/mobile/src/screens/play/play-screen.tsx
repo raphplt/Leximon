@@ -571,7 +571,9 @@ function PlayFlow() {
   // Still loading, or no sachet chosen yet: the desk comes whole once it is.
   return (
     <View style={styles.screen} onLayout={measureScreen}>
-      <Text style={styles.waiting}>On fouille les rayons…</Text>
+      <View style={styles.waitingBox}>
+        <Text style={styles.waiting}>On fouille les rayons…</Text>
+      </View>
     </View>
   );
 }
@@ -591,10 +593,14 @@ function Notice({ text, children }: { readonly text: string; readonly children?:
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  waiting: {
+  waitingBox: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: space.s8,
+  },
+  waiting: {
     textAlign: "center",
-    textAlignVertical: "center",
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
     color: colors.pageInkMuted,
@@ -639,5 +645,10 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
     color: colors.pageInkMuted,
   },
-  revealActions: { flexDirection: "row", justifyContent: "center", gap: space.s6 },
+  revealActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: space.s6,
+  },
 });
