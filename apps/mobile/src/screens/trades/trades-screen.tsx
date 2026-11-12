@@ -46,6 +46,7 @@ import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/th
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LEAF_PADDING } from "@/ui/ornaments";
+import { PAGE_MAX_WIDTH } from "@/ui/page";
 import { OnPaper, Panel } from "@/ui/panel";
 import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
@@ -634,6 +635,9 @@ const styles = StyleSheet.create({
   offer: { padding: LEAF_PADDING.tile },
   screen: { flex: 1 },
   page: {
+    width: "100%",
+    maxWidth: PAGE_MAX_WIDTH,
+    alignSelf: "center",
     gap: space.s8,
     paddingHorizontal: space.s8,
     paddingTop: space.s4,

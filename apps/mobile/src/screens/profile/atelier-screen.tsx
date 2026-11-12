@@ -36,7 +36,7 @@ import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/th
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { Page, Paragraph } from "@/ui/page";
+import { PAGE_MAX_WIDTH, Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
 import { Sheet } from "@/ui/sheet";
 import { toyFace } from "@/ui/toy";
@@ -80,8 +80,8 @@ export function AtelierScreen() {
       ? []
       : draftItems(atelierItems(tab, me, now), (item) => item.id === chosenIn(tab, look));
   const columns = tab === "banners" ? 2 : COLUMNS[tab];
-  // The page's side margins (desk + inset + content padding), then the gaps between columns.
-  const contentWidth = Math.max(200, window.width - 70);
+  // The page's side margins, capped to the tablet page width, then the gaps between columns.
+  const contentWidth = Math.max(200, Math.min(PAGE_MAX_WIDTH, window.width) - 48);
   const itemWidth = Math.floor((contentWidth - GAP * (columns - 1)) / columns);
   const previewSize = tab === "titles" ? 72 : itemWidth - 28;
 

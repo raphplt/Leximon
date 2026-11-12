@@ -18,7 +18,7 @@ import {
 import { router } from "expo-router";
 import type { BottomTabBarProps } from "expo-router/js-tabs";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EcusSheet } from "@/ecus/ecus-sheet";
 import {
@@ -48,19 +48,22 @@ const SIDE_TABS = PHONE_TAB_ORDER.filter((id): id is Exclude<TabId, "jouer"> => 
 /** The band at the top of every tab: portrait, level, stock, mail. */
 export function LibraryTopBand() {
   const insets = useSafeAreaInsets();
+  const window = useWindowDimensions();
   const view = usePlayerView();
   const now = useNow(15_000);
   const [stockOpen, setStockOpen] = useState(false);
   const [ecusOpen, setEcusOpen] = useState(false);
   const { progress } = view;
   const stock = view.wallet === null ? null : stockView(view.wallet, now);
+  const narrow = window.width < 385;
+  const tight = window.width < 365;
   return (
-    <View style={[styles.band, { paddingTop: insets.top + 8 }]}>
-      <PortraitButton label="Ton profil" onPress={() => router.push("/profil")}>
-        <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={40} />
+    <View style={[styles.band, narrow && styles.bandNarrow, { paddingTop: insets.top + 8 }]}>
+      <PortraitButton label="Ton profil" compact={tight} onPress={() => router.push("/profil")}>
+        <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={tight ? 34 : 40} />
       </PortraitButton>
       <Pressable
-        style={styles.gauge}
+        style={[styles.gauge, { minWidth: tight ? 42 : 46 }]}
         onPress={() => router.push("/niveaux")}
         accessibilityRole="button"
         accessibilityLabel={
@@ -73,6 +76,7 @@ export function LibraryTopBand() {
             level={progress.level}
             progress={levelRatio(progress)}
             label={xpProgressLabel(progress)}
+            compact={tight}
           />
         )}
       </Pressable>
@@ -80,6 +84,7 @@ export function LibraryTopBand() {
         <StockButton
           label={stock.description}
           figure={`${stock.stored}/${stock.capacity}`}
+          compact={tight}
           onPress={() => setStockOpen(true)}
         />
       )}
@@ -87,12 +92,14 @@ export function LibraryTopBand() {
         <EcusButton
           label={`${ECUS_TITLE}, ${ecusLabel(view.wallet.ecus)}`}
           figure={String(view.wallet.ecus)}
+          compact={tight}
           onPress={() => setEcusOpen(true)}
         />
       )}
       <MailButton
         label={mailLabel(view.mail)}
         count={view.mail}
+        compact={tight}
         onPress={() => router.push("/courrier")}
       />
       {view.wallet !== null && (
@@ -161,5 +168,6 @@ export function LibraryTabBar({ state, emitter, navigateToTab }: BottomTabBarPro
 
 const styles = StyleSheet.create({
   band: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12 },
-  gauge: { flex: 1, minWidth: 0 },
+  bandNarrow: { gap: 4, paddingHorizontal: 8 },
+  gauge: { flex: 1, minWidth: 46 },
 });

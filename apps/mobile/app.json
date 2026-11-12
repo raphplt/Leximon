@@ -10,6 +10,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "fr.leximon.app",
+      "appStoreUrl": "https://apps.apple.com/app/id6827744020",
       "config": {
         "usesNonExemptEncryption": false
       }

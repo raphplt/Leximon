@@ -27,7 +27,6 @@ import {
 } from "@leximon/view-model";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
-  KeyboardAvoidingView,
   Pressable,
   ScrollView,
   type ScrollViewInstance,
@@ -60,6 +59,7 @@ import { Button } from "@/ui/button";
 import { DefinitionText } from "@/ui/definition-text";
 import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
+import { KeyboardLift } from "@/ui/keyboard-lift";
 import { TOOLING_ROOM } from "@/ui/ornaments";
 import { useOptionalStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
@@ -491,13 +491,13 @@ export function QuestionView({
   );
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior="padding">
+    <KeyboardLift style={styles.screen}>
       <View style={library.room}>
         <Desk style={StyleSheet.absoluteFill} />
         {/* The questions slide in within the gilt tooling, never over it. */}
         <View style={library.inside}>{page}</View>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardLift>
   );
 }
 

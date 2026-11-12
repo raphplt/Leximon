@@ -223,10 +223,11 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   }, [resetKey]);
 
   const lettered = (view?.letters.length ?? 0) > 0;
+  const columns = window.width >= 900 ? 5 : window.width >= 600 ? 4 : COLUMNS;
   // The bar of letters keeps its margin even when the order hides it: changing the order
   // does not resize every card.
   const cardWidth = Math.floor(
-    (window.width - LIBRARY_INSET * 2 - GUTTER - LETTER_ROOM - GAP * (COLUMNS - 1)) / COLUMNS,
+    (window.width - LIBRARY_INSET * 2 - GUTTER - LETTER_ROOM - GAP * (columns - 1)) / columns,
   );
   const tileHeight = Math.ceil(cardWidth * 1.4) + TILE_FOOT;
   // Every row is as tall: the list knows where the rows it has not drawn yet lie, and a letter
@@ -243,7 +244,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const jumpTo = (index: number) =>
     list.current?.scrollToOffset({
       // A little of the row above shows, and the badges over the cards with it.
-      offset: rowsTop.current - GRID_TOP + Math.floor(index / COLUMNS) * rowHeight,
+      offset: rowsTop.current - GRID_TOP + Math.floor(index / columns) * rowHeight,
       animated: false,
     });
   const practiceCards =
@@ -469,10 +470,11 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
       {header}
       <View style={styles.shelf}>
         <FlatList
+          key={columns}
           ref={list}
           data={view.empty === null ? view.items : []}
           keyExtractor={itemKey}
-          numColumns={COLUMNS}
+          numColumns={columns}
           getItemLayout={rowLayout}
           ListHeaderComponent={head}
           renderItem={({ item }) => (

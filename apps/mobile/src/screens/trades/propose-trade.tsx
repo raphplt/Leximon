@@ -31,7 +31,7 @@ import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { LevelMedal } from "@/ui/level";
 import { TitleRule } from "@/ui/ornaments";
-import { FormError } from "@/ui/page";
+import { FormError, PAGE_MAX_WIDTH } from "@/ui/page";
 import { ON_PAPER_INSET, OnPaper } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
@@ -592,7 +592,8 @@ function CardPicker({
   readonly onToggle: (cardId: string) => void;
 }) {
   const window = useWindowDimensions();
-  const width = Math.floor((window.width - 2 * GUTTER - (COLUMNS - 1) * GAP) / COLUMNS);
+  const contentWidth = Math.min(window.width, PAGE_MAX_WIDTH);
+  const width = Math.floor((contentWidth - 2 * GUTTER - (COLUMNS - 1) * GAP) / COLUMNS);
   // With one card per side, a tap swaps the card: nothing is dimmed.
   const full = max > 1 && selection.length >= max;
   return (

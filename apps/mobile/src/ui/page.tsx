@@ -8,7 +8,11 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
 import { useInk } from "./ink";
+import { KeyboardLift } from "./keyboard-lift";
 import { Lettering } from "./toy";
+
+/** Maximum width of page content on tablets so lines and grids stay balanced. */
+export const PAGE_MAX_WIDTH = 600;
 
 /** The height left free under the content for a footer of two lines and its buttons. */
 const FOOTER_ROOM = 170;
@@ -86,8 +90,8 @@ export function Page({
       {inside}
     </ScrollView>
   );
-  return (
-    <KeyboardAvoidingView style={[styles.page, inTab && styles.inRoom]} behavior="padding">
+  const frame = (
+    <>
       {onDesk ? (
         <Room>
           <View
@@ -106,10 +110,23 @@ export function Page({
         scroll
       )}
       {footer !== undefined && (
-        <View style={[styles.footer, { bottom: insets.bottom + space.s6 }]}>{footer}</View>
+        <View
+          style={[styles.footer, { bottom: insets.bottom + space.s6 }]}
+          pointerEvents="box-none"
+        >
+          <View style={styles.footerInner}>{footer}</View>
+        </View>
       )}
       {/* The content scrolls under the status bar: a band of background keeps the clock legible. */}
       {!inTab && !onDesk && <View style={[styles.statusBand, { height: insets.top }]} />}
+    </>
+  );
+  if (inTab) {
+    return <KeyboardLift style={[styles.page, styles.inRoom]}>{frame}</KeyboardLift>;
+  }
+  return (
+    <KeyboardAvoidingView style={styles.page} behavior="padding">
+      {frame}
     </KeyboardAvoidingView>
   );
 }
@@ -156,8 +173,14 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: colors.page,
   },
-  content: { paddingHorizontal: space.s12 },
-  footer: { position: "absolute", left: space.s8, right: space.s8 },
+  content: {
+    width: "100%",
+    maxWidth: PAGE_MAX_WIDTH,
+    alignSelf: "center",
+    paddingHorizontal: space.s12,
+  },
+  footer: { position: "absolute", left: space.s8, right: space.s8, alignItems: "center" },
+  footerInner: { width: "100%", maxWidth: PAGE_MAX_WIDTH - space.s8 * 2 },
   desk: { flex: 1, marginHorizontal: 6 },
   deskInside: {
     flex: 1,

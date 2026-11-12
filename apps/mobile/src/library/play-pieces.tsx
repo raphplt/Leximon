@@ -142,17 +142,19 @@ export function CountBadge({
 /** The player's portrait, which opens their profile. */
 export function PortraitButton({
   label,
+  compact = false,
   children,
   onPress,
 }: {
   readonly label: string;
+  readonly compact?: boolean;
   readonly children: ReactNode;
   readonly onPress?: () => void;
 }) {
   return (
     <Toy
       matter="paper"
-      style={styles.portrait}
+      style={[styles.portrait, compact && styles.portraitCompact]}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -170,11 +172,13 @@ export function LevelGauge({
   level,
   progress,
   label,
+  compact = false,
 }: {
   readonly level: number;
   /** From 0 to 1. */
   readonly progress: number;
   readonly label: string;
+  readonly compact?: boolean;
 }) {
   const filled = Math.min(1, Math.max(0, progress));
   const [roomy, setRoomy] = useState(true);
@@ -183,8 +187,8 @@ export function LevelGauge({
       style={styles.level}
       onLayout={(event) => setRoomy(event.nativeEvent.layout.width >= GAUGE_MIN_WIDTH)}
     >
-      <View style={styles.medal}>
-        <LevelMedal level={level} size={46} />
+      <View style={[styles.medal, compact && styles.medalCompact]}>
+        <LevelMedal level={level} size={compact ? 42 : 46} />
       </View>
       {roomy && (
         <View style={styles.xp}>
@@ -204,23 +208,25 @@ export function LevelGauge({
 export function StockButton({
   label,
   figure,
+  compact = false,
   onPress,
 }: {
   readonly label: string;
   readonly figure: string;
+  readonly compact?: boolean;
   readonly onPress?: () => void;
 }) {
   return (
     <Toy
       matter="paper"
-      style={styles.stockToy}
-      bodyStyle={styles.stock}
+      style={[styles.stockToy, compact && styles.stockToyCompact]}
+      bodyStyle={[styles.stock, compact && styles.stockCompact]}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
     >
-      <ToyIcon name="sachet" size={30} inks={stockToyInks} />
-      <Lettering size={17}>{figure}</Lettering>
+      <ToyIcon name="sachet" size={compact ? 26 : 30} inks={stockToyInks} />
+      <Lettering size={compact ? 15 : 17}>{figure}</Lettering>
     </Toy>
   );
 }
@@ -229,23 +235,25 @@ export function StockButton({
 export function EcusButton({
   label,
   figure,
+  compact = false,
   onPress,
 }: {
   readonly label: string;
   readonly figure: string;
+  readonly compact?: boolean;
   readonly onPress?: () => void;
 }) {
   return (
     <Toy
       matter="paper"
-      style={styles.stockToy}
-      bodyStyle={styles.stock}
+      style={[styles.stockToy, compact && styles.stockToyCompact]}
+      bodyStyle={[styles.stock, compact && styles.stockCompact]}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
     >
-      <ToyIcon name="ecu" size={30} />
-      <Lettering size={17}>{figure}</Lettering>
+      <ToyIcon name="ecu" size={compact ? 26 : 30} />
+      <Lettering size={compact ? 15 : 17}>{figure}</Lettering>
     </Toy>
   );
 }
@@ -254,22 +262,24 @@ export function EcusButton({
 export function MailButton({
   label,
   count,
+  compact = false,
   onPress,
 }: {
   readonly label: string;
   readonly count: number;
+  readonly compact?: boolean;
   readonly onPress?: () => void;
 }) {
   return (
     <View>
       <Toy
         matter="red"
-        style={styles.mail}
+        style={[styles.mail, compact && styles.mailCompact]}
         accessibilityRole="button"
         accessibilityLabel={label}
         onPress={onPress}
       >
-        <ToyIcon name="mail" size={30} />
+        <ToyIcon name="mail" size={compact ? 26 : 30} />
       </Toy>
       {count > 0 && <CountBadge count={String(count)} style={styles.corner} />}
     </View>
@@ -621,6 +631,7 @@ const styles = StyleSheet.create({
   badge: { minWidth: 23, height: 23, paddingHorizontal: 5 },
   corner: { position: "absolute", top: -9, right: -9, zIndex: 2 },
   portrait: { width: 54, height: 54 },
+  portraitCompact: { width: 46, height: 46 },
   portraitFrame: {
     position: "absolute",
     top: 3,
@@ -634,6 +645,7 @@ const styles = StyleSheet.create({
   },
   level: { flex: 1, flexDirection: "row", alignItems: "center", minWidth: 0 },
   medal: { zIndex: 2, width: 46, height: 46 },
+  medalCompact: { width: 42, height: 42 },
   xp: {
     ...outlined,
     flex: 1,
@@ -662,8 +674,11 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   stockToy: { height: 42 },
+  stockToyCompact: { height: 38 },
   stock: { flexDirection: "row", gap: 5, paddingLeft: 5, paddingRight: 12 },
+  stockCompact: { gap: 4, paddingLeft: 4, paddingRight: 9 },
   mail: { width: 46, height: 46 },
+  mailCompact: { width: 42, height: 42 },
   side: { alignItems: "center", width: 86 },
   tile: { width: 58, height: 58 },
   lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
