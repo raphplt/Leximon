@@ -63,8 +63,8 @@ const OPENING_SCALE = 1.25;
 const SACHET_WIDTH = { min: 64, max: 180 } as const;
 /** Room the sachet keeps in its row: its top margin and its sway. */
 const SACHET_ROOM = 24;
-/** Room it keeps across: the desk's tooling on both sides, so the tiles lie inside it, and some air. */
-const SACHET_GUTTER = 2 * TOOLING_ROOM + 12;
+/** Room it keeps across: the desk's tooling on both sides, so the tiles lie inside it, and air around the sachet. */
+const SACHET_GUTTER = 2 * TOOLING_ROOM + 32;
 /** The desk's distance from the screen's sides. */
 const DESK_SIDE = 14;
 
@@ -192,7 +192,7 @@ export function LibraryCounter({
   );
   const fitTiles = {
     transform: [{ scale: tileScale }],
-    transformOrigin: "top",
+    transformOrigin: "center",
   } as const;
   const measureTiles = ({ nativeEvent: { layout } }: LayoutChangeEvent) =>
     setTiles((known) => ({
@@ -438,13 +438,15 @@ const styles = StyleSheet.create({
   },
   middle: {
     flex: 1,
+    width: "100%",
     flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    marginTop: 14,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: DESK_SIDE + TOOLING_ROOM + 2,
+    marginTop: 6,
   },
-  side: { gap: 8, paddingTop: 10 },
-  sachet: { marginHorizontal: -4, paddingTop: 12, zIndex: 2 },
+  side: { gap: 6 },
+  sachet: { paddingTop: 4, zIndex: 2 },
   // The light it gathers, behind it.
   glow: {
     position: "absolute",
@@ -458,7 +460,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingBottom: 14 + TAB_BAR_RISE,
   },
 });

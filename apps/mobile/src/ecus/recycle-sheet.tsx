@@ -315,7 +315,7 @@ function Row({
           <Icon name="plus" size={16} color={toyValues.outline} />
         </Pressable>
       </View>
-      {on && <ToyIcon name="ecu" size={18} />}
+      <View style={styles.ecuSlot}>{on && <ToyIcon name="ecu" size={18} />}</View>
     </View>
   );
 }
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: ink.pageInkMuted,
   },
-  filters: { gap: space.s4 },
+  filters: { gap: space.s3 },
   chips: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   gemChip: {
     minHeight: 36,
@@ -431,6 +431,7 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
     color: ink.pageInk,
   },
+  ecuSlot: { width: 18, alignItems: "center" },
   confirm: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,

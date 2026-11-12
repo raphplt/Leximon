@@ -28,6 +28,7 @@ import {
   type ScrollViewInstance,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Animated, {
@@ -76,6 +77,8 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   const progressFailed = useSharedFailed(progressResource);
   const rewardsFailed = useSharedFailed(levelRewards);
   const now = useNow(60_000);
+  const { height: windowHeight } = useWindowDimensions();
+  const roadHeight = Math.max(400, Math.round(windowHeight * 0.56));
   // The detail of a level opens in a bubble under its stop, only when asked.
   const [bubble, setBubble] = useState<number | null>(asked);
   const [shown, setShown] = useState<number | null>(
@@ -131,9 +134,9 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   };
 
   return (
-    <Page title="Niveaux" fill>
+    <Page title="Niveaux">
       <Hero progress={progress} claimed={claimed} now={now} />
-      <Leaf style={styles.roadLeaf}>
+      <Leaf style={[styles.roadLeaf, { height: roadHeight }]}>
         <ChapterTabs own={own} last={last} shown={quarter} onShow={show} />
         <View style={styles.tray}>
           <Road
@@ -468,6 +471,7 @@ function Road({
   return (
     <ScrollView
       ref={box}
+      nestedScrollEnabled
       style={styles.scroll}
       contentContainerStyle={styles.scrollInside}
       onLayout={(event) => setBoxHeight(event.nativeEvent.layout.height)}
@@ -840,7 +844,7 @@ const styles = StyleSheet.create({
     color: ink.pageInk,
   },
   heroBar: {
-    height: 22,
+    minHeight: 22,
     overflow: "hidden",
     justifyContent: "center",
     borderWidth: toyValues.outlineWidth,
@@ -921,7 +925,6 @@ const styles = StyleSheet.create({
   comingText: { flex: 1, gap: 2 },
   comingTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
   roadLeaf: {
-    flex: 1,
     paddingTop: space.s5,
     paddingHorizontal: space.s3,
     paddingBottom: space.s4,

@@ -67,7 +67,7 @@ export function DeckBuilder({
   const [rowWidth, setRowWidth] = useState(0);
   const share = (perRow: number, gap: number, fallback: number) =>
     rowWidth === 0 ? fallback : Math.floor((rowWidth - (perRow - 1) * gap) / perRow);
-  const slotWidth = share(SLOTS_PER_ROW, SLOT_GAP, 56);
+  const slotWidth = share(SLOTS_PER_ROW, SLOT_GAP, 48);
   const poolWidth = share(POOL_PER_ROW, POOL_GAP, 96);
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const costOf = (cardId: string) => costs.get(cardId) ?? 0;
@@ -308,8 +308,8 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   legendText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
   filters: { flexDirection: "row", flexWrap: "wrap", gap: space.s3 },
-  filter: { height: 34 },
-  filterBody: { paddingHorizontal: space.s5 },
+  filter: { minHeight: 34 },
+  filterBody: { paddingHorizontal: space.s5, paddingVertical: space.s2 },
   filterText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInk },
   tray: {
     gap: space.s5,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   gaugeFill: { height: "100%", backgroundColor: toyMatters.gold.top },
   gaugeFigure: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
   actions: { gap: space.s3 },
-  action: { height: 50 },
+  action: { minHeight: 50 },
   poolGroup: { gap: space.s3 },
   poolHead: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.rubric },
   pool: { flexDirection: "row", flexWrap: "wrap", gap: POOL_GAP },

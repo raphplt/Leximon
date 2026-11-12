@@ -240,14 +240,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s6,
   },
   names: { flex: 1, gap: space.s2, paddingTop: CLOTH_OVERLAP + space.s3 },
-  headline: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  headline: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s4 },
   headlineText: {
+    flexShrink: 1,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
     color: colors.rubric,
   },
   clan: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  clanName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  clanName: {
+    flexShrink: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+  },
   subline: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,

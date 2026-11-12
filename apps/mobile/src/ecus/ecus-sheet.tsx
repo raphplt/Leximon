@@ -74,7 +74,14 @@ export function EcusSheet({
         <View style={styles.row}>
           <View style={styles.rarity} />
           <View style={[styles.cell, styles.headCell]}>
-            <Text style={styles.column}>{table.gainColumn}</Text>
+            <Text
+              style={styles.column}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {table.gainColumn}
+            </Text>
             <Pressable
               onPress={() => setHelping((was) => !was)}
               hitSlop={10}
@@ -87,7 +94,14 @@ export function EcusSheet({
             </Pressable>
           </View>
           <View style={[styles.cell, styles.headCell]}>
-            <Text style={styles.column}>{table.priceColumn}</Text>
+            <Text
+              style={styles.column}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {table.priceColumn}
+            </Text>
           </View>
         </View>
         {helping && <Text style={styles.help}>{RECYCLE_RULE}</Text>}
@@ -181,9 +195,10 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: ink.rule,
   },
-  rarity: { flex: 1.4 },
+  rarity: { flex: 1.15 },
   cell: {
     flex: 1,
+    minWidth: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",

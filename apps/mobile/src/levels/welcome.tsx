@@ -226,7 +226,7 @@ export function WelcomeHost() {
 function Day({ day }: { readonly day: WelcomeCase }) {
   const tomorrow = day.status === "tomorrow";
   // Seven cases and tomorrow's ring across a phone's window, without touching.
-  const size = day.last ? 42 : tomorrow ? 38 : 34;
+  const size = day.last ? 38 : tomorrow ? 35 : 30;
   const matter = day.status === "today" || day.status === "claimed" ? "gold" : "paper";
   const icon = (
     <ToyBody
@@ -274,6 +274,7 @@ const styles = StyleSheet.create({
   },
   days: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "flex-end",
     justifyContent: "center",
     gap: space.s2,
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   },
   dayLabel: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.label,
+    fontSize: fontSizes.small,
     color: colors.pageInkMuted,
   },
   todayLabel: { color: lettering.kicker },

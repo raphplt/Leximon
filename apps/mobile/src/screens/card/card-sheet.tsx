@@ -212,7 +212,7 @@ function SheetBody({
                   <View key={step.level} style={styles.step}>
                     <View style={[styles.stepBar, { backgroundColor: tone }]} />
                     <View style={styles.stepName}>
-                      <ToyIcon name={step.level} size={20} locked={!step.reached} />
+                      <ToyIcon name={step.level} size={18} locked={!step.reached} />
                       <Text
                         style={[
                           styles.stepLabel,
@@ -405,11 +405,15 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
-  steps: { flexDirection: "row", gap: space.s4 },
-  step: { flex: 1, gap: space.s3 },
+  steps: { flexDirection: "row", gap: space.s3 },
+  step: { flex: 1, minWidth: 0, gap: space.s3 },
   stepBar: { height: 6, borderRadius: 3 },
-  stepName: { flexDirection: "row", alignItems: "center", gap: 3 },
-  stepLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small },
+  stepName: { alignItems: "center", gap: space.s1 },
+  stepLabel: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.small,
+    textAlign: "center",
+  },
   note: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
@@ -454,7 +458,7 @@ const styles = StyleSheet.create({
   },
   actions: { gap: space.s5, alignItems: "flex-start" },
   later: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
-  ghosts: { flexDirection: "row", justifyContent: "center", gap: space.s5 },
+  ghosts: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s5 },
   ghost: {
     flexDirection: "row",
     alignItems: "center",

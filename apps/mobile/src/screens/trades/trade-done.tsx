@@ -4,7 +4,7 @@ import { type TradeDone, tradeDoneAction, tradeDoneTitle, tradesDone } from "@le
 import { router, usePathname } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { ZoomIn } from "react-native-reanimated";
 import { api } from "@/api/client";
 import { Card } from "@/cards/card";
@@ -133,59 +133,65 @@ function Moment({
   };
 
   return (
-    <View style={styles.moment}>
-      <Text style={styles.kicker}>Échange conclu</Text>
-      <Text style={styles.title} accessibilityRole="header">
-        {tradeDoneTitle(done.player)}
-      </Text>
-      {catalog !== null && received.length > 0 && (
-        <>
-          <View style={styles.cards}>
-            {received.map((cardId, index) => {
-              const card = catalogCard(catalog, cardId);
-              return (
-                <Animated.View key={cardId} entering={ZoomIn.delay(160 + index * 140)}>
-                  <Pressable
-                    onPress={() => {
-                      onClose();
-                      openCard(cardId);
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Lire ${card.word}`}
-                  >
-                    <View importantForAccessibility="no-hide-descendants">
-                      <Card
-                        card={card}
-                        collectionName={collectionName(catalog, card.collectionId)}
-                        width={width}
-                      />
-                    </View>
-                  </Pressable>
-                </Animated.View>
-              );
-            })}
-          </View>
-          {given.length > 0 && (
-            <Text style={styles.given}>
-              Contre{" "}
-              {given.map((cardId, index) => (
-                <Text key={cardId}>
-                  {index > 0 && (index === given.length - 1 ? " et " : ", ")}
-                  <Text style={styles.word}>{catalogCard(catalog, cardId).word}</Text>
-                </Text>
-              ))}
-              .
-            </Text>
-          )}
-        </>
-      )}
-      <View style={styles.actions}>
-        <Button
-          label={received.length === 0 ? "Voir mes échanges" : tradeDoneAction(received.length)}
-          onPress={act}
-        />
-        <TextButton label="Plus tard" onPress={onClose} />
-      </View>
+    <View style={styles.cardWrap}>
+      <ScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.moment}
+      >
+        <Text style={styles.kicker}>Échange conclu</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {tradeDoneTitle(done.player)}
+        </Text>
+        {catalog !== null && received.length > 0 && (
+          <>
+            <View style={styles.cards}>
+              {received.map((cardId, index) => {
+                const card = catalogCard(catalog, cardId);
+                return (
+                  <Animated.View key={cardId} entering={ZoomIn.delay(160 + index * 140)}>
+                    <Pressable
+                      onPress={() => {
+                        onClose();
+                        openCard(cardId);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Lire ${card.word}`}
+                    >
+                      <View importantForAccessibility="no-hide-descendants">
+                        <Card
+                          card={card}
+                          collectionName={collectionName(catalog, card.collectionId)}
+                          width={width}
+                        />
+                      </View>
+                    </Pressable>
+                  </Animated.View>
+                );
+              })}
+            </View>
+            {given.length > 0 && (
+              <Text style={styles.given}>
+                Contre{" "}
+                {given.map((cardId, index) => (
+                  <Text key={cardId}>
+                    {index > 0 && (index === given.length - 1 ? " et " : ", ")}
+                    <Text style={styles.word}>{catalogCard(catalog, cardId).word}</Text>
+                  </Text>
+                ))}
+                .
+              </Text>
+            )}
+          </>
+        )}
+        <View style={styles.actions}>
+          <Button
+            label={received.length === 0 ? "Voir mes échanges" : tradeDoneAction(received.length)}
+            onPress={act}
+          />
+          <TextButton label="Plus tard" onPress={onClose} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -197,13 +203,17 @@ const styles = StyleSheet.create({
     padding: space.s10,
     backgroundColor: alpha(colors.scrim, 0.78),
   },
+  cardWrap: {
+    maxHeight: "90%",
+    borderRadius: 24,
+    backgroundColor: colors.sheet,
+    overflow: "hidden",
+  },
   moment: {
     alignItems: "center",
     gap: space.s7,
-    paddingVertical: space.s14,
+    paddingVertical: space.s12,
     paddingHorizontal: space.s10,
-    borderRadius: 24,
-    backgroundColor: colors.sheet,
   },
   kicker: {
     fontFamily: fonts.displayBold,

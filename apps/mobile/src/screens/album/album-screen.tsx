@@ -84,9 +84,10 @@ const ROOM_MARGIN = 6;
 /** Under a card, its level or its rarity: every tile is as tall, so a letter knows its row. */
 const TILE_FOOT = 28;
 const ROW_GAP = space.s9;
-const GRID_TOP = space.s4;
+const GRID_TOP = space.s5;
 /** The bar of letters, in the right margin of the cards. */
 const LETTER_ROOM = 24;
+const LETTER_GAP = 6;
 
 function readCollection(): string | null {
   try {
@@ -227,7 +228,8 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   // The bar of letters keeps its margin even when the order hides it: changing the order
   // does not resize every card.
   const cardWidth = Math.floor(
-    (window.width - LIBRARY_INSET * 2 - GUTTER - LETTER_ROOM - GAP * (columns - 1)) / columns,
+    (window.width - LIBRARY_INSET * 2 - GUTTER - LETTER_ROOM - LETTER_GAP - GAP * (columns - 1)) /
+      columns,
   );
   const tileHeight = Math.ceil(cardWidth * 1.4) + TILE_FOOT;
   // Every row is as tall: the list knows where the rows it has not drawn yet lie, and a letter
@@ -370,7 +372,6 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
                 styles.tab,
                 selected && styles.tabOn,
                 library.tab,
-                library.tabCell,
                 toyFace(selected ? "gold" : "paper", "tile"),
               ]}
             >
@@ -393,21 +394,6 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           );
         })}
       </TabRow>
-
-      {/* The filters wait in their panel; only the new words stay at hand. */}
-      {!view.searching &&
-        !comparing &&
-        fresh !== undefined &&
-        ((fresh.count ?? 0) > 0 || state.filter === "new") && (
-          <View style={styles.quick}>
-            <FilterChip
-              label={fresh.label}
-              count={fresh.count}
-              on={state.filter === "new"}
-              onPick={() => setState((s) => ({ ...s, filter: s.filter === "new" ? "all" : "new" }))}
-            />
-          </View>
-        )}
 
       {!view.searching && comparing && (
         <View style={styles.compare}>
@@ -442,13 +428,30 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     </View>
   );
 
+  const showFresh =
+    !view.searching &&
+    !comparing &&
+    fresh !== undefined &&
+    ((fresh.count ?? 0) > 0 || state.filter === "new");
+  const hasHead = showFresh || practiceCards !== null || view.empty !== null;
+
   const head = (
     <View
-      style={styles.listHead}
+      style={hasHead ? styles.listHead : undefined}
       onLayout={(event: LayoutChangeEvent) => {
         rowsTop.current = GRID_TOP + event.nativeEvent.layout.height;
       }}
     >
+      {showFresh && fresh !== undefined && (
+        <View style={styles.quick}>
+          <FilterChip
+            label={fresh.label}
+            count={fresh.count}
+            on={state.filter === "new"}
+            onPick={() => setState((s) => ({ ...s, filter: s.filter === "new" ? "all" : "new" }))}
+          />
+        </View>
+      )}
       {practiceCards !== null && (
         <View style={styles.revise}>
           <Button
@@ -825,12 +828,18 @@ function LetterBar({
   );
 }
 
-/** The collection tabs, all in view on rows of two. */
+/** The collection tabs on one scrolling row, leaving room below for the cards. */
 function TabRow({ dimmed, children }: { readonly dimmed: boolean; readonly children: ReactNode }) {
   return (
-    <View style={[library.tabGrid, dimmed && styles.dimmed]} accessibilityRole="tablist">
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={[styles.bleed, dimmed && styles.dimmed]}
+      contentContainerStyle={library.tabRow}
+      accessibilityRole="tablist"
+    >
       {children}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -853,7 +862,7 @@ const styles = StyleSheet.create({
     paddingBottom: space.s6,
     paddingHorizontal: GUTTER,
   },
-  listHead: { gap: space.s6, paddingBottom: space.s8 },
+  listHead: { gap: space.s5, paddingBottom: space.s6 },
   shelf: { flex: 1 },
   letters: {
     position: "absolute",
@@ -979,7 +988,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.micro,
     textAlign: "center",
   },
-  revise: { marginTop: space.s6 },
+  revise: { marginTop: space.s2 },
   emptyLine: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
@@ -988,7 +997,7 @@ const styles = StyleSheet.create({
     marginTop: space.s16,
   },
   grid: { paddingHorizontal: GUTTER, paddingTop: GRID_TOP, paddingBottom: TAB_BAR_RISE + 24 },
-  gridLettered: { paddingRight: LETTER_ROOM },
+  gridLettered: { paddingRight: LETTER_ROOM + LETTER_GAP },
   gridRow: { gap: GAP, marginBottom: ROW_GAP },
   tile: { alignItems: "center", gap: space.s3 },
   fresh: {
@@ -1083,9 +1092,14 @@ const library = StyleSheet.create({
     borderTopRightRadius: DESK_RADIUS - TOOLING_ROOM,
     overflow: "hidden",
   },
-  header: { paddingTop: space.s6, gap: space.s5 },
-  tabGrid: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
-  tabCell: { flexBasis: "40%", flexGrow: 1, minWidth: 0 },
+  header: { paddingTop: space.s4, paddingBottom: space.s4, gap: space.s4 },
+  tabRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s4,
+    paddingHorizontal: GUTTER,
+    paddingVertical: 2,
+  },
   search: {
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
@@ -1101,8 +1115,9 @@ const library = StyleSheet.create({
   tab: {
     borderWidth: toyValues.outlineWidth,
     marginBottom: 4,
+    paddingHorizontal: space.s5,
     paddingVertical: space.s3,
-    gap: space.s3,
+    gap: space.s2,
   },
   tabName: { fontFamily: fonts.display, color: colors.paperInk },
   tabTrack: { backgroundColor: alpha(colors.paperInk, 0.18) },

@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
   },
-  tintWorn: { borderWidth: 3, borderColor: toyMatters.gold.top },
+  tintWorn: { borderColor: toyMatters.gold.top },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
   item: {
     alignItems: "center",

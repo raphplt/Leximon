@@ -20,6 +20,13 @@ export function SignInLink() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: space.s4, marginTop: space.s8 },
+  row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: space.s4,
+    marginTop: space.s8,
+  },
   text: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.body },
 });

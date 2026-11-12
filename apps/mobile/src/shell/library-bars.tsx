@@ -55,7 +55,7 @@ export function LibraryTopBand() {
   const [ecusOpen, setEcusOpen] = useState(false);
   const { progress } = view;
   const stock = view.wallet === null ? null : stockView(view.wallet, now);
-  const narrow = window.width < 385;
+  const narrow = window.width < 405;
   const tight = window.width < 365;
   return (
     <View style={[styles.band, narrow && styles.bandNarrow, { paddingTop: insets.top + 8 }]}>
@@ -167,7 +167,7 @@ export function LibraryTabBar({ state, emitter, navigateToTab }: BottomTabBarPro
 }
 
 const styles = StyleSheet.create({
-  band: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12 },
-  bandNarrow: { gap: 4, paddingHorizontal: 8 },
-  gauge: { flex: 1, minWidth: 46 },
+  band: { flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 10 },
+  bandNarrow: { gap: 5, paddingHorizontal: 8 },
+  gauge: { flex: 1, minWidth: 42 },
 });

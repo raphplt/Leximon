@@ -198,9 +198,9 @@ export function ClanPage({
             <HeroButton
               onPress={() => setOverlay("requests")}
               label={view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"}
+              badge={view.pendingRequests}
             >
               <Icon name="amis" size={20} color={ink.pageInk} />
-              <Badge count={view.pendingRequests} ring={toyValues.outline} />
             </HeroButton>
           )}
           <HeroButton onPress={invite} label="Inviter">
@@ -384,24 +384,29 @@ export function ClanPage({
 function HeroButton({
   onPress,
   label,
+  badge,
   children,
 }: {
   readonly onPress: () => void;
   readonly label: string;
+  readonly badge?: number;
   readonly children: ReactNode;
 }) {
   return (
-    <Toy
-      matter="paper"
-      shape="round"
-      onPress={onPress}
-      style={styles.toy}
-      bodyStyle={styles.toyBody}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      {children}
-    </Toy>
+    <View>
+      <Toy
+        matter="paper"
+        shape="round"
+        onPress={onPress}
+        style={styles.toy}
+        bodyStyle={styles.toyBody}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        {children}
+      </Toy>
+      {badge !== undefined && badge > 0 && <Badge count={badge} ring={toyValues.outline} />}
+    </View>
   );
 }
 
@@ -499,11 +504,11 @@ const styles = StyleSheet.create({
   hero: {
     flexDirection: "row",
     alignItems: "center",
-    gap: space.s6,
+    gap: space.s4,
     overflow: "hidden",
     padding: DESK_PADDING,
   },
-  heroText: { flex: 1, gap: space.s1 },
+  heroText: { flex: 1, minWidth: 0, gap: space.s1 },
   heroSmall: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
@@ -548,7 +553,7 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     color: ink.pageInk,
   },
-  goalBar: { height: 28, justifyContent: "center", marginHorizontal: space.s4 },
+  goalBar: { height: 28, justifyContent: "center", marginHorizontal: 14 },
   goalTrack: { height: 10, borderRadius: 5, backgroundColor: ink.well, overflow: "hidden" },
   goalFill: { height: 10, borderRadius: 5, backgroundColor: ink.success },
   tier: {

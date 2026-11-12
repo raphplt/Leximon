@@ -241,7 +241,7 @@ function Preview({
 }) {
   if (tab === "titles") {
     return (
-      <View style={[styles.titleBox, { height: size }]}>
+      <View style={[styles.titleBox, { minHeight: size }]}>
         <Text style={styles.titlePill}>{item.name}</Text>
       </View>
     );

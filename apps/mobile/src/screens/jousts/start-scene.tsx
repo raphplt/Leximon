@@ -293,7 +293,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: alpha(lettering.fill, 0.8),
   },
-  searchRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
+  searchRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.s5,
+  },
   searchMe: { alignItems: "center", gap: space.s3, maxWidth: FACE + 20 },
   searchName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: lettering.fill },
   slot: {

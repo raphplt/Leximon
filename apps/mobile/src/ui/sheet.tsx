@@ -109,7 +109,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: ink.pageRaised,
   },
-  body: { gap: space.s7, paddingHorizontal: space.s10, paddingTop: space.s5 },
+  body: {
+    gap: space.s7,
+    paddingHorizontal: space.s10,
+    paddingTop: space.s5,
+    paddingBottom: space.s10,
+  },
   footer: {
     gap: space.s4,
     paddingHorizontal: space.s10,

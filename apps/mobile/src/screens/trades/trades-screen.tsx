@@ -45,6 +45,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { KeyboardLift } from "@/ui/keyboard-lift";
 import { LEAF_PADDING } from "@/ui/ornaments";
 import { PAGE_MAX_WIDTH } from "@/ui/page";
 import { OnPaper, Panel } from "@/ui/panel";
@@ -71,7 +72,7 @@ const DONE_MESSAGES: Readonly<Record<Action, string>> = {
   cancel: "Offre annulée.",
 };
 
-const OFFER_THUMB = 96;
+const OFFER_THUMB = 86;
 
 /**
  * Échanges: offers received and sent, their history, a new offer, and the list of wishes, with
@@ -233,7 +234,7 @@ export function TradesScreen({
   };
 
   return (
-    <View style={styles.screen}>
+    <KeyboardLift style={styles.screen}>
       <ScrollView
         ref={scroll}
         contentContainerStyle={styles.page}
@@ -312,7 +313,7 @@ export function TradesScreen({
       </ScrollView>
       {/* Floats at the top: the offer just answered leaves the list, and its result stays in view. */}
       {notice !== null && <NoticeBanner notice={notice} onClose={() => setNotice(null)} />}
-    </View>
+    </KeyboardLift>
   );
 }
 
@@ -742,6 +743,7 @@ const styles = StyleSheet.create({
   giving: { color: ink.danger },
   offerHeader: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
     gap: space.s4,
@@ -752,8 +754,8 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
     color: ink.pageInkMuted,
   },
-  sides: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  side: { flex: 1, gap: space.s4, alignItems: "center" },
+  sides: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  side: { flex: 1, minWidth: 0, gap: space.s4, alignItems: "center" },
   swap: { alignItems: "center", paddingTop: space.s10 },
   offerActions: { gap: space.s2, marginTop: space.s2 },
   sentWords: {
@@ -794,6 +796,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.success,
     backgroundColor: colors.sheet,
+    boxShadow: `0 6px 18px ${alpha(toyValues.outline, 0.45)}`,
   },
   noticeError: { borderColor: colors.danger },
   noticeText: {

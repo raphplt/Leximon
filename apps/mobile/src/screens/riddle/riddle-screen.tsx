@@ -275,9 +275,16 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: ink.pageInkMuted,
   },
-  cells: { flexDirection: "row", justifyContent: "center", gap: space.s2, marginTop: space.s2 },
+  cells: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: space.s2,
+    marginTop: space.s2,
+  },
   cell: {
-    flex: 1,
+    flexBasis: 26,
+    flexGrow: 1,
     maxWidth: 36,
     height: 44,
     alignItems: "center",

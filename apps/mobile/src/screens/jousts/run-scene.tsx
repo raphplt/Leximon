@@ -413,6 +413,7 @@ export function RunScene({
                 />
               </Animated.View>
             )}
+            {flying > 0 && <PlusOne key={flying} />}
           </Animated.View>
           <View style={styles.choices}>
             {shown.question.choices.map((cardId) => {
@@ -472,7 +473,6 @@ export function RunScene({
               Le temps est écoulé : la question compte fausse.
             </Text>
           )}
-          {flying > 0 && <PlusOne key={flying} />}
         </View>
       )}
 
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     boxShadow: `inset 0 -4px 0 ${toyMatters.red.edge}, 0 4px 0 ${toyValues.outline}`,
   },
   plaqueRow: { flexDirection: "row", alignItems: "center", gap: space.s3 },
-  plaqueBody: { flex: 1, gap: space.s2 },
+  plaqueBody: { flex: 1, minWidth: 0, gap: space.s2 },
   mirrored: { flexDirection: "row-reverse" },
   hudName: {
     fontFamily: fonts.ui.extrabold,
@@ -737,7 +737,7 @@ const styles = StyleSheet.create({
     color: lettering.fill,
   },
   hudNameMirrored: { textAlign: "right" },
-  hudMiddle: { width: RING_SIZE + 6, alignItems: "center", gap: space.s1 },
+  hudMiddle: { width: RING_SIZE + 4, alignItems: "center", gap: space.s1 },
   pips: { flexDirection: "row", gap: 3 },
   pip: {
     flex: 1,
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
   },
   choiceCell: { width: "48.5%" },
   // Off once answered, the words keep their colour: the green and red of the verdict stand out.
-  choice: { height: 60, opacity: 1 },
+  choice: { minHeight: 60, opacity: 1 },
   choiceBody: { paddingHorizontal: space.s4, paddingVertical: space.s3 },
   choiceWord: {
     textAlign: "center",
@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
     color: lettering.fill,
   },
   // Over the card's corner, where the eye already is.
-  plusOne: { position: "absolute", right: space.s12, top: 110 },
+  plusOne: { position: "absolute", right: space.s4, top: space.s4 },
   ring: {
     width: RING_SIZE,
     height: RING_SIZE,

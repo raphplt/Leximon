@@ -359,8 +359,19 @@ const styles = StyleSheet.create({
   },
   framed: { padding: LEAF_PADDING.panel },
   titled: { gap: space.s3 },
-  panelHead: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
+  panelHead: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    gap: space.s4,
+  },
+  panelTitle: {
+    flexShrink: 1,
+    fontFamily: fonts.display,
+    fontSize: fontSizes.title,
+    color: ink.pageInk,
+  },
   meta: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: ink.pageInkMuted },
   /** The pins scroll up to the gilt rule, not over it. */
   pinsScroll: { marginHorizontal: -PINS_BLEED },

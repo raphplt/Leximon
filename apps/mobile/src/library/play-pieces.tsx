@@ -165,7 +165,7 @@ export function PortraitButton({
 }
 
 /** Narrower, on a small phone, the XP bar would shrink to a sliver beside the medal: it goes. */
-const GAUGE_MIN_WIDTH = 110;
+const GAUGE_MIN_WIDTH = 94;
 
 /** The level as its gilt medal, and the experience toward the next one as a gilt bar. */
 export function LevelGauge({
@@ -194,7 +194,7 @@ export function LevelGauge({
         <View style={styles.xp}>
           <View style={[styles.xpFill, { width: `${filled * 100}%` }]} />
           <View style={styles.xpText}>
-            <Lettering size={12} font={fonts.ui.extrabold}>
+            <Lettering size={11} font={fonts.ui.extrabold} numberOfLines={1}>
               {label}
             </Lettering>
           </View>
@@ -329,7 +329,7 @@ export function SideTile({
           <Lettering size={11}>{lockedAt}</Lettering>
         </ToyBody>
       )}
-      <Lettering size={11} numberOfLines={1} style={styles.sideLabel}>
+      <Lettering size={11} numberOfLines={2} style={styles.sideLabel}>
         {label}
       </Lettering>
     </View>
@@ -468,11 +468,14 @@ export function PaperAction({
     <Toy
       matter="paper"
       style={styles.paperAction}
+      bodyStyle={styles.paperActionBody}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
     >
-      <Lettering size={17}>{label}</Lettering>
+      <Lettering size={15} style={styles.paperActionLabel}>
+        {label}
+      </Lettering>
     </Toy>
   );
 }
@@ -671,19 +674,20 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
-    paddingLeft: 10,
+    paddingLeft: 14,
+    paddingRight: 6,
   },
   stockToy: { height: 42 },
   stockToyCompact: { height: 38 },
-  stock: { flexDirection: "row", gap: 5, paddingLeft: 5, paddingRight: 12 },
-  stockCompact: { gap: 4, paddingLeft: 4, paddingRight: 9 },
+  stock: { flexDirection: "row", gap: 4, paddingLeft: 5, paddingRight: 10 },
+  stockCompact: { gap: 3, paddingLeft: 4, paddingRight: 8 },
   mail: { width: 46, height: 46 },
   mailCompact: { width: 42, height: 42 },
-  side: { alignItems: "center", width: 86 },
+  side: { alignItems: "center", width: 88 },
   tile: { width: 58, height: 58 },
   lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
   levelTag: { zIndex: 2, marginTop: -9, paddingHorizontal: 7, paddingBottom: 2 },
-  sideLabel: { marginTop: 5, textAlign: "center" },
+  sideLabel: { marginTop: 4, textAlign: "center" },
   collection: { alignItems: "center" },
   collectionRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   arrow: { width: 42, height: 42 },
@@ -728,7 +732,9 @@ const styles = StyleSheet.create({
     backgroundColor: toyValues.sheen,
   },
   mainCount: { width: 38, height: 38 },
-  paperAction: { height: 48, paddingHorizontal: 24 },
+  paperAction: { minHeight: 46, maxWidth: "100%" },
+  paperActionBody: { paddingHorizontal: 20, paddingVertical: 8 },
+  paperActionLabel: { textAlign: "center" },
   tabs: {
     flexDirection: "row",
     alignItems: "flex-end",

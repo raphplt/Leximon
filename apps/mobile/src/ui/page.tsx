@@ -1,6 +1,6 @@
 import { lettering } from "@leximon/tokens";
 import { router } from "expo-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DESK_RADIUS, DESK_RIM, Desk, Room } from "@/library/play-pieces";
@@ -49,6 +49,7 @@ export function Page({
   readonly footer?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
+  const [footerHeight, setFooterHeight] = useState(0);
   const onDesk = desk && !inTab;
   const padding = [
     styles.content,
@@ -57,7 +58,9 @@ export function Page({
       : onDesk
         ? { paddingTop: space.s4, paddingBottom: space.s16 }
         : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + (fill ? 12 : 32) },
-    footer !== undefined && { paddingBottom: insets.bottom + FOOTER_ROOM },
+    footer !== undefined && {
+      paddingBottom: insets.bottom + (footerHeight > 0 ? footerHeight + space.s8 : FOOTER_ROOM),
+    },
   ];
   const inside = (
     <>
@@ -113,6 +116,7 @@ export function Page({
         <View
           style={[styles.footer, { bottom: insets.bottom + space.s6 }]}
           pointerEvents="box-none"
+          onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
         >
           <View style={styles.footerInner}>{footer}</View>
         </View>

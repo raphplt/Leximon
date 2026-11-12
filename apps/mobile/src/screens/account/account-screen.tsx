@@ -929,7 +929,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: ink.danger,
   },
-  links: { flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" },
+  links: { flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap", gap: space.s4 },
   switchRow: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   switchLabel: {
     flex: 1,

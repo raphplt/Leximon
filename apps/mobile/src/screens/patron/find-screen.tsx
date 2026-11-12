@@ -269,8 +269,13 @@ const styles = StyleSheet.create({
     color: toyMatters.red.bottom,
   },
   actions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s4 },
-  action: { height: 44, paddingHorizontal: space.s6 },
-  pick: { alignSelf: "flex-start", height: 42, paddingHorizontal: space.s6 },
+  action: { minHeight: 44, paddingHorizontal: space.s6, paddingVertical: space.s2 },
+  pick: {
+    alignSelf: "flex-start",
+    minHeight: 42,
+    paddingHorizontal: space.s6,
+    paddingVertical: space.s2,
+  },
   found: { alignItems: "center", gap: space.s8, paddingTop: space.s16 },
   foundIcon: { width: 96, height: 96, alignItems: "center", justifyContent: "center" },
 });

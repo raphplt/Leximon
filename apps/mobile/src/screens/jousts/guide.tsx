@@ -49,7 +49,7 @@ import { RunScene, type RunSource } from "./run-scene";
 
 const FURET_DUELIST: Duelist = { name: FURET, avatar: null, frame: null, furet: true };
 const RULE_ICONS: readonly IconName[] = ["clock", "check", "bolt"];
-const LIST_WIDTH = 54;
+const LIST_WIDTH = 46;
 
 /**
  * The first visit to the jousts, with Maître Furet: the lists, the player's deck, a training run
@@ -320,9 +320,9 @@ function Crossing({
   }, [index, reduced, lean]);
   const style = useAnimatedStyle(() => ({
     transform: [
-      { translateX: toward * 14 * lean.value },
+      { translateX: toward * 8 * lean.value },
       { translateY: -6 * lean.value },
-      { rotate: `${toward * 6 * lean.value}deg` },
+      { rotate: `${toward * 5 * lean.value}deg` },
     ],
   }));
   return <Animated.View style={style}>{children}</Animated.View>;
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     color: toyMatters.paper.top,
     textDecorationLine: "underline",
   },
-  lists: { flexDirection: "row", alignItems: "flex-start" },
+  lists: { flexDirection: "row", alignItems: "flex-start", gap: space.s2 },
   listSide: { flex: 1, alignItems: "center", gap: space.s3 },
   listCards: {
     alignSelf: "stretch",

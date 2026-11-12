@@ -482,7 +482,7 @@ function Minor({
       onPress={onPress}
     >
       <Icon name={icon} size={17} color={ink.pageInk} />
-      <Text style={styles.minorText} numberOfLines={1}>
+      <Text style={styles.minorText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
         {label}
       </Text>
     </Toy>
@@ -544,7 +544,7 @@ export function Road({
           accessibilityRole="button"
           accessibilityLabel={`${roadLabel(standing.league)} ${SEE_LEAGUES}`}
         >
-          <View style={styles.roadLine}>
+          <View style={[styles.roadLine, { width: Math.max(0, stops.length - 1) * STOP }]}>
             <View style={[styles.roadReached, { width: here * STOP }]} />
           </View>
           {stops.map((stop) => (
@@ -563,6 +563,9 @@ export function Road({
               />
               <Text
                 style={[styles.stopName, stop.state === "ahead" && { color: ink.pageInkMuted }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
               >
                 {stop.name}
               </Text>
@@ -822,7 +825,13 @@ function Letter({ joust }: { readonly joust: JoustSummary }) {
         </Animated.View>
       </Looping>
       <Animated.View
-        style={[styles.face, styles.letter, styles.letterBack, won && styles.letterWon, reverse]}
+        style={[
+          styles.letterSlot,
+          styles.letter,
+          styles.letterBack,
+          won && styles.letterWon,
+          reverse,
+        ]}
         pointerEvents={opened ? "auto" : "none"}
         accessibilityElementsHidden={!opened}
         accessibilityLiveRegion="polite"
@@ -1167,9 +1176,19 @@ const styles = StyleSheet.create({
   waitingText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
   actions: { alignSelf: "stretch", gap: space.s5, marginTop: space.s6 },
   minorActions: { flexDirection: "row", gap: space.s4 },
-  minor: { flex: 1, height: 44 },
-  minorBody: { flexDirection: "row", gap: space.s3, paddingHorizontal: space.s5 },
-  minorText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
+  minor: { flex: 1, minHeight: 44 },
+  minorBody: {
+    flexDirection: "row",
+    gap: space.s3,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s2,
+  },
+  minorText: {
+    flexShrink: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    color: ink.pageInk,
+  },
   actionLine: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
@@ -1182,7 +1201,6 @@ const styles = StyleSheet.create({
   roadLine: {
     position: "absolute",
     left: STOP / 2,
-    width: STOP * 6,
     top: 52,
     height: 8,
     overflow: "hidden",

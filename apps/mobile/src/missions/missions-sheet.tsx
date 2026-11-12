@@ -349,8 +349,19 @@ const styles = StyleSheet.create({
     backgroundColor: paperColors.track,
   },
   helpTitle: { fontFamily: fonts.display, fontSize: fontSizes.label, color: paperColors.pageInk },
-  helpLine: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  helpLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: paperColors.pageInk },
+  helpLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.s4,
+  },
+  helpLabel: {
+    flex: 1,
+    flexShrink: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    color: paperColors.pageInk,
+  },
   gains: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   gainBox: { flexDirection: "row", alignItems: "center", gap: 2 },
   gain: {
@@ -359,8 +370,10 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
     color: paperColors.pageInk,
   },
-  helpNote: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  helpNote: { flexDirection: "row", alignItems: "flex-start", gap: space.s2 },
   helpNoteText: {
+    flex: 1,
+    flexShrink: 1,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.caption,
     color: paperColors.pageInkMuted,

@@ -546,9 +546,9 @@ const CLAIM_LOOK = 64;
 const styles = StyleSheet.create({
   card: { gap: space.s5, padding: space.s8 },
   // The perks as a grid of tiles: a half tile shares its row, a whole one fills it.
-  bento: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
+  bento: { flexDirection: "row", flexWrap: "wrap", gap: space.s6 },
   whole: { width: "100%" },
-  half: { flexBasis: "40%", flexGrow: 1, gap: space.s4, padding: space.s6 },
+  half: { minWidth: 160, flexBasis: "45%", flexGrow: 1, gap: space.s4, padding: space.s6 },
   halfIcon: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
   // What to do sits at the foot of the tile, so that the two tiles of a row end together.
   halfActions: { marginTop: "auto", gap: space.s4 },
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: paperColors.pageInk,
   },
-  claimButton: { height: 48 },
+  claimButton: { minHeight: 48 },
   found: {
     gap: 2,
     paddingTop: space.s4,

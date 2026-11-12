@@ -91,10 +91,10 @@ export function DoorSachet() {
 
 const styles = StyleSheet.create({
   counter: {
-    height: 350,
+    minHeight: 280,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: space.s10,
+    marginTop: space.s6,
   },
   hint: { position: "absolute", bottom: space.s6 },
   revealed: {

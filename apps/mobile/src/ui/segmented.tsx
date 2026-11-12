@@ -46,6 +46,7 @@ export function Segmented<T extends string>({
               light && styles.tabLight,
               selected && (light ? styles.tabOnLight : styles.tabOn),
               styles.toy,
+              options.length >= 4 && styles.toyCompact,
               toyFace(selected ? "gold" : "paper"),
             ]}
           >
@@ -56,7 +57,9 @@ export function Segmented<T extends string>({
                 selected && (light ? styles.labelOnLight : styles.labelOn),
                 selected ? styles.labelGold : styles.labelPaper,
               ]}
-              numberOfLines={1}
+              numberOfLines={wrap ? 2 : 1}
+              adjustsFontSizeToFit={!wrap}
+              minimumFontScale={0.82}
             >
               {option.label}
             </Text>
@@ -103,6 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s5,
     marginBottom: 3,
   },
+  toyCompact: { paddingHorizontal: space.s3 },
   labelPaper: { fontFamily: fonts.ui.extrabold, color: paperColors.pageInk },
   labelGold: { fontFamily: fonts.ui.extrabold, color: toyValues.outline },
 });

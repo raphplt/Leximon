@@ -535,7 +535,12 @@ function Steps({ step }: { readonly step: Step }) {
           accessibilityLabel={`${item.label}${index === current ? ", étape en cours" : ""}`}
         >
           <View style={[styles.stepBar, index <= current && styles.stepBarDone]} />
-          <Text style={[styles.stepLabel, index <= current && styles.stepLabelDone]}>
+          <Text
+            style={[styles.stepLabel, index <= current && styles.stepLabelDone]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+          >
             {item.label}
           </Text>
         </View>
@@ -744,11 +749,16 @@ const styles = StyleSheet.create({
   codeForm: { gap: space.s5 },
   presetGive: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.rubric },
   empty: { gap: space.s6 },
-  steps: { flexDirection: "row", gap: space.s3 },
-  step: { flex: 1, gap: space.s3 },
+  steps: { flexDirection: "row", gap: space.s2 },
+  step: { flex: 1, minWidth: 0, gap: space.s3 },
   stepBar: { height: 4, borderRadius: 2, backgroundColor: ink.well },
   stepBarDone: { backgroundColor: ink.action },
-  stepLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: ink.pageInkFaint },
+  stepLabel: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.caption,
+    color: ink.pageInkFaint,
+    textAlign: "center",
+  },
   stepLabelDone: { color: ink.pageInk },
   pickHeading: { gap: space.s2 },
   pickTitleRow: { flexDirection: "row", alignItems: "baseline", gap: space.s5 },
