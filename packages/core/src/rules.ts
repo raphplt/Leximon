@@ -66,6 +66,8 @@ const REBALANCED = Date.UTC(2026, 10, 8, 23);
 const STOCK_TRIMMED = Date.parse("2026-11-08T20:40:00Z");
 // Midnight in Paris, 9 November 2026: jousts open to every player past their level, with the open beta.
 const JOUSTS_OPEN = Date.UTC(2026, 10, 8, 23);
+// Midnight in Paris, 13 November 2026: back to the faster clock, decided on 2026-11-12.
+const CLOCK_RESTORED = Date.UTC(2026, 10, 12, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -74,6 +76,8 @@ export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: ECONOMY_DECIDED, capacity: 8, intervalMs: 60 * MINUTE },
   // The clock gave over 80 % of the sachets: no more than 6 pile up between two visits.
   { startsAt: STOCK_TRIMMED, capacity: 6, intervalMs: 60 * MINUTE },
+  // Players found an hour per sachet too long a wait.
+  { startsAt: CLOCK_RESTORED, capacity: 6, intervalMs: 30 * MINUTE },
 ];
 
 export const DRAW_SCHEDULE: DrawSchedule = [
