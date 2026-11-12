@@ -17,7 +17,9 @@
   "vars": {
     // Server-side reads only; the browser's addresses are inlined at build time (NEXT_PUBLIC_*).
     "API_URL": "http://localhost:8787",
-    "CATALOG_URL": "http://localhost:8788/catalog"
+    "CATALOG_URL": "http://localhost:8788/catalog",
+    "APPLE_TEAM_ID": "J7LLHCN3DF",
+    "ANDROID_APP_SHA256": "0F:9C:6E:0B:71:E5:01:21:F4:7D:40:EF:1F:59:42:8B:38:66:42:99:FD:CF:F6:2D:AC:43:0D:B7:6B:A9:69:41,C1:04:0E:5A:70:1A:C1:DF:05:67:1E:89:39:F5:F3:0E:8C:92:E5:A1:A1:50:43:59:A7:7D:35:1C:48:66:BB:1D,FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C"
   },
   // OpenNext's cache: R2 for the entries, a Durable Object for revalidations, and a binding to
   // the Worker itself to recompute a stale page. The service name must be the Worker's name.
@@ -37,7 +39,9 @@
       "preview_urls": false,
       "vars": {
         "API_URL": "https://api.leximon.fr",
-        "CATALOG_URL": "https://leximon.fr/catalog"
+        "CATALOG_URL": "https://leximon.fr/catalog",
+        "APPLE_TEAM_ID": "J7LLHCN3DF",
+        "ANDROID_APP_SHA256": "0F:9C:6E:0B:71:E5:01:21:F4:7D:40:EF:1F:59:42:8B:38:66:42:99:FD:CF:F6:2D:AC:43:0D:B7:6B:A9:69:41,E3:AE:CD:6B:9F:9C:DE:28:D6:A2:29:73:DB:22:9A:60:EE:56:C0:E7:ED:7A:7A:06:5B:8A:41:FA:9F:B0:26:D9,C1:04:0E:5A:70:1A:C1:DF:05:67:1E:89:39:F5:F3:0E:8C:92:E5:A1:A1:50:43:59:A7:7D:35:1C:48:66:BB:1D"
       },
       "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "leximon-web-production" }],
       "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "leximon-web-cache" }],
