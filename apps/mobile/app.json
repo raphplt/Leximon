@@ -11,6 +11,8 @@
     "ios": {
       "bundleIdentifier": "fr.leximon.app",
       "appStoreUrl": "https://apps.apple.com/app/id6827744020",
+      "usesAppleSignIn": true,
+      "associatedDomains": ["applinks:leximon.fr"],
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -30,12 +32,27 @@
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.ACTIVITY_RECOGNITION"
       ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "leximon.fr", "pathPrefix": "/ami" },
+            { "scheme": "https", "host": "leximon.fr", "pathPrefix": "/invitation" },
+            { "scheme": "https", "host": "leximon.fr", "pathPrefix": "/carte" },
+            { "scheme": "https", "host": "leximon.fr", "pathPrefix": "/joueur" },
+            { "scheme": "https", "host": "leximon.fr", "pathPrefix": "/enigme" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "playStoreUrl": "https://play.google.com/store/apps/details?id=fr.leximon.app"
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
+      "expo-apple-authentication",
       [
         "expo-font",
         {

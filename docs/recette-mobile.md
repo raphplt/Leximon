@@ -323,4 +323,4 @@ Les tests du téléphone (MJT-01 à MJT-04) sont dans [recette-nouveautes.md](re
 
 ## Pas encore sur le mobile
 
-Copie du lien d'ami dans le presse-papiers, liens universels `https://leximon.fr/…`, page Mécène.
+Page Mécène ; liens universels `https://leximon.fr/…` câblés côté app et API web (restent `APPLE_TEAM_ID` et `ANDROID_APP_SHA256` en production pour la vérification des deux boutiques).

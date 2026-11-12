@@ -74,15 +74,24 @@ export const WELCOME_TOAST = "Bienvenue ! Ton compte est créé, tes cartes te s
 /** Said instead when Google came in by the address of an account that was already there. */
 export const GOOGLE_LINKED_TOAST = "Ton compte Google est maintenant associé à ton compte.";
 
-/** How a sign-in went: a new account, Google added to an existing one, or a return. */
-export type SignedInWay = "joined" | "linked" | "back";
+/** Said instead when Apple came in by the address of an account that was already there. */
+export const APPLE_LINKED_TOAST = "Ton compte Apple est maintenant associé à ton compte.";
+
+/** How a sign-in went: a new account, Google or Apple added to an existing one, or a return. */
+export type SignedInWay = "joined" | "linked" | "apple_linked" | "back";
 
 export function signedInWay(
-  account: { readonly justJoined: boolean; readonly googleJustLinked: boolean },
-  byGoogle: boolean,
+  account: {
+    readonly justJoined: boolean;
+    readonly googleJustLinked: boolean;
+    readonly appleJustLinked?: boolean;
+  },
+  via: boolean | "google" | "apple",
 ): SignedInWay {
   if (account.justJoined) return "joined";
-  return byGoogle && account.googleJustLinked ? "linked" : "back";
+  if ((via === true || via === "google") && account.googleJustLinked) return "linked";
+  if (via === "apple" && account.appleJustLinked) return "apple_linked";
+  return "back";
 }
 
 export function signedInToast(way: SignedInWay): string {
@@ -91,6 +100,8 @@ export function signedInToast(way: SignedInWay): string {
       return WELCOME_TOAST;
     case "linked":
       return GOOGLE_LINKED_TOAST;
+    case "apple_linked":
+      return APPLE_LINKED_TOAST;
     case "back":
       return SIGNED_IN_TOAST;
   }
@@ -289,6 +300,10 @@ export const GOOGLE_OR = "ou";
 // A non-breaking hyphen: « e-mail » never splits over two lines.
 export const GOOGLE_AGE_TEXT = "Google ne nous transmet que ton adresse e\u2011mail.";
 
+/** Said on the step that asks the age before opening Apple Sign-In. */
+export const APPLE_AGE_TEXT =
+  "Apple ne nous transmet que ton adresse e\u2011mail (ou l'adresse relais que tu choisis).";
+
 /**
  * Queries of the account page on Google's return: `google` once signed in (with `news` when the
  * box was ticked before leaving), `error` and `cards` when the sign-in failed. Better Auth names
@@ -311,41 +326,54 @@ export type GoogleReturn =
   | { readonly kind: "guest_loss"; readonly step: Omit<ConfirmStep, "closed" | "needsAge"> }
   | { readonly kind: "error"; readonly message: string };
 
-/** What the account page says after a failed trip to Google, from its `error` and `cards`. */
-export function googleReturn(error: string, cards: string | null): GoogleReturn {
+type SocialProviderName = "Google" | "Apple";
+
+function socialReturn(provider: SocialProviderName, error: string, count: number): GoogleReturn {
   switch (error) {
     case "access_denied":
       return { kind: "cancelled" };
     case "signup_disabled":
       return {
         kind: "no_account",
-        notice: "Aucun compte n'utilise encore ce compte Google. Crée-le ici.",
+        notice: `Aucun compte n'utilise encore ce compte ${provider}. Crée-le ici.`,
       };
-    case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged: {
-      const count = Number.parseInt(cards ?? "", 10);
+    case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged:
       return {
         kind: "guest_loss",
         step: {
           title: "Tu vas perdre cette partie",
-          text: "Ce compte Google mène à un compte Leximon qui a déjà sa propre collection. Pour garder la partie que tu joues ici, utilise un autre compte Google.",
+          text: `Ce compte ${provider} mène à un compte Leximon qui a déjà sa propre collection. Pour garder la partie que tu joues ici, utilise un autre compte ${provider}.`,
           warning: `Si tu te connectes, ${lostGame(Number.isNaN(count) ? 0 : count)}.`,
           confirmLabel: "Perdre cette partie et me connecter",
           acceptsLoss: true,
         },
       };
-    }
     default:
-      return { kind: "error", message: googleErrorMessage(error) };
+      return { kind: "error", message: socialErrorMessage(provider, error) };
   }
 }
 
-function googleErrorMessage(error: string): string {
+/** What the account page says after a failed trip to Google, from its `error` and `cards`. */
+export function googleReturn(error: string, cards: string | null): GoogleReturn {
+  const count = Number.parseInt(cards ?? "", 10);
+  return socialReturn("Google", error, count);
+}
+
+/** What the account screen says after a failed native Apple sign-in, given the guest's cards. */
+export function appleReturn(error: string, guestCards: number): GoogleReturn {
+  return socialReturn("Apple", error, guestCards);
+}
+
+function socialErrorMessage(provider: SocialProviderName, error: string): string {
   switch (error) {
     case "BANNED_USER":
       return "Ce compte a été suspendu. Écris à contact@leximon.fr pour en savoir plus.";
+    case "rate_limited":
+      return "Trop de tentatives. Réessaie dans une minute.";
     case "email_not_verified":
+    case "EMAIL_NOT_VERIFIED":
     case "account_not_linked":
-      return "Google n'a pas vérifié cette adresse. Connecte-toi plutôt avec un code par e-mail.";
+      return `${provider} n'a pas vérifié cette adresse. Connecte-toi plutôt avec un code par e-mail.`;
     case ACCOUNT_ERROR_CODES.ageConfirmationRequired:
       return "Il faut cocher la case de l'âge pour créer un compte.";
     case ACCOUNT_ERROR_CODES.accountLinkFailed:
@@ -355,18 +383,34 @@ function googleErrorMessage(error: string): string {
     case ACCOUNT_ERROR_CODES.inviteClosed:
       return "Ce lien d'invitation n'est plus valable.";
     default:
-      return "La connexion avec Google a échoué. Réessaie.";
+      return `La connexion avec ${provider} a échoué. Réessaie.`;
   }
 }
 
 /** After the member's address, when Google is one of the ways they sign in. */
 export const BY_GOOGLE = "par Google";
 
+/** After the member's address, when Apple is one of the ways they sign in. */
+export const BY_APPLE = "par Apple";
+
+export function connectedByLabel(providers: {
+  readonly withGoogle: boolean;
+  readonly withApple: boolean;
+}): string | null {
+  if (providers.withGoogle && providers.withApple) return "par Google et Apple";
+  if (providers.withGoogle) return BY_GOOGLE;
+  if (providers.withApple) return BY_APPLE;
+  return null;
+}
+
 /** On the member's panel while Google is not one of the ways they sign in. */
 export const GOOGLE_LINK_BUTTON = "Associer mon compte Google";
 
 export const GOOGLE_LINKED_NOTICE =
   "Ton compte Google est associé. Tu peux maintenant te connecter avec lui.";
+
+export const APPLE_LINKED_NOTICE =
+  "Ton compte Apple est associé. Tu peux maintenant te connecter avec lui.";
 
 /**
  * What the member's panel says after a failed trip to add Google, from Better Auth's `error`;
@@ -377,12 +421,32 @@ export function googleLinkError(error: string, email: string): string | null {
     case "access_denied":
       return null;
     case "email_does_not_match":
+    case "LINKING_DIFFERENT_EMAILS_NOT_ALLOWED":
       return `Ce compte Google n'a pas la même adresse que ton compte. Choisis celui de ${email}.`;
     case "account_already_linked_to_different_user":
+    case "SOCIAL_ACCOUNT_ALREADY_LINKED":
       return "Ce compte Google est déjà associé à un autre compte Leximon.";
     case "email_not_verified":
+    case "EMAIL_NOT_VERIFIED":
       return "Google n'a pas vérifié l'adresse de ce compte Google.";
     default:
       return "L'association avec Google a échoué. Réessaie.";
+  }
+}
+
+/** What the member's panel says when linking an Apple account fails. */
+export function appleLinkError(error: string, email: string): string {
+  switch (error) {
+    case "email_does_not_match":
+    case "LINKING_DIFFERENT_EMAILS_NOT_ALLOWED":
+      return `Ce compte Apple utilise une autre adresse que la tienne. Choisis de partager ${email}.`;
+    case "account_already_linked_to_different_user":
+    case "SOCIAL_ACCOUNT_ALREADY_LINKED":
+      return "Ce compte Apple est déjà associé à un autre compte Leximon.";
+    case "email_not_verified":
+    case "EMAIL_NOT_VERIFIED":
+      return "Apple n'a pas vérifié l'adresse de ce compte Apple.";
+    default:
+      return "L'association avec Apple a échoué. Réessaie.";
   }
 }

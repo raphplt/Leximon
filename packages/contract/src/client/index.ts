@@ -35,7 +35,13 @@ export function createAdminClient(options: ApiClientOptions) {
 
 export type AdminClient = ReturnType<typeof createAdminClient>;
 
-export type { JoinWaitlistResult, PreviewResult, SendCodeResult, SignInResult } from "./account";
+export type {
+  JoinWaitlistResult,
+  LinkSocialResult,
+  PreviewResult,
+  SendCodeResult,
+  SignInResult,
+} from "./account";
 export type { AdminAccess, EraseResult, LaunchResult } from "./admin";
 export * from "./catalog";
 export type { ClanResult } from "./clans";

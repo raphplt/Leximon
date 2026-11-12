@@ -48,6 +48,13 @@ export function googleSignInConfigured(env: Env): boolean {
   return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
 }
 
+export const APPLE_BUNDLE_ID = "fr.leximon.app";
+
+/** Apple Sign-In verifies native iOS identity tokens against Apple's JWKS. */
+export function appleSignInConfigured(env: Env): boolean {
+  return Boolean(env.APPLE_CLIENT_ID);
+}
+
 /** The request context Better Auth hands to its callbacks. */
 type EndpointContext = Parameters<typeof getSessionFromCtx>[0];
 
@@ -106,20 +113,32 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
         verifications: schema.verifications,
       },
     }),
-    socialProviders: googleSignInConfigured(env)
-      ? {
-          google: {
-            clientId: env.GOOGLE_CLIENT_ID,
-            clientSecret: env.GOOGLE_CLIENT_SECRET,
-            // The address only: no name, no picture on Google's consent screen.
-            scope: ["openid", "email"],
-            disableDefaultScope: true,
-            // An account is created only from « Créer un compte », where the age was asked.
-            disableImplicitSignUp: true,
-            prompt: "select_account",
-          },
-        }
-      : {},
+    socialProviders: {
+      ...(googleSignInConfigured(env)
+        ? {
+            google: {
+              clientId: env.GOOGLE_CLIENT_ID,
+              clientSecret: env.GOOGLE_CLIENT_SECRET,
+              // The address only: no name, no picture on Google's consent screen.
+              scope: ["openid", "email"],
+              disableDefaultScope: true,
+              // An account is created only from « Créer un compte », where the age was asked.
+              disableImplicitSignUp: true,
+              prompt: "select_account",
+            },
+          }
+        : {}),
+      ...(appleSignInConfigured(env)
+        ? {
+            apple: {
+              clientId: env.APPLE_CLIENT_ID || APPLE_BUNDLE_ID,
+              appBundleIdentifier: APPLE_BUNDLE_ID,
+              // An account is created only from « Créer un compte », where the age was asked.
+              disableImplicitSignUp: true,
+            },
+          }
+        : {}),
+    },
     account: {
       // Google's tokens serve nothing once the player is in: none is written (hooks below).
       updateAccountOnSignIn: false,
@@ -240,10 +259,15 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== SOCIAL_SIGN_IN_PATH && ctx.path !== LINK_SOCIAL_PATH) return;
-        // Signing in with a token the client got from Google itself skips the trip, and with it
-        // what travels in the state: only the redirect is offered.
+        // Google only uses the redirect trip so declarations travel safely in OAuth state.
+        // Native Apple Sign-In sends a signed Apple identity token directly.
         if (readsIdToken(ctx.body)) {
-          throw new APIError("BAD_REQUEST", { message: "Only the redirect to Google is offered" });
+          if (providerFromBody(ctx.body) !== "apple") {
+            throw new APIError("BAD_REQUEST", {
+              message: "Only the redirect to Google is offered",
+            });
+          }
+          return;
         }
         if (ctx.path === SOCIAL_SIGN_IN_PATH) await keepArrivalForTrip(ctx.headers);
       }),
@@ -281,6 +305,12 @@ const NO_TOKENS = { accessToken: null, refreshToken: null, idToken: null } as co
 
 function readsIdToken(body: unknown): boolean {
   return typeof body === "object" && body !== null && "idToken" in body;
+}
+
+function providerFromBody(body: unknown): unknown {
+  return typeof body === "object" && body !== null && "provider" in body
+    ? (body as { readonly provider?: unknown }).provider
+    : undefined;
 }
 
 export function parseOrigins(value: string): string[] {

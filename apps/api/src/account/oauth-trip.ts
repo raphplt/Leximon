@@ -29,7 +29,14 @@ export function isOAuthCallback(ctx: TripContext | null | undefined): boolean {
  * the player's own declarations, never a permission.
  */
 export async function declarations(ctx: TripContext | null | undefined): Promise<unknown> {
-  if (!isOAuthCallback(ctx)) return ctx?.body;
+  if (!isOAuthCallback(ctx)) {
+    const body = ctx?.body;
+    // Direct `idToken` calls place declarations under `additionalData`; email OTP puts them at root.
+    if (typeof body === "object" && body !== null && "additionalData" in body) {
+      return (body as { readonly additionalData?: unknown }).additionalData;
+    }
+    return body;
+  }
   return (await getOAuthState()) ?? undefined;
 }
 

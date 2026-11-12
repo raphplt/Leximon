@@ -121,6 +121,24 @@ export interface GoogleLinkRequest {
 /** `POST /api/auth/sign-in/social` and `/link-social`, 200: Google's page the player is sent to. */
 export const googleSignInStartSchema = z.object({ url: z.url() });
 
+/** Apple identity token returned natively on iOS (`ASAuthorizationAppleIDCredential`). */
+export interface AppleIdToken {
+  readonly token: string;
+  readonly nonce: string;
+}
+
+/** Direct native Apple sign-in via Better Auth's `idToken` branch on `/api/auth/sign-in/social`. */
+export interface AppleSignInRequest {
+  readonly signUp: boolean;
+  readonly idToken: AppleIdToken;
+  readonly declared: GoogleDeclarations;
+}
+
+/** Adding Apple to the signed-in member directly via Better Auth's `/api/auth/link-social`. */
+export interface AppleLinkRequest {
+  readonly idToken: AppleIdToken;
+}
+
 /** `GET /me/account`, 200: who is playing. */
 export const accountResponseSchema = z.discriminatedUnion("kind", [
   z.object({
@@ -135,10 +153,14 @@ export const accountResponseSchema = z.discriminatedUnion("kind", [
     isAdmin: z.boolean(),
     /** The member can sign in with Google (absent from an API older than it). */
     withGoogle: z.boolean().default(false),
+    /** The member can sign in with Apple (absent from an API older than it). */
+    withApple: z.boolean().default(false),
     /** The account was created a few minutes ago: the game welcomes it rather than greets it. */
     justJoined: z.boolean().default(false),
     /** Google was added to this existing account a few minutes ago: the game says so. */
     googleJustLinked: z.boolean().default(false),
+    /** Apple was added to this existing account a few minutes ago: the game says so. */
+    appleJustLinked: z.boolean().default(false),
   }),
 ]);
 export type AccountResponse = z.infer<typeof accountResponseSchema>;

@@ -1,6 +1,7 @@
 import {
   AGE_BRACKETS,
   type AgeBracket,
+  type AppleIdToken,
   type GoogleDeclarations,
   type LinkPreviewResponse,
 } from "@leximon/contract";
@@ -10,17 +11,22 @@ import {
   ACCOUNT_TITLES,
   type AccountIntent,
   AGE_UNSAID,
+  APPLE_AGE_TEXT,
+  APPLE_LINKED_NOTICE,
   ageBracketLabel,
-  BY_GOOGLE,
+  appleLinkError,
+  appleReturn,
   type CodeError,
   type ConfirmStep,
   codeErrorMessage,
   confirmStep,
+  connectedByLabel,
   emailStep,
   GOOGLE_AGE_TEXT,
   GOOGLE_LINK_BUTTON,
   GOOGLE_LINKED_NOTICE,
   GOOGLE_OR,
+  type GoogleReturn,
   googleLinkError,
   googleReturn,
   NEWS_OPT_IN,
@@ -32,11 +38,13 @@ import {
   signedInToast,
   signedInWay,
 } from "@leximon/view-model";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import Svg from "react-native-svg";
+import { isAppleAvailable, linkApple, signInWithApple } from "@/api/apple-sign-in";
 import { api } from "@/api/client";
 import { linkGoogle, signInWithGoogle } from "@/api/google-sign-in";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
@@ -53,18 +61,31 @@ import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { toast } from "@/ui/toast";
+import { AppleButton } from "./apple-button";
 import { GoogleButton } from "./google-button";
 import { keepLastEmail, readLastEmail } from "./last-email";
+
+type SocialProvider = "google" | "apple";
 
 type Step =
   | { readonly kind: "loading" }
   | { readonly kind: "failed" }
-  | { readonly kind: "member"; readonly email: string; readonly withGoogle: boolean }
+  | {
+      readonly kind: "member";
+      readonly email: string;
+      readonly withGoogle: boolean;
+      readonly withApple: boolean;
+    }
   | { readonly kind: "email" }
-  /** « J'ai 15 ans ou plus », asked before leaving for Google to create an account. */
-  | { readonly kind: "googleAge" }
-  /** Back from Google: the account plays already, the guest's game would be lost. */
-  | { readonly kind: "googleLoss"; readonly step: GoogleLossStep }
+  /** « J'ai 15 ans ou plus », asked before social sign-up. */
+  | { readonly kind: "socialAge"; readonly provider: SocialProvider }
+  /** Back from social auth: the account plays already, the guest's game would be lost. */
+  | {
+      readonly kind: "socialLoss";
+      readonly provider: SocialProvider;
+      readonly step: GoogleLossStep;
+      readonly appleToken?: AppleIdToken;
+    }
   | { readonly kind: "code"; readonly email: string }
   | {
       readonly kind: "confirm";
@@ -91,7 +112,7 @@ export function AccountScreen() {
   // Said above the form, not as an error: where Google's return left the player.
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const google = useGoogleSignIn();
+  const social = useSocialSignIn();
   // Kept in the route's params, so that a « Me connecter » works from this screen too.
   const intent: AccountIntent =
     useLocalSearchParams()[SIGN_IN_QUERY] !== undefined ? "signin" : "signup";
@@ -104,7 +125,12 @@ export function AccountScreen() {
       const account = await api.fetchAccount();
       setStep(
         account.kind === "member"
-          ? { kind: "member", email: account.email, withGoogle: account.withGoogle }
+          ? {
+              kind: "member",
+              email: account.email,
+              withGoogle: account.withGoogle,
+              withApple: account.withApple,
+            }
           : { kind: "email" },
       );
     } catch (error) {
@@ -167,11 +193,11 @@ export function AccountScreen() {
     });
     if (result.kind === "signed_in") {
       keepLastEmail(email);
-      await finishSignIn(false);
+      await finishSignIn("email");
     } else showCodeError(result.code, email);
   };
 
-  const finishSignIn = async (byGoogle: boolean) => {
+  const finishSignIn = async (via: "email" | SocialProvider) => {
     if (newsOptIn) {
       // Missing consent is the safe failure: the player can still tick it in their account.
       await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
@@ -179,7 +205,39 @@ export function AccountScreen() {
     // Whether the account is new is the server's to say; a failed read only loses the welcome.
     const account = await api.fetchAccount().catch(() => null);
     playFromScratch();
-    toast(signedInToast(account?.kind === "member" ? signedInWay(account, byGoogle) : "back"));
+    toast(
+      signedInToast(
+        account?.kind === "member" ? signedInWay(account, via === "email" ? false : via) : "back",
+      ),
+    );
+  };
+
+  const applySocialReturn = (
+    provider: SocialProvider,
+    back: GoogleReturn,
+    appleToken?: AppleIdToken,
+  ) => {
+    switch (back.kind) {
+      case "cancelled":
+        go({ kind: "email" });
+        return;
+      case "no_account":
+        router.setParams({ [SIGN_IN_QUERY]: undefined });
+        go({ kind: "email" });
+        setNotice(back.notice);
+        return;
+      case "guest_loss":
+        go({
+          kind: "socialLoss",
+          provider,
+          step: back.step,
+          ...(appleToken === undefined ? {} : { appleToken }),
+        });
+        return;
+      case "error":
+        go({ kind: "email" });
+        setError(back.message);
+    }
   };
 
   /** Off to Google in the browser; back here signed in, or with the reason it failed. */
@@ -187,38 +245,57 @@ export function AccountScreen() {
     run(async () => {
       const trip = await signInWithGoogle(signUp, declared);
       if (trip.kind === "signed_in") {
-        await finishSignIn(true);
+        await finishSignIn("google");
         return;
       }
       if (trip.kind === "closed") return;
-      const back = googleReturn(trip.error, trip.cards);
-      switch (back.kind) {
-        case "cancelled":
-          go({ kind: "email" });
-          return;
-        case "no_account":
-          router.setParams({ [SIGN_IN_QUERY]: undefined });
-          go({ kind: "email" });
-          setNotice(back.notice);
-          return;
-        case "guest_loss":
-          go({ kind: "googleLoss", step: back.step });
-          return;
-        case "error":
-          go({ kind: "email" });
-          setError(back.message);
+      applySocialReturn("google", googleReturn(trip.error, trip.cards));
+    });
+
+  /** Native iOS Apple Sign-In; signed in or back with a clear next step. */
+  const leaveForApple = (
+    signUp: boolean,
+    declared: GoogleDeclarations,
+    cachedToken?: AppleIdToken,
+  ) =>
+    run(async () => {
+      const trip = await signInWithApple(signUp, declared, cachedToken);
+      if (trip.kind === "signed_in") {
+        await finishSignIn("apple");
+        return;
       }
+      if (trip.kind === "closed") return;
+      applySocialReturn("apple", appleReturn(trip.code, trip.guestCards), trip.idToken);
     });
 
   /** Off to Google in the browser to add it to the account; back here linked or not. */
-  const addGoogle = (email: string) =>
+  const addGoogle = (member: {
+    readonly email: string;
+    readonly withGoogle: boolean;
+    readonly withApple: boolean;
+  }) =>
     run(async () => {
       setNotice(null);
       const trip = await linkGoogle();
       if (trip.kind === "linked") {
         setNotice(GOOGLE_LINKED_NOTICE);
-        setStep({ kind: "member", email, withGoogle: true });
-      } else if (trip.kind === "refused") setError(googleLinkError(trip.error, email));
+        setStep({ kind: "member", ...member, withGoogle: true });
+      } else if (trip.kind === "refused") setError(googleLinkError(trip.error, member.email));
+    });
+
+  /** Native Apple link on iOS to add Apple Sign-In to the current account. */
+  const addApple = (member: {
+    readonly email: string;
+    readonly withGoogle: boolean;
+    readonly withApple: boolean;
+  }) =>
+    run(async () => {
+      setNotice(null);
+      const trip = await linkApple();
+      if (trip.kind === "linked") {
+        setNotice(APPLE_LINKED_NOTICE);
+        setStep({ kind: "member", ...member, withApple: true });
+      } else if (trip.kind === "refused") setError(appleLinkError(trip.code, member.email));
     });
 
   const showCodeError = (reason: CodeError, email: string) => {
@@ -249,13 +326,23 @@ export function AccountScreen() {
           {notice !== null && <Text style={styles.notice}>{notice}</Text>}
           <Paragraph>
             Connecté avec <Text style={styles.email}>{step.email}</Text>
-            {step.withGoogle ? ` ${BY_GOOGLE}` : ""}.
+            {(() => {
+              const by = connectedByLabel(step);
+              return by === null ? "" : ` ${by}`;
+            })()}.
           </Paragraph>
-          {google && !step.withGoogle && (
+          {social.apple && !step.withApple && (
+            <AppleButton
+              busy={busy}
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              onPress={() => void addApple(step)}
+            />
+          )}
+          {social.google && !step.withGoogle && (
             <GoogleButton
               busy={busy}
               label={GOOGLE_LINK_BUTTON}
-              onPress={() => void addGoogle(step.email)}
+              onPress={() => void addGoogle(step)}
             />
           )}
           <NewsToggle />
@@ -282,10 +369,11 @@ export function AccountScreen() {
               setNotice(null);
             }}
             notice={notice}
-            google={google}
-            onGoogle={() => {
+            social={social}
+            onSocial={(provider) => {
               setNotice(null);
-              if (intent === "signup") go({ kind: "googleAge" });
+              if (intent === "signup") go({ kind: "socialAge", provider });
+              else if (provider === "apple") void leaveForApple(false, {});
               else void leaveForGoogle(false, {});
             }}
             busy={busy}
@@ -296,24 +384,27 @@ export function AccountScreen() {
         </OnPaper>
       )}
 
-      {step.kind === "googleAge" && (
+      {step.kind === "socialAge" && (
         <OnPaper>
-          <GoogleAge
+          <SocialAge
+            provider={step.provider}
             busy={busy}
             newsOptIn={newsOptIn}
             onNewsOptIn={setNewsOptIn}
-            onLeave={(ageBracket) =>
-              void leaveForGoogle(true, {
+            onLeave={(ageBracket) => {
+              const declared: GoogleDeclarations = {
                 ageConfirmed: true,
                 ...(ageBracket === null ? {} : { ageBracket }),
-              })
-            }
+              };
+              if (step.provider === "apple") void leaveForApple(true, declared);
+              else void leaveForGoogle(true, declared);
+            }}
             onCancel={() => go({ kind: "email" })}
           />
         </OnPaper>
       )}
 
-      {step.kind === "googleLoss" && (
+      {step.kind === "socialLoss" && (
         <OnPaper>
           <Paragraph>{step.step.text}</Paragraph>
           {step.step.warning !== null && <Text style={styles.warning}>{step.step.warning}</Text>}
@@ -322,7 +413,13 @@ export function AccountScreen() {
             label={busy ? "Un instant…" : step.step.confirmLabel}
             secondary
             disabled={busy}
-            onPress={() => void leaveForGoogle(false, { acceptGuestLoss: true })}
+            onPress={() => {
+              if (step.provider === "apple") {
+                void leaveForApple(false, { acceptGuestLoss: true }, step.appleToken);
+              } else {
+                void leaveForGoogle(false, { acceptGuestLoss: true });
+              }
+            }}
           />
         </OnPaper>
       )}
@@ -419,26 +516,33 @@ function titleOf(step: Step, intent: AccountIntent): string {
     case "code":
     case "confirm":
       return ACCOUNT_TITLES[step.kind];
-    case "googleLoss":
+    case "socialLoss":
       return step.step.title;
     default:
       return emailStep(intent).title;
   }
 }
 
+interface SocialSignInState {
+  readonly apple: boolean;
+  readonly google: boolean;
+}
+
 /**
- * Whether Google is offered here: by the API, and on Android only, since the App Store asks for
- * « Se connecter avec Apple » beside it.
+ * Offered social sign-ins: on Android, Google when configured; on iOS, Apple when available on
+ * the device, and Google only alongside Apple so both appear together.
  */
-function useGoogleSignIn(): boolean {
-  const [offered, setOffered] = useState(false);
+function useSocialSignIn(): SocialSignInState {
+  const [offered, setOffered] = useState<SocialSignInState>({ apple: false, google: false });
   useEffect(() => {
-    if (Platform.OS !== "android") return;
     let live = true;
-    api
-      .fetchAppStatus()
-      .then((status) => {
-        if (live) setOffered(status.googleSignIn);
+    Promise.all([api.fetchAppStatus(), isAppleAvailable()])
+      .then(([status, appleAvailable]) => {
+        if (!live) return;
+        const apple = Platform.OS === "ios" && appleAvailable && status.appleSignIn;
+        const google =
+          status.googleSignIn && (Platform.OS === "android" || (Platform.OS === "ios" && apple));
+        setOffered({ apple, google });
       })
       .catch(() => undefined);
     return () => {
@@ -452,8 +556,8 @@ function EmailForm({
   intent,
   onIntent,
   notice,
-  google,
-  onGoogle,
+  social,
+  onSocial,
   busy,
   newsOptIn,
   onNewsOptIn,
@@ -462,8 +566,8 @@ function EmailForm({
   readonly intent: AccountIntent;
   readonly onIntent: (intent: AccountIntent) => void;
   readonly notice: string | null;
-  readonly google: boolean;
-  readonly onGoogle: () => void;
+  readonly social: SocialSignInState;
+  readonly onSocial: (provider: SocialProvider) => void;
   readonly busy: boolean;
   readonly newsOptIn: boolean;
   readonly onNewsOptIn: (value: boolean) => void;
@@ -472,6 +576,7 @@ function EmailForm({
   const [email, setEmail] = useState(readLastEmail);
   const ready = !busy && email.trim() !== "";
   const words = emailStep(intent);
+  const hasSocial = social.apple || social.google;
   const submit = () => {
     if (ready) onSubmit(email.trim().toLowerCase());
   };
@@ -480,9 +585,20 @@ function EmailForm({
       <Segmented options={ACCOUNT_INTENTS} value={intent} onChange={onIntent} />
       {notice !== null && <Text style={styles.notice}>{notice}</Text>}
       <Paragraph>{words.text}</Paragraph>
-      {google && (
+      {hasSocial && (
         <>
-          <GoogleButton busy={busy} onPress={onGoogle} />
+          {social.apple && (
+            <AppleButton
+              busy={busy}
+              buttonType={
+                intent === "signin"
+                  ? AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+                  : AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
+              }
+              onPress={() => onSocial("apple")}
+            />
+          )}
+          {social.google && <GoogleButton busy={busy} onPress={() => onSocial("google")} />}
           <View style={styles.or}>
             <View style={styles.orRule} />
             <Text style={styles.orWord}>{GOOGLE_OR}</Text>
@@ -697,14 +813,16 @@ function AgeCheck({
   );
 }
 
-/** Before leaving for Google to create an account: what the code asks on its last step. */
-function GoogleAge({
+/** Before starting a social sign-up: asks the same age and news choices as the code flow. */
+function SocialAge({
+  provider,
   busy,
   newsOptIn,
   onNewsOptIn,
   onLeave,
   onCancel,
 }: {
+  readonly provider: SocialProvider;
   readonly busy: boolean;
   readonly newsOptIn: boolean;
   readonly onNewsOptIn: (value: boolean) => void;
@@ -715,13 +833,22 @@ function GoogleAge({
   const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
   return (
     <>
-      <Paragraph>{GOOGLE_AGE_TEXT}</Paragraph>
+      <Paragraph>{provider === "apple" ? APPLE_AGE_TEXT : GOOGLE_AGE_TEXT}</Paragraph>
       <AgeChoice value={ageBracket} onChange={setAgeBracket} />
       <Check checked={newsOptIn} onChange={onNewsOptIn}>
         {NEWS_OPT_IN}
       </Check>
       <AgeCheck checked={ageConfirmed} onChange={setAgeConfirmed} />
-      <GoogleButton busy={busy} disabled={!ageConfirmed} onPress={() => onLeave(ageBracket)} />
+      {provider === "apple" ? (
+        <AppleButton
+          busy={busy}
+          disabled={!ageConfirmed}
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+          onPress={() => onLeave(ageBracket)}
+        />
+      ) : (
+        <GoogleButton busy={busy} disabled={!ageConfirmed} onPress={() => onLeave(ageBracket)} />
+      )}
       <TextButton label="Retour" disabled={busy} onPress={onCancel} />
     </>
   );

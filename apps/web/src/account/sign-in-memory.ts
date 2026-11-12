@@ -48,7 +48,7 @@ export function takeSignedIn(): SignedInWay | null {
     const noted = window.sessionStorage.getItem(SIGNED_IN_KEY);
     window.sessionStorage.removeItem(SIGNED_IN_KEY);
     if (noted === null) return null;
-    return noted === "joined" || noted === "linked" ? noted : "back";
+    return noted === "joined" || noted === "linked" || noted === "apple_linked" ? noted : "back";
   } catch {
     return null;
   }

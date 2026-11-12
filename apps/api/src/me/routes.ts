@@ -40,7 +40,7 @@ import {
   practiceRulesAt,
 } from "@leximon/core";
 import { schema } from "@leximon/db";
-import { and, asc, eq, gt, isNull, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
@@ -430,27 +430,34 @@ export function meRoutes(createBilling: BillingFactory) {
       return c.json({ error: "unauthorized" }, 401);
     }
     if (session.user.isAnonymous !== true) {
-      const [google] = await c.var.db
-        .select({ linkedAt: schema.accounts.createdAt })
+      const socialAccounts = await c.var.db
+        .select({
+          providerId: schema.accounts.providerId,
+          linkedAt: schema.accounts.createdAt,
+        })
         .from(schema.accounts)
         .where(
           and(
             eq(schema.accounts.userId, session.user.id),
-            eq(schema.accounts.providerId, "google"),
+            inArray(schema.accounts.providerId, ["google", "apple"]),
           ),
-        )
-        .limit(1);
+        );
+      const google = socialAccounts.find((account) => account.providerId === "google");
+      const apple = socialAccounts.find((account) => account.providerId === "apple");
+      const linkedLater = (account: { readonly linkedAt: Date } | undefined) =>
+        account !== undefined &&
+        isRecent(account.linkedAt) &&
+        account.linkedAt.getTime() - session.user.createdAt.getTime() > LINKED_LATER_MS;
       return c.json<AccountResponse>({
         kind: "member",
         email: session.user.email,
         isAdmin: session.user.role === ADMIN_ROLE,
         withGoogle: google !== undefined,
+        withApple: apple !== undefined,
         justJoined: isRecent(session.user.createdAt),
-        // Google added to an account that was already there, not the way the account was made.
-        googleJustLinked:
-          google !== undefined &&
-          isRecent(google.linkedAt) &&
-          google.linkedAt.getTime() - session.user.createdAt.getTime() > LINKED_LATER_MS,
+        // Added to an account that was already there, not the way the account was made.
+        googleJustLinked: linkedLater(google),
+        appleJustLinked: linkedLater(apple),
       });
     }
     const rules = guestRulesAt(GUEST_SCHEDULE, Date.now());

@@ -7,6 +7,7 @@ import {
   FRIENDS_TITLE,
   type FriendFilter,
   friendLine,
+  friendLink,
   friendLinkText,
   friendListView,
   friendsCountLabel,
@@ -15,6 +16,7 @@ import {
   tradesLabel,
   unfoldLabel,
 } from "@leximon/view-model";
+import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
@@ -39,6 +41,7 @@ import { SearchField } from "@/ui/search-field";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
+import { toast } from "@/ui/toast";
 import { FriendFeed } from "./feed";
 import { Podium } from "./podium";
 
@@ -305,6 +308,10 @@ function FriendLink({
   readonly placesLeft: number | null;
 }) {
   const places = betaPlacesLabel(placesLeft);
+  const copyLink = async () => {
+    const copied = await Clipboard.setStringAsync(friendLink(WEB_URL, code));
+    toast(copied ? "Lien copié." : "Impossible de copier le lien.");
+  };
   return (
     <Panel paper style={styles.tile}>
       <Text style={styles.kicker}>Ton lien d'ami</Text>
@@ -313,10 +320,13 @@ function FriendLink({
         vous gagnez chacun un sachet bonus.
       </Text>
       {places !== null && <Text style={styles.small}>{places}</Text>}
-      <Button
-        label="Partager mon lien"
-        onPress={() => void Share.share({ message: friendLinkText(WEB_URL, code) })}
-      />
+      <View style={styles.linkActions}>
+        <Button
+          label="Partager mon lien"
+          onPress={() => void Share.share({ message: friendLinkText(WEB_URL, code) })}
+        />
+        <Button label="Copier le lien" secondary onPress={() => void copyLink()} />
+      </View>
     </Panel>
   );
 }
@@ -566,6 +576,7 @@ const styles = StyleSheet.create({
   incoming: { borderWidth: 1, borderColor: alpha(ink.gilt, 0.35) },
   request: { gap: space.s4 },
   requestActions: { flexDirection: "row", gap: space.s5 },
+  linkActions: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   grow: { flex: 1 },
   summary: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   summaryText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },

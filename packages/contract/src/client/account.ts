@@ -1,5 +1,8 @@
+import { z } from "zod";
 import {
   type AccountResponse,
+  type AppleLinkRequest,
+  type AppleSignInRequest,
   type AppStatusResponse,
   accountResponseSchema,
   appStatusResponseSchema,
@@ -25,6 +28,19 @@ import {
 } from "../index";
 import { ApiError, authErrorCode, errorCode, type Http, json, parse, segment } from "./http";
 
+const socialAuthErrorSchema = z.object({
+  code: z.string(),
+  message: z.string().optional(),
+});
+
+async function socialIdTokenErrorCode(response: Response): Promise<string | null> {
+  const body = socialAuthErrorSchema.safeParse(await response.json().catch(() => null));
+  if (!body.success) return null;
+  // Better Auth wraps `signup_disabled` from `handleOAuthUserInfo` inside `message` on `idToken` sign-in.
+  if (body.data.code === "OAUTH_LINK_ERROR" && body.data.message) return body.data.message;
+  return body.data.code;
+}
+
 export type SendCodeResult =
   | { readonly kind: "sent" }
   | {
@@ -39,6 +55,10 @@ export type PreviewResult =
 export type SignInResult =
   | { readonly kind: "signed_in" }
   /** Better Auth's code (`INVALID_OTP`…) or ours (`ACCOUNT_ERROR_CODES`); "rate_limited" on 429. */
+  | { readonly kind: "refused"; readonly code: string };
+
+export type LinkSocialResult =
+  | { readonly kind: "linked" }
   | { readonly kind: "refused"; readonly code: string };
 
 export type JoinWaitlistResult =
@@ -150,6 +170,41 @@ export function accountRoutes(http: Http) {
       const response = await send("/api/auth/link-social", json("POST", body));
       if (!response.ok) throw new ApiError("google_unavailable", response.status);
       return (await parse(response, googleSignInStartSchema)).url;
+    },
+
+    /** Signs in or creates a player with a native Apple identity token. */
+    async signInWithApple(request: AppleSignInRequest): Promise<SignInResult> {
+      const body = {
+        provider: "apple",
+        idToken: request.idToken,
+        ...(request.signUp ? { requestSignUp: true } : {}),
+        additionalData: request.declared,
+      };
+      const response = await send(
+        "/api/auth/sign-in/social",
+        json("POST", body, arrival.headers()),
+      );
+      if (response.ok) {
+        arrival.forget();
+        return { kind: "signed_in" };
+      }
+      if (response.status === 429) return { kind: "refused", code: "rate_limited" };
+      const code = await socialIdTokenErrorCode(response);
+      if (code !== null) return { kind: "refused", code };
+      throw new ApiError("apple_unavailable", response.status);
+    },
+
+    /** Links a native Apple account to the signed-in member. */
+    async linkApple(request: AppleLinkRequest): Promise<LinkSocialResult> {
+      const response = await send(
+        "/api/auth/link-social",
+        json("POST", { provider: "apple", idToken: request.idToken }),
+      );
+      if (response.ok) return { kind: "linked" };
+      if (response.status === 429) return { kind: "refused", code: "rate_limited" };
+      const code = await socialIdTokenErrorCode(response);
+      if (code !== null) return { kind: "refused", code };
+      throw new ApiError("apple_unavailable", response.status);
     },
 
     async signOut(): Promise<void> {

@@ -252,8 +252,10 @@ describe("signing up from a guest", () => {
       email,
       isAdmin: false,
       withGoogle: false,
+      withApple: false,
       justJoined: true,
       googleJustLinked: false,
+      appleJustLinked: false,
     });
     expect(await cardsOf(user.id)).toEqual(cardsBefore);
     const [wallet] = await db
@@ -401,8 +403,10 @@ describe("signing in to an account that plays", () => {
       email: account.email,
       isAdmin: false,
       withGoogle: false,
+      withApple: false,
       justJoined: false,
       googleJustLinked: false,
+      appleJustLinked: false,
     });
     expect(await cardsOf(account.userId)).toEqual({ "test-a-common-1": 2, "test-a-common-2": 1 });
     expect(await cardsOf(guest.userId)).toEqual({ "test-a-common-1": 3, "test-a-epic-1": 1 });
@@ -473,8 +477,10 @@ describe("signing in to an account that plays", () => {
       email: account.email,
       isAdmin: false,
       withGoogle: false,
+      withApple: false,
       justJoined: true,
       googleJustLinked: false,
+      appleJustLinked: false,
     });
     expect(await cardsOf(account.userId)).toEqual({ "test-b-common-1": 1 });
     expect(await linkOf(empty.userId)).toMatchObject({

@@ -41,6 +41,7 @@
     // the app then asks to be updated.
     "MOBILE_MIN_VERSION": "0.0.0",
     "PATRON_SALES": "closed",
+    "APPLE_CLIENT_ID": "fr.leximon.app",
     // The patrons' Discord: the bot's application, the server, the role it gives. Empty: no
     // link offered. Secrets DISCORD_CLIENT_SECRET and DISCORD_BOT_TOKEN complete them.
     "DISCORD_CLIENT_ID": "1568981422721470464",
@@ -177,6 +178,7 @@
         "MOBILE_MIN_VERSION": "0.0.0",
         // "open" sells the patron subscription; closed, only admins can buy, to try the payment.
         "PATRON_SALES": "open",
+        "APPLE_CLIENT_ID": "fr.leximon.app",
         "DISCORD_CLIENT_ID": "1568981422721470464",
         "DISCORD_GUILD_ID": "1563157710042570764",
         "DISCORD_PATRON_ROLE_ID": "1569285444594573342"

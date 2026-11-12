@@ -31,6 +31,7 @@ describe("api", () => {
     expect(await response.json()).toEqual({
       mobileMinVersion: "1.2.0",
       googleSignIn: false,
+      appleSignIn: false,
       patronOffer: true,
     });
   });
@@ -44,8 +45,18 @@ describe("api", () => {
     expect(await response.json()).toEqual({
       mobileMinVersion: "0.0.0",
       googleSignIn: false,
+      appleSignIn: false,
       patronOffer: true,
     });
+  });
+
+  it("reports Apple sign-in as offered when configured", async () => {
+    const response = await createApp().request(
+      "/app",
+      {},
+      { ...testEnv(), APPLE_CLIENT_ID: "fr.leximon.app" },
+    );
+    expect(await response.json()).toMatchObject({ appleSignIn: true });
   });
 
   it("hides the patron offer until sales open", async () => {
@@ -267,5 +278,18 @@ describe("api", () => {
       );
       expect(response.status, path).toBe(404);
     }
+  });
+
+  it("rejects direct identity tokens for Google", async () => {
+    const response = await createApp().request(
+      "/api/auth/sign-in/social",
+      {
+        method: "POST",
+        headers: { origin: TEST_ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ provider: "google", idToken: { token: "fake" } }),
+      },
+      { ...testEnv(), GOOGLE_CLIENT_ID: "google-id", GOOGLE_CLIENT_SECRET: "google-secret" },
+    );
+    expect(response.status).toBe(400);
   });
 });

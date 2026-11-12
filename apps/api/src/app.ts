@@ -16,7 +16,12 @@ import { createEmailSender, type EmailSenderFactory } from "./account/email-send
 import { dnsOverHttpsResolver, type MailDomainResolver, mailDomainOf } from "./account/mail-domain";
 import { accountRoutes } from "./account/routes";
 import { adminRoutes } from "./admin/routes";
-import { AUTH_BASE_PATH, googleSignInConfigured, parseOrigins } from "./auth";
+import {
+  AUTH_BASE_PATH,
+  appleSignInConfigured,
+  googleSignInConfigured,
+  parseOrigins,
+} from "./auth";
 import { inviteRoutes } from "./beta/routes";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
@@ -127,6 +132,7 @@ export function createApp(options: AppOptions = {}) {
     return c.json<AppStatusResponse>({
       mobileMinVersion: minimum.success ? minimum.data : "0.0.0",
       googleSignIn: googleSignInConfigured(c.env),
+      appleSignIn: appleSignInConfigured(c.env),
       patronOffer: patronSales(c.env) === "open",
     });
   });

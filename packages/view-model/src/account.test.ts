@@ -1,10 +1,14 @@
 import { ACCOUNT_ERROR_CODES, type LinkPreviewResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  APPLE_LINKED_TOAST,
   ageBracketLabel,
+  appleLinkError,
+  appleReturn,
   cardCount,
   codeErrorMessage,
   confirmStep,
+  connectedByLabel,
   emailStep,
   GOOGLE_LINKED_TOAST,
   googleLinkError,
@@ -173,8 +177,60 @@ describe("signedInWay", () => {
     expect(signedInToast(signedInWay(account(false, true), false))).toBe(SIGNED_IN_TOAST);
   });
 
+  it("says Apple was added only when signing in with Apple", () => {
+    expect(
+      signedInToast(
+        signedInWay({ justJoined: false, googleJustLinked: false, appleJustLinked: true }, "apple"),
+      ),
+    ).toBe(APPLE_LINKED_TOAST);
+    expect(
+      signedInToast(
+        signedInWay({ justJoined: false, googleJustLinked: false, appleJustLinked: true }, false),
+      ),
+    ).toBe(SIGNED_IN_TOAST);
+  });
+
   it("greets a returning player", () => {
     expect(signedInToast(signedInWay(account(false, false), true))).toBe(SIGNED_IN_TOAST);
+  });
+});
+
+describe("connectedByLabel", () => {
+  it("lists both providers cleanly", () => {
+    expect(connectedByLabel({ withGoogle: false, withApple: false })).toBeNull();
+    expect(connectedByLabel({ withGoogle: true, withApple: false })).toBe("par Google");
+    expect(connectedByLabel({ withGoogle: false, withApple: true })).toBe("par Apple");
+    expect(connectedByLabel({ withGoogle: true, withApple: true })).toBe("par Google et Apple");
+  });
+});
+
+describe("appleReturn", () => {
+  it("guides toward account creation when no account exists yet", () => {
+    expect(appleReturn("signup_disabled", 0)).toEqual({
+      kind: "no_account",
+      notice: "Aucun compte n'utilise encore ce compte Apple. Crée-le ici.",
+    });
+  });
+
+  it("asks confirmation before discarding guest cards", () => {
+    const back = appleReturn(ACCOUNT_ERROR_CODES.guestLossNotAcknowledged, 4);
+    expect(back.kind).toBe("guest_loss");
+    if (back.kind === "guest_loss") {
+      expect(back.step.warning).toContain("4 cartes");
+      expect(back.step.acceptsLoss).toBe(true);
+    }
+  });
+});
+
+describe("appleLinkError", () => {
+  it("explains email mismatch when relay or different address is used", () => {
+    expect(appleLinkError("LINKING_DIFFERENT_EMAILS_NOT_ALLOWED", "a@b.fr")).toContain("a@b.fr");
+  });
+
+  it("explains when the Apple account already belongs to another player", () => {
+    expect(appleLinkError("SOCIAL_ACCOUNT_ALREADY_LINKED", "a@b.fr")).toBe(
+      "Ce compte Apple est déjà associé à un autre compte Leximon.",
+    );
   });
 });
 
