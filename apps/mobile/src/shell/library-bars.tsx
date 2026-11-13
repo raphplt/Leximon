@@ -3,6 +3,7 @@ import {
   closedTabs,
   ECUS_TITLE,
   ecusLabel,
+  formatCount,
   levelBadge,
   levelDescription,
   levelRatio,
@@ -13,7 +14,6 @@ import {
   TAB_LABELS,
   type TabId,
   tabBadge,
-  xpProgressLabel,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import type { BottomTabBarProps } from "expo-router/js-tabs";
@@ -76,7 +76,7 @@ export function LibraryTopBand() {
           <LevelGauge
             level={progress.level}
             progress={levelRatio(progress)}
-            label={xpProgressLabel(progress)}
+            label={`${formatCount(progress.xpIntoLevel)}/${formatCount(progress.xpForNextLevel)}`}
             compact={tight}
           />
         )}

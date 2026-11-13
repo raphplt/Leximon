@@ -210,6 +210,8 @@ export function Lettering({
   color = lettering.fill,
   style,
   numberOfLines,
+  adjustsFontSizeToFit,
+  minimumFontScale,
 }: {
   readonly children: string | number;
   readonly size: number;
@@ -217,6 +219,8 @@ export function Lettering({
   readonly color?: string;
   readonly style?: StyleProp<TextStyle>;
   readonly numberOfLines?: number;
+  readonly adjustsFontSizeToFit?: boolean;
+  readonly minimumFontScale?: number;
 }) {
   const reach = Math.max(lettering.minOutline / 2, (lettering.outlineRatio * size) / 2);
   const text: TextStyle = { fontFamily: font, fontSize: size, lineHeight: Math.round(size * 1.15) };
@@ -224,6 +228,8 @@ export function Lettering({
     <Text
       key={key}
       numberOfLines={numberOfLines}
+      adjustsFontSizeToFit={adjustsFontSizeToFit}
+      minimumFontScale={minimumFontScale}
       accessible={false}
       importantForAccessibility="no"
       style={[text, style, styles.outline, { transform: [{ translateX: dx }, { translateY: dy }] }]}
@@ -236,7 +242,12 @@ export function Lettering({
       {/* A drop deeper than the outline would part from it and read as a second line of text. */}
       {copy("drop", 0, reach + Math.min(lettering.drop, reach))}
       {RING.map(([x, y]) => copy(`${x}${y}`, x * reach, y * reach))}
-      <Text numberOfLines={numberOfLines} style={[text, style, { color }]}>
+      <Text
+        numberOfLines={numberOfLines}
+        adjustsFontSizeToFit={adjustsFontSizeToFit}
+        minimumFontScale={minimumFontScale}
+        style={[text, style, { color }]}
+      >
         {children}
       </Text>
     </View>

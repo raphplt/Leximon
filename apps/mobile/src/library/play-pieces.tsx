@@ -272,7 +272,13 @@ export function LevelGauge({
             <View style={styles.xpEdge} />
           </View>
           <View style={styles.xpText}>
-            <Lettering size={11} font={fonts.ui.extrabold} numberOfLines={1}>
+            <Lettering
+              size={10}
+              font={fonts.ui.extrabold}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
               {label}
             </Lettering>
           </View>
@@ -765,8 +771,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
-    paddingLeft: 16,
-    paddingRight: 8,
+    paddingLeft: 20,
+    paddingRight: 6,
   },
   stockToy: { height: 42 },
   stockToyCompact: { height: 38 },
