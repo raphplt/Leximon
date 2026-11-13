@@ -20,8 +20,9 @@ import {
   wordFontSize,
   wordWidthEm,
 } from "@leximon/view-model";
+import { Image } from "expo-image";
 import { type ReactNode, useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Svg, {
   Defs,
   Mask,
@@ -317,22 +318,29 @@ function EngravingPrint({
         {hasPlate(card.rarity) && (
           <Image
             source={{ uri: catalogFileUrl(engraving.fill) }}
+            recyclingKey={engraving.fill}
+            cachePolicy="disk"
+            contentFit="fill"
+            transition={120}
+            tintColor={solidColor(style.frame)}
             style={[
               StyleSheet.absoluteFill,
               {
-                tintColor: solidColor(style.frame),
                 opacity: night ? 0.3 : 0.5,
                 transform: [{ translateX: 2 * u }, { translateY: 1.5 * u }],
               },
             ]}
-            resizeMode="stretch"
           />
         )}
         {typeof style.word === "string" ? (
           <Image
             source={{ uri: catalogFileUrl(engraving.ink) }}
-            style={[StyleSheet.absoluteFill, { tintColor: style.word }]}
-            resizeMode="stretch"
+            recyclingKey={engraving.ink}
+            cachePolicy="disk"
+            contentFit="fill"
+            transition={120}
+            tintColor={style.word}
+            style={StyleSheet.absoluteFill}
           />
         ) : (
           // A gradient cannot tint an image: the ink file masks a rectangle painted with it.
@@ -411,20 +419,27 @@ function EditionPrint({
       <View style={[styles.print, size, place]}>
         <Image
           source={{ uri: catalogFileUrl(engraving.fill) }}
+          recyclingKey={engraving.fill}
+          cachePolicy="disk"
+          contentFit="fill"
+          transition={120}
+          tintColor={edition.plate}
           style={[
             StyleSheet.absoluteFill,
             {
-              tintColor: edition.plate,
               opacity: edition.plateOpacity,
               transform: [{ translateX: 2 * u }, { translateY: 1.5 * u }],
             },
           ]}
-          resizeMode="stretch"
         />
         <Image
           source={{ uri: catalogFileUrl(engraving.ink) }}
-          style={[StyleSheet.absoluteFill, { tintColor: edition.ink }]}
-          resizeMode="stretch"
+          recyclingKey={engraving.ink}
+          cachePolicy="disk"
+          contentFit="fill"
+          transition={120}
+          tintColor={edition.ink}
+          style={StyleSheet.absoluteFill}
         />
       </View>
     </View>

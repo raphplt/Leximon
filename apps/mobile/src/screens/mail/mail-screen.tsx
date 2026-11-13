@@ -249,7 +249,7 @@ export function MailScreen() {
   const empty = todo.length === 0 && news.length === 0;
 
   return (
-    <Page title="Courrier">
+    <Page title="Courrier" onRefresh={() => mailbox.refresh()}>
       {empty ? (
         <Paragraph muted>{box === null ? "Un instant…" : MAIL_EMPTY}</Paragraph>
       ) : (

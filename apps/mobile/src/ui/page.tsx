@@ -1,7 +1,15 @@
 import { lettering } from "@leximon/tokens";
 import { router } from "expo-router";
-import { type ReactNode, useState } from "react";
-import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { type ReactNode, useCallback, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DESK_RADIUS, DESK_RIM, Desk, Room } from "@/library/play-pieces";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
@@ -32,6 +40,7 @@ export function Page({
   inTab = false,
   desk = false,
   fill = false,
+  onRefresh,
   footer,
 }: {
   readonly kicker?: string;
@@ -45,11 +54,24 @@ export function Page({
   readonly desk?: boolean;
   /** The page holds in the screen and its content scrolls where it says: the levels' road. */
   readonly fill?: boolean;
+  /** Pull-to-refresh handler for scrollable pages. */
+  readonly onRefresh?: () => Promise<void> | void;
   /** Held at the bottom over the content, which leaves room under itself: a bar of unsaved changes. */
   readonly footer?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   const [footerHeight, setFooterHeight] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(() => {
+    if (onRefresh === undefined || refreshing) return;
+    setRefreshing(true);
+    const pending = onRefresh();
+    if (pending instanceof Promise) {
+      void pending.finally(() => setRefreshing(false));
+    } else {
+      setTimeout(() => setRefreshing(false), 400);
+    }
+  }, [onRefresh, refreshing]);
   const onDesk = desk && !inTab;
   const padding = [
     styles.content,
@@ -89,7 +111,20 @@ export function Page({
   const scroll = fill ? (
     <View style={[styles.filled, padding]}>{inside}</View>
   ) : (
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={padding}>
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={padding}
+      refreshControl={
+        onRefresh === undefined ? undefined : (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.gilt}
+            colors={[colors.gilt]}
+          />
+        )
+      }
+    >
       {inside}
     </ScrollView>
   );

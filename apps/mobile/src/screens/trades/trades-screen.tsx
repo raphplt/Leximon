@@ -25,6 +25,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Pressable,
+  RefreshControl,
   ScrollView,
   type ScrollViewInstance,
   Share,
@@ -125,6 +126,17 @@ export function TradesScreen({
       setFailed(true);
     }
   }, []);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await load();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load]);
 
   // Each time the tab comes back into view: an offer may have arrived meanwhile.
   useFocusEffect(
@@ -239,6 +251,14 @@ export function TradesScreen({
         ref={scroll}
         contentContainerStyle={styles.page}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void handleRefresh()}
+            tintColor={colors.gilt}
+            colors={[colors.gilt]}
+          />
+        }
       >
         <View style={styles.header}>
           <View accessibilityRole="header">

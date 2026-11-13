@@ -105,7 +105,7 @@ export function FriendsScreen({
   );
 
   return (
-    <Page inTab={inTab} title={FRIENDS_TITLE}>
+    <Page inTab={inTab} title={FRIENDS_TITLE} onRefresh={() => friends.refresh()}>
       <Text style={styles.count}>{friendsCountLabel(data.friends.length, data.maxFriends)}</Text>
       {adding !== null && <AddFromLink code={adding} />}
       {data.incoming.length > 0 && <Incoming requests={data.incoming} />}

@@ -44,6 +44,7 @@ import {
   FlatList,
   type LayoutChangeEvent,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -153,6 +154,14 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const [filtering, setFiltering] = useState(false);
   const currentWallet = useShared(wallet);
   const [ecusOpen, setEcusOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    ownedCards.refresh();
+    wordMemory.refresh();
+    cardDates.refresh();
+    setTimeout(() => setRefreshing(false), 400);
+  }, []);
 
   useEffect(() => {
     setFriend(null);
@@ -491,6 +500,14 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           maxToRenderPerBatch={9}
           windowSize={5}
           removeClippedSubviews
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.gilt}
+              colors={[colors.gilt]}
+            />
+          }
         />
         {lettered && <LetterBar letters={view.letters} onJump={jumpTo} />}
       </View>

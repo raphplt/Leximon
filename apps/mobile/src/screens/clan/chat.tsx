@@ -17,12 +17,12 @@ import {
   writingBlock,
 } from "@leximon/view-model";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AppState,
+  FlatList,
   Pressable,
-  ScrollView,
-  type ScrollViewInstance,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -42,8 +42,6 @@ import { Leaf, toyFace } from "@/ui/toy";
 
 /** Typing after an "@" asks for members once the keys pause this long. */
 const MENTION_DELAY_MS = 150;
-/** How close to the end the thread must be to follow new messages. */
-const STICK_PX = 80;
 
 type MessageItem = Extract<ClanMessage, { kind: "message" }>;
 
@@ -73,8 +71,9 @@ export function ClanChat({
   const [sending, setSending] = useState(false);
   const [menu, setMenu] = useState<MessageItem | null>(null);
   const [focused, setFocused] = useState(true);
-  const scroller = useRef<ScrollViewInstance>(null);
-  const stickToBottom = useRef(true);
+  const listRef = useRef<FlatList<ClanMessage>>(null);
+  const loadingOlder = useRef(false);
+  const [refreshing, setRefreshing] = useState(false);
   const sanctionList = useShared(sanctions);
   // After a mention is put in, the caret goes after it rather than staying where it was.
   const [placedCaret, setPlacedCaret] = useState<number | null>(null);
@@ -153,12 +152,25 @@ export function ClanChat({
 
   const loadOlder = async () => {
     const first = messages?.[0];
-    if (first === undefined) return;
-    stickToBottom.current = false;
-    const page = await api.fetchMessages(clanId, { before: first.id }).catch(() => null);
-    if (page === null) return;
-    setMessages((current) => [...[...page.messages].reverse(), ...(current ?? [])]);
-    setHasMore(page.hasMore);
+    if (first === undefined || !hasMore || loadingOlder.current) return;
+    loadingOlder.current = true;
+    try {
+      const page = await api.fetchMessages(clanId, { before: first.id }).catch(() => null);
+      if (page === null) return;
+      setMessages((current) => [...[...page.messages].reverse(), ...(current ?? [])]);
+      setHasMore(page.hasMore);
+    } finally {
+      loadingOlder.current = false;
+    }
+  };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      await load();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const send = async () => {
@@ -169,8 +181,8 @@ export function ClanChat({
     try {
       const result = await api.postMessage(clanId, body);
       if (result.kind === "ok") {
-        stickToBottom.current = true;
         setMessages((current) => mergeMessages(current ?? [], [result.value]));
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
         typedText.current = "";
         setDraft("");
         mention.close();
@@ -236,62 +248,74 @@ export function ClanChat({
     sanctioned ??
     (clanMuted && mutedUntil !== null ? mutedUntilLabel(mutedUntil, now) : null);
 
+  const reversedMessages = useMemo(
+    () => (messages === null ? [] : [...messages].reverse()),
+    [messages],
+  );
+
   return (
     <Leaf style={styles.chat}>
-      <ScrollView
-        ref={scroller}
+      <FlatList
+        ref={listRef}
+        data={reversedMessages}
+        inverted
+        keyExtractor={(item) => String(item.id)}
         style={styles.thread}
         contentContainerStyle={styles.threadContent}
         keyboardShouldPersistTaps="handled"
-        onScroll={(event) => {
-          const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-          stickToBottom.current =
-            contentSize.height - contentOffset.y - layoutMeasurement.height < STICK_PX;
+        initialNumToRender={20}
+        maxToRenderPerBatch={15}
+        windowSize={9}
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+        onEndReached={() => {
+          if (hasMore) void loadOlder();
         }}
-        scrollEventThrottle={64}
-        onContentSizeChange={() => {
-          if (stickToBottom.current) scroller.current?.scrollToEnd({ animated: false });
-        }}
-        // The keyboard shrinks the thread: the last message stays in view.
-        onLayout={() => {
-          if (stickToBottom.current) scroller.current?.scrollToEnd({ animated: false });
-        }}
-      >
-        {hasMore && (
-          <Pressable
-            onPress={() => void loadOlder()}
-            style={styles.older}
-            accessibilityRole="button"
-          >
-            <Text style={styles.olderText}>Messages plus anciens</Text>
-          </Pressable>
-        )}
-        {messages === null ? (
-          <Text style={styles.faint}>Un instant…</Text>
-        ) : messages.length === 0 ? (
-          <Text style={styles.empty}>{EMPTY_DISCUSSION}</Text>
-        ) : (
-          messages.map((message) =>
-            message.kind === "event" ? (
-              <View key={message.id} style={styles.event}>
-                <Icon name="star" size={14} color={ink.rubric} />
-                <Text style={styles.eventText}>{eventText(message.event, wordOf)}</Text>
-              </View>
-            ) : (
-              <MessageRow
-                key={message.id}
-                message={message}
-                now={now}
-                onMenu={
-                  message.body !== null && (message.mine || message.author !== null)
-                    ? () => setMenu(message)
-                    : null
-                }
-              />
-            ),
+        onEndReachedThreshold={0.2}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void refresh()}
+            tintColor={ink.rubric}
+            colors={[ink.rubric]}
+          />
+        }
+        ListFooterComponent={
+          hasMore ? (
+            <Pressable
+              onPress={() => void loadOlder()}
+              style={styles.older}
+              accessibilityRole="button"
+            >
+              <Text style={styles.olderText}>Messages plus anciens</Text>
+            </Pressable>
+          ) : undefined
+        }
+        ListEmptyComponent={
+          messages === null ? (
+            <Text style={styles.faint}>Un instant…</Text>
+          ) : (
+            <Text style={styles.empty}>{EMPTY_DISCUSSION}</Text>
           )
-        )}
-      </ScrollView>
+        }
+        renderItem={({ item: message }) =>
+          message.kind === "event" ? (
+            <View style={styles.event}>
+              <Icon name="star" size={14} color={ink.rubric} />
+              <Text style={styles.eventText}>{eventText(message.event, wordOf)}</Text>
+            </View>
+          ) : (
+            <MessageRow
+              message={message}
+              now={now}
+              onMenu={
+                message.body !== null && (message.mine || message.author !== null)
+                  ? () => setMenu(message)
+                  : null
+              }
+            />
+          )
+        }
+      />
 
       <View style={styles.compose}>
         {notice !== null && (
