@@ -94,29 +94,28 @@
 
 @media (max-width: 759px) {
   .screen {
-    max-width: 460px;
+    max-width: 520px;
+    width: 100%;
     height: calc(100dvh - 66px - 96px - env(safe-area-inset-bottom));
-    min-height: 520px;
-    max-height: 820px;
-    padding: 6px 10px 0;
+    min-height: 500px;
+    max-height: none;
+    padding: 4px 6px 0;
   }
 
   /*
-   * The name on top, the tiles down both sides inside the gilt, the sachet between them, and the
-   * arrows at the foot, where the thumb reaches.
+   * On mobile, the desk frame and bookshelf give way to the full-screen diamond backdrop, so
+   * the side tiles hug the outer edges and the sachet claims the whole centre.
    */
   .play {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 52px minmax(0, 1fr) 52px;
     grid-template-rows: auto minmax(0, 1fr) auto;
-    gap: 4px 6px;
-    /* Clear of the gilt tooling round the leather, the tiles' names included. */
-    padding: 28px 22px 24px;
+    gap: 4px 4px;
+    padding: 4px 0 0;
   }
 
   .desk {
-    position: absolute;
-    inset: 0;
+    display: none;
   }
 
   .title {
@@ -124,27 +123,33 @@
     grid-row: 1;
   }
 
-  /* The arrows only take the middle of the foot: the tiles keep its height on both sides. */
+  /* Pushed to the outer edges so the booster in the middle can grow large. */
   .left,
   .right {
     position: relative;
     grid-row: 2 / -1;
     align-self: center;
-    gap: 6px;
+    align-items: center;
+    width: 52px;
+    gap: 8px;
   }
 
   .left {
     grid-column: 1;
+    justify-self: start;
   }
 
   .right {
     grid-column: 3;
+    justify-self: end;
   }
 
   .sachet {
     position: relative;
     grid-column: 2;
     grid-row: 2;
+    margin-inline: -4px;
+    --sachet-max-unit: 1.55px;
     transition: scale var(--lx-open-arrive) cubic-bezier(0.3, 1.4, 0.5, 1);
   }
 
@@ -162,7 +167,7 @@
   }
 
   .cta {
-    padding: 12px 0 8px;
+    padding: 8px 8px 10px;
   }
 
   /* A change of sachet slides them across the desk, the new one in as the old one goes out. */

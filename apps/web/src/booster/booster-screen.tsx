@@ -211,6 +211,7 @@ function writeChoice(id: string): void {
 export function BoosterScreen() {
   return (
     <ParticleStage dust>
+      <div className={styles.mobileBackdrop} aria-hidden="true" />
       <BoosterFlow />
     </ParticleStage>
   );

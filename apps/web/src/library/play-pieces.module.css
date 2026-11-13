@@ -292,10 +292,29 @@
     text-align: center;
   }
 
-  /* On a phone a long name (« Récompenses ») stays within its tile's column. */
+  /* On a phone the side tiles stay compact at the edges and the header breathes without taking vertical room. */
   @media (max-width: 759px) {
+    .side {
+      width: 52px;
+    }
+
+    .tile {
+      width: 48px;
+      height: 48px;
+    }
+
     .sideLabel {
+      max-width: 56px;
+      margin-top: 4px;
       font-size: var(--lx-size-micro);
+    }
+
+    .name {
+      max-width: none;
+    }
+
+    .tagline {
+      margin: 3px 12px 0;
     }
   }
 
