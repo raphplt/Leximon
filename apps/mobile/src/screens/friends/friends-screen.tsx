@@ -39,6 +39,7 @@ import { Page, Paragraph } from "@/ui/page";
 import { OnPaper, Panel } from "@/ui/panel";
 import { SearchField } from "@/ui/search-field";
 import { Sheet } from "@/ui/sheet";
+import { ListSkeleton } from "@/ui/skeleton";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { toast } from "@/ui/toast";
@@ -82,7 +83,7 @@ export function FriendsScreen({
             <Button label="Réessayer" secondary onPress={() => friends.refresh()} />
           </>
         ) : (
-          <Paragraph muted>Un instant…</Paragraph>
+          <ListSkeleton />
         )}
       </Page>
     );

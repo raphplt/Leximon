@@ -70,6 +70,7 @@ import { Icon } from "@/ui/icon";
 import { TOOLING_ROOM } from "@/ui/ornaments";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
 import { Sheet } from "@/ui/sheet";
+import { AlbumSkeleton } from "@/ui/skeleton";
 import { TextButton } from "@/ui/text-button";
 import { Lettering, ToyIcon, toyFace } from "@/ui/toy";
 
@@ -284,7 +285,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   if (view === null) {
     return (
       <View style={styles.center}>
-        <Text style={styles.empty}>On range les cartes…</Text>
+        <AlbumSkeleton columns={columns} cardWidth={cardWidth} />
       </View>
     );
   }

@@ -11,6 +11,7 @@ import { MissionsHost } from "@/missions/missions-sheet";
 import { useSessionGeneration } from "@/player/session";
 import { UpdateGate } from "@/shell/update-gate";
 import { colors } from "@/theme";
+import { OfflineBanner } from "@/ui/offline-banner";
 import { ToastHost } from "@/ui/toast";
 
 export default function RootLayout() {
@@ -33,6 +34,7 @@ export default function RootLayout() {
         <MissingWordHost />
         <RecycleHost />
       </Fragment>
+      <OfflineBanner />
       <ToastHost />
       <UpdateGate />
     </GestureHandlerRootView>

@@ -34,6 +34,7 @@ import { usePlayerView } from "@/player/use-player-view";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
+import { ListSkeleton } from "@/ui/skeleton";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
 import { toyFace } from "@/ui/toy";
@@ -250,8 +251,10 @@ export function MailScreen() {
 
   return (
     <Page title="Courrier" onRefresh={() => mailbox.refresh()}>
-      {empty ? (
-        <Paragraph muted>{box === null ? "Un instant…" : MAIL_EMPTY}</Paragraph>
+      {box === null ? (
+        <ListSkeleton />
+      ) : empty ? (
+        <Paragraph muted>{MAIL_EMPTY}</Paragraph>
       ) : (
         <>
           {todo.length > 0 && (

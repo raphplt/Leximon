@@ -1,16 +1,20 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useRef } from "react";
 import {
-  Keyboard,
-  Platform,
   type StyleProp,
+  useWindowDimensions,
   View,
   type ViewInstance,
   type ViewStyle,
 } from "react-native";
+import Animated, {
+  useAnimatedKeyboard,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 
 /**
- * Lifts its content above the keyboard, by what the keyboard covers of it. It measures itself in
- * the window: inside the tabs, under the top bar, `KeyboardAvoidingView` cannot know where it is.
+ * Lifts its content above the keyboard, frame-synced with the native keyboard animation.
+ * Measures its bottom gap from the screen edge so tab bars below are subtracted cleanly.
  */
 export function KeyboardLift({
   style,
@@ -20,24 +24,24 @@ export function KeyboardLift({
   readonly children: ReactNode;
 }) {
   const box = useRef<ViewInstance>(null);
-  const [lift, setLift] = useState(0);
-  useEffect(() => {
-    const showing = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hiding = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-    const shown = Keyboard.addListener(showing, (event) => {
-      box.current?.measureInWindow((_x, y, _width, height) => {
-        setLift(Math.max(0, y + height - event.endCoordinates.screenY));
-      });
+  const { height: windowHeight } = useWindowDimensions();
+  const bottomGap = useSharedValue(0);
+  const keyboard = useAnimatedKeyboard();
+
+  const measure = () => {
+    box.current?.measureInWindow((_x, y, _width, height) => {
+      bottomGap.value = Math.max(0, windowHeight - (y + height));
     });
-    const hidden = Keyboard.addListener(hiding, () => setLift(0));
-    return () => {
-      shown.remove();
-      hidden.remove();
-    };
-  }, []);
+  };
+
+  const animated = useAnimatedStyle(() => ({
+    flex: 1,
+    marginBottom: Math.max(0, keyboard.height.value - bottomGap.value),
+  }));
+
   return (
-    <View ref={box} style={style}>
-      <View style={{ flex: 1, marginBottom: lift }}>{children}</View>
+    <View ref={box} style={style} onLayout={measure}>
+      <Animated.View style={animated}>{children}</Animated.View>
     </View>
   );
 }
