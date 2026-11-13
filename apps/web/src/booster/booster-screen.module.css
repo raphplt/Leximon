@@ -1,8 +1,3 @@
-/* On mobile, `/jouer` replaces both the bookshelf and the green desk with a single fixed-hue diamond room. */
-.mobileBackdrop {
-  display: none;
-}
-
 .screen {
   box-sizing: border-box;
   max-width: 1180px;
@@ -507,65 +502,6 @@
   /* « Ouvrir un autre sachet » on one line. */
   .recap .actions > :first-child span {
     font-size: var(--lx-size-title-small);
-  }
-
-  .mobileBackdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    --base-a: var(--lx-desk-center);
-    --base-b: var(--lx-desk-edge);
-    --d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
-    --d2: var(--base-b);
-    --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--d1));
-    --seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--d2));
-    background:
-      var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
-      var(--lx-matter-cloth) 36px 48px / 192px 192px,
-      radial-gradient(
-        ellipse 90% 60% at 50% 34%,
-        color-mix(in srgb, var(--lx-color-success) 12%, transparent) 0%,
-        transparent 62%,
-        color-mix(in srgb, var(--lx-color-shade) 58%, transparent) 100%
-      ),
-      radial-gradient(
-        circle at 50% 50%,
-        color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
-        transparent 54%
-      )
-      0 0 / 62px 66px,
-      radial-gradient(
-        circle at 50% 50%,
-        color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
-        transparent 54%
-      )
-      31px 33px / 62px 66px,
-      linear-gradient(
-        133.21deg,
-        var(--d1) 23.6%,
-        var(--seam-light) 24.5%,
-        var(--seam-dark) 25.2%,
-        transparent 25.8%
-      )
-      0 0 / 62px 66px,
-      linear-gradient(
-        226.79deg,
-        var(--d1) 23.6%,
-        var(--seam-light) 24.5%,
-        var(--seam-dark) 25.2%,
-        transparent 25.8%
-      )
-      0 0 / 62px 66px,
-      linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
-      62px 66px,
-      linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
-      66px;
-  }
-
-  .recapDesk {
-    display: none;
   }
 }
 
