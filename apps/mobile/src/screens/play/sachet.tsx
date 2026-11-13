@@ -1,15 +1,9 @@
 import type { CatalogCollectionFile } from "@leximon/contract";
 import { backTone } from "@leximon/tokens";
-import { TEAR_COMPLETE_AT, TEAR_STARTED_AT, tearProgress } from "@leximon/view-model";
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import {
-  PanResponder,
-  type PanResponderInstance,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { TEAR_COMPLETE_AT, TEAR_STARTED_AT } from "@leximon/view-model";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   cancelAnimation,
   type DerivedValue,
@@ -258,14 +252,15 @@ export function Sachet({
           )}
           <Glow u={u} glow={glow} />
           {state === "sealed" && (
-            <View
-              // A taller target than the strip itself.
-              style={[styles.handle, { top: -16 * u, height: (STRIP + 28) * u }]}
-              // Without it, the empty view is flattened away and never receives the finger.
-              collapsable={false}
-              {...tear.handlers}
-              importantForAccessibility="no-hide-descendants"
-            />
+            <GestureDetector gesture={tear.gesture}>
+              <View
+                // A taller target than the strip itself.
+                style={[styles.handle, { top: -16 * u, height: (STRIP + 28) * u }]}
+                // Without it, the empty view is flattened away and never receives the finger.
+                collapsable={false}
+                importantForAccessibility="no-hide-descendants"
+              />
+            </GestureDetector>
           )}
         </Animated.View>
       </Animated.View>
@@ -713,7 +708,7 @@ interface Tear {
   readonly progress: SharedValue<number>;
   /** +1 when the strip tears from its left end, -1 from its right end. */
   readonly direction: SharedValue<number>;
-  readonly handlers: PanResponderInstance["panHandlers"];
+  readonly gesture: ReturnType<typeof Gesture.Pan>;
 }
 
 /** Pulling the strip: its progress drives the pouch's layers, the request leaves at 5 %. */
@@ -733,65 +728,73 @@ function useTear({
   const progress = useSharedValue(0);
   const direction = useSharedValue(1);
   const [layered, setLayered] = useState(false);
-  // The responder is made once: it reads the latest props through this.
-  const latest = useRef({ enabled, width, onTearStart, onOpen, openWithTouch });
-  latest.current = { enabled, width, onTearStart, onOpen, openWithTouch };
-  const started = useRef(false);
+  const latest = useRef({ onTearStart, onOpen, openWithTouch });
+  latest.current = { onTearStart, onOpen, openWithTouch };
+  const started = useSharedValue(false);
   /** Whether the finger went past the tap slop at any point of this touch. */
-  const moved = useRef(false);
+  const moved = useSharedValue(false);
   /** The last grain of torn paper: when, and how far the strip was torn then. */
-  const grain = useRef({ at: 0, progress: 0 });
+  const grainAt = useSharedValue(0);
+  const grainProgress = useSharedValue(0);
 
   useEffect(() => {
     // Sealed again (an opening that failed): a whole strip, ready to pull.
     if (!enabled) return;
-    started.current = false;
+    started.value = false;
     progress.value = 0;
     setLayered(false);
-  }, [enabled, progress]);
+  }, [enabled, progress, started]);
 
-  const responder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => latest.current.enabled,
-      onMoveShouldSetPanResponder: () => latest.current.enabled,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: () => {
-        started.current = false;
-        moved.current = false;
-        grain.current = { at: Date.now(), progress: 0 };
+  const gesture = useMemo(() => {
+    const notifyTearStart = () => latest.current.onTearStart();
+    const notifyTouch = () => latest.current.openWithTouch();
+    const notifyGrain = (speed: number) => playTearGrain(speed);
+    const notifyFinish = () => {
+      latest.current.onTearStart();
+      play("tearFinish");
+      vibrate([30]);
+      latest.current.onOpen();
+    };
+
+    return Gesture.Pan()
+      .enabled(enabled)
+      .minDistance(0)
+      .onBegin(() => {
+        started.value = false;
+        moved.value = false;
+        grainAt.value = Date.now();
+        grainProgress.value = 0;
         progress.value = 0;
-        setLayered(true);
-      },
-      onPanResponderMove: (_event, gesture) => {
-        if (Math.hypot(gesture.dx, gesture.dy) >= TAP_SLOP) moved.current = true;
-        const next = tearProgress(gesture.dx, latest.current.width);
-        if (!started.current) direction.value = gesture.dx < 0 ? -1 : 1;
-        if (!started.current && next >= TEAR_STARTED_AT) {
-          started.current = true;
-          latest.current.onTearStart();
+        scheduleOnRN(setLayered, true);
+      })
+      .onUpdate((event) => {
+        if (Math.hypot(event.translationX, event.translationY) >= TAP_SLOP) moved.value = true;
+        const next =
+          width <= 0 ? 0 : Math.min(1, Math.max(0, Math.abs(event.translationX) / width));
+        if (!started.value) direction.value = event.translationX < 0 ? -1 : 1;
+        if (!started.value && next >= TEAR_STARTED_AT) {
+          started.value = true;
+          scheduleOnRN(notifyTearStart);
         }
-        const torn = Math.abs(next - grain.current.progress);
+        const torn = Math.abs(next - grainProgress.value);
         if (torn >= 0.025) {
           const now = Date.now();
-          playTearGrain((torn * 1000) / Math.max(1, now - grain.current.at));
-          grain.current = { at: now, progress: next };
+          scheduleOnRN(notifyGrain, (torn * 1000) / Math.max(1, now - grainAt.value));
+          grainAt.value = now;
+          grainProgress.value = next;
         }
         progress.value = next;
-      },
-      onPanResponderRelease: () => {
-        const { onTearStart: start, onOpen: open, openWithTouch: touch } = latest.current;
-        if (!moved.current) {
+      })
+      .onEnd(() => {
+        if (!moved.value) {
           // A tap on the strip opens the pouch like a tap anywhere else.
-          setLayered(false);
-          touch();
+          scheduleOnRN(setLayered, false);
+          scheduleOnRN(notifyTouch);
           return;
         }
         if (progress.value >= TEAR_COMPLETE_AT) {
           progress.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.quad) });
-          start();
-          play("tearFinish");
-          vibrate([30]);
-          open();
+          scheduleOnRN(notifyFinish);
           return;
         }
         // The strip sticks back. A request already sent is kept for the next try.
@@ -802,15 +805,16 @@ function useTear({
             if (done) scheduleOnRN(setLayered, false);
           },
         );
-      },
-      onPanResponderTerminate: () => {
-        progress.value = withTiming(0, { duration: 250 });
-        setLayered(false);
-      },
-    }),
-  ).current;
+      })
+      .onFinalize((_, success) => {
+        if (!success) {
+          progress.value = withTiming(0, { duration: 250 });
+          scheduleOnRN(setLayered, false);
+        }
+      });
+  }, [enabled, width, progress, direction, started, moved, grainAt, grainProgress]);
 
-  return { layered, progress, direction, handlers: responder.panHandlers };
+  return { layered, progress, direction, gesture };
 }
 
 /**

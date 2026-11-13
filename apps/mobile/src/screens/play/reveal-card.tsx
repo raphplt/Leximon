@@ -1,8 +1,9 @@
 import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
 import { cardSize, rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
 import { cardRelease, frequencyLine, type RarityStaging } from "@leximon/view-model";
-import { useEffect, useRef, useState } from "react";
-import { PanResponder, StyleSheet, Text, View, type ViewInstance } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { StyleSheet, Text, View, type ViewInstance } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   interpolate,
@@ -15,6 +16,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
+import { scheduleOnRN } from "react-native-worklets";
 import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
 import { SpeechButtons } from "@/cards/speech-buttons";
@@ -208,37 +210,41 @@ export function RevealCard({
     if (settled) leave(-1);
   };
 
-  // The responder is made once: it reads the latest state through this.
   const latest = useRef({ press, leave, settled });
   latest.current = { press, leave, settled };
-  const moved = useRef(false);
-  const responder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: () => {
-        moved.current = false;
-      },
-      onPanResponderMove: (_event, { dx, dy }) => {
-        if (Math.hypot(dx, dy) >= TAP_SLOP) moved.current = true;
+  const settledValue = useSharedValue(settled);
+  useEffect(() => {
+    settledValue.value = settled;
+  }, [settled, settledValue]);
+  const moved = useSharedValue(false);
+  const pan = useMemo(() => {
+    const notifyPress = () => latest.current.press();
+    const notifyRelease = (dx: number, dy: number) => {
+      const { leave: away, settled: ready } = latest.current;
+      if (ready && cardRelease(dx, dy, width) === "next") away(dx < 0 ? -1 : 1);
+      else drag.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.back(1.6)) });
+    };
+    return Gesture.Pan()
+      .minDistance(0)
+      .onBegin(() => {
+        moved.value = false;
+      })
+      .onUpdate((event) => {
+        if (Math.hypot(event.translationX, event.translationY) >= TAP_SLOP) moved.value = true;
         // Only a face up card follows the finger: a back keeps its announcement.
-        if (latest.current.settled) drag.value = dx;
-      },
-      onPanResponderRelease: (_event, { dx, dy }) => {
-        const { press: tap, leave: away, settled: ready } = latest.current;
-        if (!moved.current) {
-          tap();
+        if (settledValue.value) drag.value = event.translationX;
+      })
+      .onEnd((event) => {
+        if (!moved.value) {
+          scheduleOnRN(notifyPress);
           return;
         }
-        if (ready && cardRelease(dx, dy, width) === "next") away(dx < 0 ? -1 : 1);
-        else drag.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.back(1.6)) });
-      },
-      onPanResponderTerminate: () => {
-        drag.value = withTiming(0, { duration: 220 });
-      },
-    }),
-  ).current;
+        scheduleOnRN(notifyRelease, event.translationX, event.translationY);
+      })
+      .onFinalize((_, success) => {
+        if (!success) drag.value = withTiming(0, { duration: 220 });
+      });
+  }, [drag, moved, settledValue, width]);
 
   const cardStyle = useAnimatedStyle(() => ({
     opacity: (1 - exit.value) * Math.min(1, arrival.value * 2),
@@ -308,41 +314,42 @@ export function RevealCard({
             </Svg>
           </Animated.View>
         )}
-        <View
-          ref={target}
-          style={StyleSheet.absoluteFill}
-          collapsable={false}
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
-          accessibilityActions={[{ name: "activate" }]}
-          onAccessibilityAction={press}
-          {...responder.panHandlers}
-        >
-          <Animated.View style={[StyleSheet.absoluteFill, back]}>
-            <CardBack width={width} tone={tone} />
-            <Animated.View style={[StyleSheet.absoluteFill, edgeOn]}>
-              <CardEdge rarity={card.rarity} width={width} />
+        <GestureDetector gesture={pan}>
+          <View
+            ref={target}
+            style={StyleSheet.absoluteFill}
+            collapsable={false}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
+            accessibilityActions={[{ name: "activate" }]}
+            onAccessibilityAction={press}
+          >
+            <Animated.View style={[StyleSheet.absoluteFill, back]}>
+              <CardBack width={width} tone={tone} />
+              <Animated.View style={[StyleSheet.absoluteFill, edgeOn]}>
+                <CardEdge rarity={card.rarity} width={width} />
+              </Animated.View>
+              {staging.announce === "crack" && <Cracks width={width} height={height} />}
             </Animated.View>
-            {staging.announce === "crack" && <Cracks width={width} height={height} />}
-          </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFill, face]}>
-            <HoloCard
-              card={card}
-              collectionName={collectionName}
-              width={width}
-              touchable={settled}
-            />
-            {library && (
-              <View
-                style={[styles.sheen, { borderRadius: (CARD_CORNER * width) / cardSize.width }]}
-                pointerEvents="none"
-              >
-                <Sheen width={width} sweep={sweep} />
-              </View>
-            )}
-          </Animated.View>
-        </View>
+            <Animated.View style={[StyleSheet.absoluteFill, face]}>
+              <HoloCard
+                card={card}
+                collectionName={collectionName}
+                width={width}
+                touchable={settled}
+              />
+              {library && (
+                <View
+                  style={[styles.sheen, { borderRadius: (CARD_CORNER * width) / cardSize.width }]}
+                  pointerEvents="none"
+                >
+                  <Sheen width={width} sweep={sweep} />
+                </View>
+              )}
+            </Animated.View>
+          </View>
+        </GestureDetector>
         {library && banner !== undefined && (
           <RarityBanner text={RARITY_LABELS[card.rarity]} color={banner} stamp={stamp} />
         )}

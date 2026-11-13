@@ -155,6 +155,13 @@ export function ParticleStage({
   const ringOpacity = useSharedValue(0);
   const shakeX = useSharedValue(0);
   const shakeY = useSharedValue(0);
+  const drawInTask = useSharedValue<{
+    readonly x: number;
+    readonly y: number;
+    readonly colors: readonly string[];
+    readonly remainingMs: number;
+    readonly cooldownMs: number;
+  } | null>(null);
   const shapes = useMemo(() => ({ star: starPath(), leaf: leafPath() }), []);
   const glows = useMemo(
     () => Object.fromEntries(glowColors().map((color) => [color, glowShader(color)])),
@@ -178,6 +185,23 @@ export function ParticleStage({
         particleCap.mobile,
         1,
       );
+    }
+    const task = drawInTask.value;
+    if (task !== null) {
+      const dtMs = seconds * 1000;
+      const nextCooldown = task.cooldownMs - dtMs;
+      const nextRemaining = task.remainingMs - dtMs;
+      if (nextCooldown <= 0) {
+        drawIn(list, task.x, task.y, task.colors, 3, particleCap.mobile);
+      }
+      drawInTask.value =
+        nextRemaining <= 0
+          ? null
+          : {
+              ...task,
+              remainingMs: nextRemaining,
+              cooldownMs: nextCooldown <= 0 ? 60 : nextCooldown,
+            };
     }
     if (list.length === 0 && clock.value === -1) return;
     advance(list, seconds);
@@ -328,15 +352,14 @@ export function ParticleStage({
       drawIn: (x, y, colors, ms) => {
         if (reduced) return;
         const point = local(x, y);
-        const timer = setInterval(() => {
-          particles.modify((list) => {
-            "worklet";
-            drawIn(list, point.x, point.y, colors, 3, particleCap.mobile);
-            return list;
-          });
-          clock.value = 0;
-        }, 60);
-        setTimeout(() => clearInterval(timer), ms);
+        drawInTask.value = {
+          x: point.x,
+          y: point.y,
+          colors,
+          remainingMs: ms,
+          cooldownMs: 0,
+        };
+        clock.value = 0;
       },
       reveal: (x, y, effect, color) => {
         for (const settings of effect.bursts) burst(x, y, settings);
@@ -357,6 +380,7 @@ export function ParticleStage({
     ringPlace,
     ringScale,
     ringOpacity,
+    drawInTask,
   ]);
 
   return (

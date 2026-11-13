@@ -1,9 +1,10 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cardSize } from "@leximon/tokens";
-import { type HoloLayers, holoFromPointer, holoLayers } from "@leximon/view-model";
+import { type HoloLayers, holoLayers } from "@leximon/view-model";
 import { useIsFocused } from "expo-router";
-import { type ReactNode, useEffect } from "react";
-import { type GestureResponderEvent, Platform, StyleSheet, View } from "react-native";
+import { type ReactNode, useEffect, useMemo } from "react";
+import { Platform, StyleSheet, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   cancelAnimation,
   type DerivedValue,
@@ -535,20 +536,33 @@ export function HoloCard({
     };
   });
 
-  const follow = (event: GestureResponderEvent) => {
-    if (!touchable) return;
-    const { locationX, locationY } = event.nativeEvent;
-    const next = holoFromPointer(locationX, locationY, width, height);
-    finger.x.value = next.x;
-    finger.y.value = next.y;
-    const turn = { duration: 100, easing: Easing.linear };
-    finger.rotateX.value = withTiming(next.rotateX, turn);
-    finger.rotateY.value = withTiming(next.rotateY, turn);
-    if (held.value < 1) held.value = withTiming(1, { duration: 150 });
-  };
-  const release = () => {
-    held.value = withTiming(0, { duration: 450, easing: EASE_IN_OUT });
-  };
+  const { x: fingerX, y: fingerY, rotateX: fingerRotateX, rotateY: fingerRotateY } = finger;
+  const pan = useMemo(() => {
+    const apply = (left: number, top: number) => {
+      "worklet";
+      if (width <= 0 || height <= 0) return;
+      const x = Math.min(1, Math.max(0, left / width));
+      const y = Math.min(1, Math.max(0, top / height));
+      fingerX.value = x * 100;
+      fingerY.value = y * 100;
+      const turn = { duration: 100, easing: Easing.linear };
+      fingerRotateX.value = withTiming((0.5 - y) * 18, turn);
+      fingerRotateY.value = withTiming((x - 0.5) * 18, turn);
+      if (held.value < 1) held.value = withTiming(1, { duration: 150 });
+    };
+    return Gesture.Pan()
+      .enabled(touchable)
+      .minDistance(4)
+      .onBegin((event) => {
+        apply(event.x, event.y);
+      })
+      .onUpdate((event) => {
+        apply(event.x, event.y);
+      })
+      .onFinalize(() => {
+        held.value = withTiming(0, { duration: 450, easing: EASE_IN_OUT });
+      });
+  }, [touchable, width, height, fingerX, fingerY, fingerRotateX, fingerRotateY, held]);
 
   return (
     <Animated.View style={[{ width, height, borderRadius: (16 * width) / W }, styles.tilt, tilt]}>
@@ -558,13 +572,9 @@ export function HoloCard({
       )}
       {/* On top of the layers so that its touches always come in the card's own coordinates;
           they still reach whatever holds the card. */}
-      <View
-        style={StyleSheet.absoluteFill}
-        onTouchStart={follow}
-        onTouchMove={follow}
-        onTouchEnd={release}
-        onTouchCancel={release}
-      />
+      <GestureDetector gesture={pan}>
+        <View style={StyleSheet.absoluteFill} collapsable={false} />
+      </GestureDetector>
     </Animated.View>
   );
 }

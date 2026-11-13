@@ -191,14 +191,16 @@ export function toyFace(
 }
 
 /** Directions of the outline's copies: a ring of eight is round enough at these sizes. */
-const RING = Array.from({ length: 8 }, (_, index) => {
-  const angle = (index / 8) * Math.PI * 2;
-  return [Math.cos(angle), Math.sin(angle)] as const;
-});
+const RING = [
+  [-0.85, -0.85],
+  [0.85, -0.85],
+  [-0.85, 0.85],
+  [0.85, 0.85],
+] as const;
 
 /**
  * Cream letters outlined in dark, for titles, buttons, figures and short labels. React Native
- * draws no outline around text: the same words are laid eight times behind, shifted all around,
+ * draws no outline around text: the same words are laid four times diagonally behind,
  * and once more below for the drop.
  */
 export function Lettering({
