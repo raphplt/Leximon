@@ -9,11 +9,10 @@ import {
   toy as toyValues,
   welcomeCloth,
 } from "@leximon/tokens";
+import { Canvas, Fill, ImageShader, useImage } from "@shopify/react-native-skia";
 import { type ReactNode, useEffect, useState } from "react";
 import {
   type GestureResponderEvent,
-  Image,
-  type LayoutChangeEvent,
   Pressable,
   type StyleProp,
   StyleSheet,
@@ -52,20 +51,26 @@ export const DESK_PADDING = Math.ceil(TOOLING_ROOM) + 3;
 
 /**
  * The reading room behind a screen: shelves in the dark, the lamp's light in the middle and the
- * dark closing in at the edges. The shelves are laid tile by tile: on Android, `repeat` draws a
- * tile once in the corner.
+ * dark closing in at the edges. Drawn as a single GPU-repeated Skia ImageShader.
  */
 export function Room({ children }: { readonly children?: ReactNode }) {
-  const [columns, setColumns] = useState(1);
-  const measure = ({ nativeEvent: { layout } }: LayoutChangeEvent) =>
-    setColumns(Math.max(1, Math.ceil(layout.width / room.shelves.width)));
+  const shelves = useImage(SHELVES);
   return (
-    <View style={styles.room} onLayout={measure}>
+    <View style={styles.room}>
       <View style={styles.shelves} pointerEvents="none">
-        {Array.from({ length: columns }, (_, column) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: identical tiles that never move
-          <Image key={column} source={SHELVES} style={styles.shelf} />
-        ))}
+        <Canvas style={StyleSheet.absoluteFill}>
+          {shelves !== null && (
+            <Fill>
+              <ImageShader
+                image={shelves}
+                tx="repeat"
+                ty="clamp"
+                fit="fill"
+                rect={{ x: 0, y: 0, width: room.shelves.width, height: room.shelves.height }}
+              />
+            </Fill>
+          )}
+        </Canvas>
       </View>
       <View style={styles.lamp} pointerEvents="none" />
       <View style={styles.vignette} pointerEvents="none" />
@@ -670,8 +675,7 @@ const outlined = {
 
 const styles = StyleSheet.create({
   room: { flex: 1, overflow: "hidden", backgroundColor: room.floor },
-  shelves: { ...StyleSheet.absoluteFill, flexDirection: "row" },
-  shelf: { width: room.shelves.width, height: room.shelves.height },
+  shelves: { ...StyleSheet.absoluteFill },
   lamp: {
     ...StyleSheet.absoluteFill,
     backgroundImage: `radial-gradient(ellipse 80% 50% at 50% 40%, ${room.lamp}, transparent 70%)`,

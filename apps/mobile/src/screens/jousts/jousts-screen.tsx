@@ -61,28 +61,30 @@ function JoustsHall() {
   const opensAt = loaded.state === "ready" ? loaded.jousts.opensAtLevel : 0;
   const { launch, busy, refusal } = useLaunch(opensAt);
 
-  const load = useCallback(() => {
-    Promise.all([api.fetchJousts(), api.fetchJoustDeck()])
-      .then(([jousts, deck]) => {
-        setLoaded({ state: "ready", jousts, deck });
-        joustsOverview.publish(jousts);
-        if (jousts.access !== "open") return;
-        api
-          .fetchJoustLeague()
-          .then(async (league) => {
-            const group =
-              league.standing.group === null ? null : await api.fetchJoustBoard("group");
-            setLadder({ league, group });
-          })
-          .catch(() => undefined);
-      })
-      .catch(() => setLoaded({ state: "failed" }));
-  }, []);
+  const load = useCallback(
+    () =>
+      Promise.all([api.fetchJousts(), api.fetchJoustDeck()])
+        .then(([jousts, deck]) => {
+          setLoaded({ state: "ready", jousts, deck });
+          joustsOverview.publish(jousts);
+          if (jousts.access !== "open") return;
+          return api
+            .fetchJoustLeague()
+            .then(async (league) => {
+              const group =
+                league.standing.group === null ? null : await api.fetchJoustBoard("group");
+              setLadder({ league, group });
+            })
+            .catch(() => undefined);
+        })
+        .catch(() => setLoaded({ state: "failed" })),
+    [],
+  );
   // Read again on each return from a joust: its row moved, and the guide closed if it launched it.
   useFocusEffect(
     useCallback(() => {
       setGuideOpen(false);
-      load();
+      void load();
     }, [load]),
   );
 
@@ -151,7 +153,7 @@ function JoustsHall() {
   }
 
   return (
-    <Page title={JOUSTS_TITLE}>
+    <Page title={JOUSTS_TITLE} onRefresh={load}>
       <ChallengeHalves current="jousts" />
       <Hall
         jousts={jousts}

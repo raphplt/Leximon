@@ -21,6 +21,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EcusSheet } from "@/ecus/ecus-sheet";
+import { vibrate } from "@/feedback/feedback";
 import {
   EcusButton,
   LevelGauge,
@@ -135,7 +136,10 @@ export function LibraryTabBar({ state, emitter, navigateToTab }: BottomTabBarPro
     const route = state.routes.find((r) => r.name === TAB_ROUTES[id]);
     if (route === undefined) return;
     const event = emitter.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
-    if (currentRoute !== route.name && !event.defaultPrevented) navigateToTab(route.key);
+    if (currentRoute !== route.name && !event.defaultPrevented) {
+      vibrate([8]);
+      navigateToTab(route.key);
+    }
   };
 
   const tabs = SIDE_TABS.map((id): Tab => {

@@ -25,8 +25,10 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Directions, Gesture, GestureDetector } from "react-native-gesture-handler";
+import { scheduleOnRN } from "react-native-worklets";
 import { cardsAround } from "@/cards/card-run";
 import { catalogInHand, loadCatalog, useFinder } from "@/cards/catalog";
 import { EditionPicker } from "@/cards/edition-picker";
@@ -178,21 +180,39 @@ function SheetBody({
     Share.share({ message: `${text} ${url}`, url, title: "Leximon" }).catch(() => undefined);
   };
 
+  const runRef = useRef(run);
+  runRef.current = run;
+  const swipeCard = useMemo(() => {
+    const step = (dir: "prev" | "next") => {
+      const target = dir === "prev" ? runRef.current?.previous : runRef.current?.next;
+      if (target != null) router.setParams({ id: target });
+    };
+    const left = Gesture.Fling()
+      .direction(Directions.LEFT)
+      .onEnd(() => scheduleOnRN(step, "next"));
+    const right = Gesture.Fling()
+      .direction(Directions.RIGHT)
+      .onEnd(() => scheduleOnRN(step, "prev"));
+    return Gesture.Race(left, right);
+  }, []);
+
   return (
     <Page title={card.word} desk>
       <View style={styles.cardSide}>
-        <View style={styles.turning}>
-          {run !== null && (
-            <TurnButton label={CARD_RUN_TEXTS.previous} icon="back" to={run.previous} />
-          )}
-          <HoloCard
-            card={card}
-            collectionName={collection}
-            width={Math.max(140, Math.min(CARD_MAX, window.width - (run === null ? 70 : 162)))}
-            edition={quantity > 0 ? editionOfCard(printed, card.id) : null}
-          />
-          {run !== null && <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} />}
-        </View>
+        <GestureDetector gesture={swipeCard}>
+          <View style={styles.turning} collapsable={false}>
+            {run !== null && (
+              <TurnButton label={CARD_RUN_TEXTS.previous} icon="back" to={run.previous} />
+            )}
+            <HoloCard
+              card={card}
+              collectionName={collection}
+              width={Math.max(140, Math.min(CARD_MAX, window.width - (run === null ? 70 : 162)))}
+              edition={quantity > 0 ? editionOfCard(printed, card.id) : null}
+            />
+            {run !== null && <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} />}
+          </View>
+        </GestureDetector>
         {run !== null && <Text style={styles.place}>{run.place}</Text>}
         <EngravingCredit card={card} />
       </View>

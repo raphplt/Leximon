@@ -70,22 +70,28 @@ function LeagueFlow() {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
   const [leaguesOpen, setLeaguesOpen] = useState(false);
   const [mine, setMine] = useState<BoardLine | null>(null);
-  const load = useCallback(() => {
-    api
-      .fetchJoustLeague()
-      .then((league) => setLoaded({ state: "ready", league }))
-      .catch(() => setLoaded({ state: "failed" }));
-  }, []);
-  useFocusEffect(load);
+  const load = useCallback(
+    () =>
+      api
+        .fetchJoustLeague()
+        .then((league) => setLoaded({ state: "ready", league }))
+        .catch(() => setLoaded({ state: "failed" })),
+    [],
+  );
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   if (loaded.state !== "ready") {
     return (
-      <Page title={CLASSEMENT}>
+      <Page title={CLASSEMENT} onRefresh={load}>
         {loaded.state === "loading" && <Paragraph muted>Un instant…</Paragraph>}
         {loaded.state === "failed" && (
           <>
             <Paragraph muted>Le classement n'a pas pu être chargé. Réessaie.</Paragraph>
-            <Button label="Réessayer" secondary onPress={load} />
+            <Button label="Réessayer" secondary onPress={() => void load()} />
           </>
         )}
       </Page>
@@ -93,7 +99,11 @@ function LeagueFlow() {
   }
   const { league } = loaded;
   return (
-    <Page title={CLASSEMENT} {...(mine === null ? {} : { footer: <GroupRow line={mine} zoned /> })}>
+    <Page
+      title={CLASSEMENT}
+      onRefresh={load}
+      {...(mine === null ? {} : { footer: <GroupRow line={mine} zoned /> })}
+    >
       <View style={styles.screen}>
         <Animated.View entering={rise(0)}>
           <Claim league={league} onClaimed={load} />

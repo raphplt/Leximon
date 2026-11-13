@@ -10,7 +10,7 @@ import {
   type StockView,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { type ReactNode, type Ref, useEffect, useState } from "react";
+import { type ReactNode, type Ref, useEffect, useMemo, useRef, useState } from "react";
 import {
   type LayoutChangeEvent,
   StyleSheet,
@@ -18,6 +18,7 @@ import {
   View,
   type ViewInstance,
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -28,6 +29,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { openRewards } from "@/levels/welcome";
 import { CollectionTitle, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
 import { openMissions } from "@/missions/missions-sheet";
@@ -264,6 +266,19 @@ export function LibraryCounter({
       onPick(next);
     }
   };
+  const turnRef = useRef(turn);
+  turnRef.current = turn;
+  const swipeCollection = useMemo(() => {
+    const go = (side: "left" | "right") => turnRef.current(side);
+    return Gesture.Pan()
+      .enabled(!opening && choices.length > 1)
+      .activeOffsetX([-30, 30])
+      .failOffsetY([-24, 24])
+      .onEnd((event) => {
+        if (event.translationX < -45) scheduleOnRN(go, "right");
+        else if (event.translationX > 45) scheduleOnRN(go, "left");
+      });
+  }, [opening, choices.length]);
 
   return (
     <View
@@ -305,20 +320,22 @@ export function LibraryCounter({
           }
         >
           <Animated.View style={[styles.glow, glowing]} pointerEvents="none" />
-          <Animated.View style={trembling} pointerEvents={opening ? "none" : "auto"}>
-            <Animated.View
-              key={choice.id}
-              collapsable={false}
-              {...(entry === null
-                ? {}
-                : {
-                    entering: slideIn(entry),
-                    exiting: slideOut(entry === "right" ? "left" : "right"),
-                  })}
-            >
-              {sachet(sachetWidth)}
+          <GestureDetector gesture={swipeCollection}>
+            <Animated.View style={trembling} pointerEvents={opening ? "none" : "auto"}>
+              <Animated.View
+                key={choice.id}
+                collapsable={false}
+                {...(entry === null
+                  ? {}
+                  : {
+                      entering: slideIn(entry),
+                      exiting: slideOut(entry === "right" ? "left" : "right"),
+                    })}
+              >
+                {sachet(sachetWidth)}
+              </Animated.View>
             </Animated.View>
-          </Animated.View>
+          </GestureDetector>
         </Animated.View>
         <Animated.View
           style={[styles.side, fitTiles, fading]}

@@ -83,8 +83,8 @@ const COLUMNS = 3;
 const GUTTER = 6;
 const GAP = 12;
 const ROOM_MARGIN = 6;
-/** Under a card, its level or its rarity: every tile is as tall, so a letter knows its row. */
-const TILE_FOOT = 28;
+/** Every tile matches the card's 1:1.4 aspect ratio; mastery sits inside the top-right corner. */
+const TILE_FOOT = 0;
 const ROW_GAP = space.s9;
 const GRID_TOP = space.s5;
 /** The bar of letters, in the right margin of the cards. */
@@ -405,6 +405,26 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
         })}
       </TabRow>
 
+      {!view.searching && !comparing && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.quickFilters}
+          style={styles.bleed}
+        >
+          {view.filters.map((choice) => (
+            <FilterChip
+              key={choice.id}
+              label={
+                choice.count === undefined ? choice.label : `${choice.label} (${choice.count})`
+              }
+              on={state.filter === choice.id}
+              onPick={() => setState((s) => ({ ...s, filter: choice.id }))}
+            />
+          ))}
+        </ScrollView>
+      )}
+
       {!view.searching && comparing && (
         <View style={styles.compare}>
           <View style={styles.compareHead}>
@@ -491,7 +511,13 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           getItemLayout={rowLayout}
           ListHeaderComponent={head}
           renderItem={({ item }) => (
-            <Tile item={item} width={cardWidth} height={tileHeight} onOpen={openOwned} />
+            <Tile
+              item={item}
+              width={cardWidth}
+              height={tileHeight}
+              showMasteryLabel={sort === "mastery"}
+              onOpen={openOwned}
+            />
           )}
           columnWrapperStyle={styles.gridRow}
           contentContainerStyle={[styles.grid, styles.gridLettered, library.grid]}
@@ -629,17 +655,19 @@ const Tile = memo(function Tile({
   item,
   width,
   height,
+  showMasteryLabel,
   onOpen,
 }: {
   readonly item: AlbumItem;
   readonly width: number;
   readonly height: number;
+  readonly showMasteryLabel: boolean;
   readonly onOpen: (cardId: string) => void;
 }) {
   return (
     <View style={{ width, height }}>
       {item.kind === "owned" ? (
-        <OwnedTile item={item} width={width} onOpen={onOpen} />
+        <OwnedTile item={item} width={width} showMasteryLabel={showMasteryLabel} onOpen={onOpen} />
       ) : item.kind === "missing" ? (
         <MissingTile item={item} width={width} />
       ) : (
@@ -659,10 +687,12 @@ const Tile = memo(function Tile({
 function OwnedTile({
   item,
   width,
+  showMasteryLabel,
   onOpen,
 }: {
   readonly item: OwnedItem;
   readonly width: number;
+  readonly showMasteryLabel: boolean;
   readonly onOpen: (cardId: string) => void;
 }) {
   const printed = useShared(editions);
@@ -683,11 +713,13 @@ function OwnedTile({
       </View>
       {item.fresh && <Text style={styles.fresh}>Nouveau</Text>}
       {item.quantity > 1 && <Text style={styles.quantity}>×{item.quantity}</Text>}
-      <View style={styles.mastery}>
-        <ToyIcon name={item.level} size={18} />
-        <Text style={[styles.masteryText, { color: masteryColors[item.level] }]}>
-          {item.levelLabel}
-        </Text>
+      <View style={styles.masteryPin}>
+        <ToyIcon name={item.level} size={14} />
+        {showMasteryLabel && (
+          <Text style={[styles.masteryText, { color: masteryColors[item.level] }]}>
+            {item.levelLabel}
+          </Text>
+        )}
       </View>
     </Pressable>
   );
@@ -705,9 +737,9 @@ function MissingTile({ item, width }: { readonly item: MissingItem; readonly wid
     >
       <View style={[styles.missingBox, { width, height: width * 1.4, borderColor: `${frame}8C` }]}>
         <Text style={[styles.question, { fontSize: width * 0.32 }]}>?</Text>
-      </View>
-      <View style={styles.missingLabel}>
-        <RarityName rarity={item.rarity} color={colors.pageInkFaint} />
+        <View style={styles.missingLabel}>
+          <RarityName rarity={item.rarity} color={colors.pageInkFaint} />
+        </View>
       </View>
     </View>
   );
@@ -1033,8 +1065,8 @@ const styles = StyleSheet.create({
   },
   quantity: {
     position: "absolute",
-    top: -6,
-    right: -4,
+    bottom: 6,
+    right: 6,
     overflow: "hidden",
     paddingHorizontal: space.s4,
     paddingVertical: space.s1,
@@ -1044,11 +1076,26 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
   },
-  mastery: { flexDirection: "row", alignItems: "center", gap: 5 },
-  masteryText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption },
+  masteryPin: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    height: 22,
+    paddingHorizontal: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    borderWidth: 1.5,
+    borderColor: toyValues.outline,
+    borderRadius: radii.pill,
+    backgroundColor: colors.page,
+  },
+  masteryText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro },
+  quickFilters: { gap: space.s4, paddingHorizontal: space.s8, paddingTop: space.s2 },
   missingBox: {
     alignItems: "center",
     justifyContent: "center",
+    gap: space.s3,
     borderWidth: 2,
     borderStyle: "dashed",
     borderRadius: radii.lg,
