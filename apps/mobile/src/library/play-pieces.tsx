@@ -267,7 +267,10 @@ export function LevelGauge({
       </View>
       {roomy && (
         <View style={styles.xp}>
-          <View style={[styles.xpFill, { width: `${filled * 100}%` }]} />
+          <View style={[styles.xpFill, { width: `${filled * 100}%` }]}>
+            <View style={styles.xpHighlight} />
+            <View style={styles.xpEdge} />
+          </View>
           <View style={styles.xpText}>
             <Lettering size={11} font={fonts.ui.extrabold} numberOfLines={1}>
               {label}
@@ -728,30 +731,42 @@ const styles = StyleSheet.create({
   xp: {
     ...outlined,
     flex: 1,
-    maxWidth: 120,
-    height: 20,
+    maxWidth: 128,
+    height: 24,
     marginLeft: -14,
     overflow: "hidden",
     borderLeftWidth: 0,
-    borderTopRightRadius: 11,
-    borderBottomRightRadius: 11,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
     backgroundColor: colors.well,
-    boxShadow: `0 4px 0 ${toyValues.outline}, inset 0 3px 4px ${toyValues.drop}`,
+    boxShadow: `0 3px 0 ${toyValues.outline}`,
   },
   xpFill: {
     position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundImage: `linear-gradient(180deg, ${colors.xpLight} 0%, ${colors.xpLight} 45%, ${colors.xpDeep} 55%, ${colors.xpDeep} 100%)`,
-    boxShadow: `inset 0 -3px 0 ${toyMatters.gold.edge}`,
+    overflow: "hidden",
+    backgroundColor: colors.xpDeep,
+  },
+  xpHighlight: {
+    height: "46%",
+    backgroundColor: colors.xpLight,
+  },
+  xpEdge: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 3,
+    backgroundColor: toyMatters.gold.edge,
   },
   xpText: {
     ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
-    paddingLeft: 14,
-    paddingRight: 6,
+    paddingLeft: 16,
+    paddingRight: 8,
   },
   stockToy: { height: 42 },
   stockToyCompact: { height: 38 },
