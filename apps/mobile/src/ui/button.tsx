@@ -52,8 +52,8 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  toy: { minHeight: 52 },
+  toy: { minHeight: 52, flexGrow: 0, flexShrink: 0 },
   toyBody: { paddingHorizontal: space.s12, paddingVertical: space.s4 },
-  smallToy: { minHeight: 40 },
+  smallToy: { minHeight: 40, flexGrow: 0, flexShrink: 0 },
   smallBody: { paddingHorizontal: space.s8, paddingVertical: space.s2 },
 });

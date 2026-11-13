@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   },
   lettrineIcon: { marginBottom: toyValues.lip.small },
   off: { opacity: 0.6 },
-  toy: { position: "relative" },
+  toy: { position: "relative", flexGrow: 0, flexShrink: 0 },
   fill: { flexGrow: 1 },
   body: { flexGrow: 1, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   /** A shown body keeps its own size, where a pressed one fills its toy. */
