@@ -30,6 +30,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import Svg, { Defs, Line, Pattern, Polygon, RadialGradient, Rect, Stop } from "react-native-svg";
 import { alpha, colors, fontSizes, fonts } from "@/theme";
 import { LevelMedal } from "@/ui/level";
 import { Matter } from "@/ui/matter";
@@ -95,6 +96,75 @@ export function Desk({
         <View style={[styles.deskRim, cloth && styles.clothRim]} />
       </View>
       {tooled && <Tooling />}
+    </View>
+  );
+}
+
+/**
+ * Full-screen single-hue aged 3D diamond backdrop for the Jouer screen, replacing both the
+ * bookshelf room and the framed green leather desk on mobile.
+ */
+export function DiamondBackdrop() {
+  return (
+    <View style={styles.diamondBackdrop} pointerEvents="none" accessible={false}>
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+        <Defs>
+          <RadialGradient id="diamond-pillow" cx="50%" cy="50%" r="50%">
+            <Stop offset="0%" stopColor={toyValues.sheen} stopOpacity={0.07} />
+            <Stop offset="100%" stopColor={toyValues.sheen} stopOpacity={0} />
+          </RadialGradient>
+          <Pattern id="play-diamonds" width={62} height={66} patternUnits="userSpaceOnUse">
+            <Rect width={62} height={66} fill={room.desk.edge} />
+            <Polygon points="31,0 62,33 31,66 0,33" fill={room.desk.middle} />
+            <Polygon points="31,0 62,33 31,66 0,33" fill="url(#diamond-pillow)" />
+            <Line
+              x1={0}
+              y1={33}
+              x2={31}
+              y2={0}
+              stroke={alpha(toyValues.sheen, 0.14)}
+              strokeWidth={1.2}
+            />
+            <Line
+              x1={31}
+              y1={0}
+              x2={62}
+              y2={33}
+              stroke={alpha(toyValues.sheen, 0.14)}
+              strokeWidth={1.2}
+            />
+            <Line
+              x1={0}
+              y1={33}
+              x2={31}
+              y2={66}
+              stroke={alpha(colors.shade, 0.45)}
+              strokeWidth={1.4}
+            />
+            <Line
+              x1={62}
+              y1={33}
+              x2={31}
+              y2={66}
+              stroke={alpha(colors.shade, 0.45)}
+              strokeWidth={1.4}
+            />
+          </Pattern>
+          <RadialGradient id="play-lamp" cx="50%" cy="34%" r="55%">
+            <Stop offset="0%" stopColor={room.desk.center} stopOpacity={0.32} />
+            <Stop offset="65%" stopColor={room.desk.center} stopOpacity={0.08} />
+            <Stop offset="100%" stopColor={room.desk.center} stopOpacity={0} />
+          </RadialGradient>
+          <RadialGradient id="play-vignette" cx="50%" cy="50%" r="72%">
+            <Stop offset="45%" stopColor={colors.shade} stopOpacity={0} />
+            <Stop offset="100%" stopColor={colors.shade} stopOpacity={0.62} />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#play-diamonds)" />
+        <Rect width="100%" height="100%" fill="url(#play-lamp)" />
+        <Rect width="100%" height="100%" fill="url(#play-vignette)" />
+      </Svg>
+      <Matter kind="leather" />
     </View>
   );
 }
@@ -293,6 +363,7 @@ export function SideTile({
   label,
   badge,
   lockedAt,
+  compact = false,
   onPress,
 }: {
   readonly icon: ToyIconName;
@@ -301,35 +372,36 @@ export function SideTile({
   readonly badge?: string | undefined;
   /** The level that opens it, while it is closed. */
   readonly lockedAt?: string | undefined;
+  readonly compact?: boolean;
   readonly onPress?: (event: GestureResponderEvent) => void;
 }) {
   const locked = lockedAt !== undefined;
   return (
-    <View style={styles.side}>
+    <View style={[styles.side, compact && styles.sideCompact]}>
       <View>
         <Toy
           matter={locked ? "locked" : "gold"}
           shape="tile"
-          style={styles.tile}
+          style={[styles.tile, compact && styles.tileCompact]}
           accessibilityRole="button"
           accessibilityLabel={locked ? `${label}, ${lockedAt}` : label}
           onPress={onPress}
         >
-          <Lettrine icon={icon} matter={matter} size={34} locked={locked} />
+          <Lettrine icon={icon} matter={matter} size={compact ? 28 : 34} locked={locked} />
         </Toy>
         {locked && (
           <View style={styles.lockPin} pointerEvents="none">
-            <ToyIcon name="lock" size={26} />
+            <ToyIcon name="lock" size={compact ? 22 : 26} />
           </View>
         )}
         {!locked && badge !== undefined && <CountBadge count={badge} style={styles.corner} />}
       </View>
       {locked && (
         <ToyBody matter="dark" shape="tag" style={styles.levelTag}>
-          <Lettering size={11}>{lockedAt}</Lettering>
+          <Lettering size={compact ? 10 : 11}>{lockedAt}</Lettering>
         </ToyBody>
       )}
-      <Lettering size={11} numberOfLines={2} style={styles.sideLabel}>
+      <Lettering size={compact ? 10 : 11} numberOfLines={2} style={styles.sideLabel}>
         {label}
       </Lettering>
     </View>
@@ -684,7 +756,10 @@ const styles = StyleSheet.create({
   mail: { width: 46, height: 46 },
   mailCompact: { width: 42, height: 42 },
   side: { alignItems: "center", width: 88 },
+  sideCompact: { width: 58 },
   tile: { width: 58, height: 58 },
+  tileCompact: { width: 48, height: 48 },
+  diamondBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: room.desk.edge },
   lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
   levelTag: { zIndex: 2, marginTop: -9, paddingHorizontal: 7, paddingBottom: 2 },
   sideLabel: { marginTop: 4, textAlign: "center" },
@@ -693,7 +768,7 @@ const styles = StyleSheet.create({
   arrow: { width: 42, height: 42 },
   flipped: { transform: [{ scaleX: -1 }] },
   collectionName: { alignItems: "center", minWidth: 180 },
-  name: { maxWidth: 200, marginTop: 3, textAlign: "center" },
+  name: { maxWidth: 260, marginTop: 3, textAlign: "center" },
   dots: { flexDirection: "row", gap: 7, marginTop: 6 },
   dot: {
     width: 10,
@@ -708,8 +783,8 @@ const styles = StyleSheet.create({
     boxShadow: `inset 0 -2px 0 ${toyMatters.gold.edge}`,
   },
   tagline: {
-    marginTop: 6,
-    marginHorizontal: 40,
+    marginTop: 3,
+    marginHorizontal: 18,
     color: colors.pageInkSoft,
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.body,

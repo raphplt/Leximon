@@ -44,7 +44,7 @@ import { Card } from "@/cards/card";
 import { RecycleButton } from "@/ecus/recycle-button";
 import { play } from "@/feedback/feedback";
 import { openCoffret } from "@/levels/coffret";
-import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
+import { MainAction, PaperAction } from "@/library/play-pieces";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
@@ -168,7 +168,6 @@ export function Recap({
       >
         {/* The cards lie on the desk, as long as what it holds; the main button sits on its edge. */}
         <View style={[styles.column, tight && styles.columnTight]}>
-          <Desk style={styles.desk} />
           <View style={styles.line}>
             {best !== null && (
               <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />

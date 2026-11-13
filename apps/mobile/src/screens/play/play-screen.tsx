@@ -39,7 +39,7 @@ import { api } from "@/api/client";
 import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/spoken-word";
 import { play, prepareSounds } from "@/feedback/feedback";
-import { Desk, PaperAction } from "@/library/play-pieces";
+import { DiamondBackdrop, PaperAction } from "@/library/play-pieces";
 import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards, refreshIfRead } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { account, carnet, missions, publishProgress, wallet } from "@/player/state";
@@ -121,9 +121,12 @@ const CHARGE_SPARKS_MAX = 6;
 /** The Jouer screen: the counter with its sachet, the opening, the reveal and the recap. */
 export function PlayScreen() {
   return (
-    <ParticleStage dust>
-      <PlayFlow />
-    </ParticleStage>
+    <View style={styles.screen}>
+      <DiamondBackdrop />
+      <ParticleStage dust>
+        <PlayFlow />
+      </ParticleStage>
+    </View>
   );
 }
 
@@ -412,8 +415,6 @@ function PlayFlow() {
     const hurried = phase.hurriedFrom !== null;
     return (
       <View style={styles.screen} onLayout={measureScreen}>
-        {/* On the desk, the lines under the card read on leather rather than on the shelves. */}
-        <Desk style={styles.revealDesk} />
         <RevealCard
           key={phase.index}
           card={card}
@@ -583,7 +584,6 @@ function Notice({ text, children }: { readonly text: string; readonly children?:
   return (
     <View style={styles.screen}>
       <View style={styles.notice}>
-        <Desk style={StyleSheet.absoluteFill} />
         <Text style={styles.hint}>{text}</Text>
         {children}
       </View>
@@ -637,7 +637,6 @@ const styles = StyleSheet.create({
     color: colors.danger,
     textAlign: "center",
   },
-  revealDesk: { position: "absolute", top: 4, left: 8, right: 8, bottom: TAB_BAR_RISE + 64 },
   revealBar: { paddingHorizontal: space.s10, paddingBottom: 12 + TAB_BAR_RISE, gap: space.s6 },
   revealInfo: { alignItems: "center", gap: space.s3 },
   position: {

@@ -29,14 +29,13 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { openRewards } from "@/levels/welcome";
-import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
+import { CollectionTitle, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
 import { openMissions } from "@/missions/missions-sheet";
 import { dailyChallenge } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { missions } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { TOOLING_ROOM } from "@/ui/ornaments";
 import { GRID } from "./sachet-face";
 
 type TileId = Exclude<FabId, "mail" | "settings">;
@@ -54,19 +53,19 @@ const TILES: Readonly<
   coffrets: { icon: "chest", matter: "blue" },
 };
 
-const DESK_TOP = 26;
-const DESK_BOTTOM = 96 + TAB_BAR_RISE;
+const COUNTER_TOP = 16;
+const COUNTER_BOTTOM = 84 + TAB_BAR_RISE;
 
 /** How much the sachet grows once it comes to the middle to be opened. */
 const OPENING_SCALE = 1.25;
-/** The sachet on the desk, between its tiles: as large as its row allows, within these. */
-const SACHET_WIDTH = { min: 64, max: 180 } as const;
+/** The sachet on the counter, between its tiles: as large as its row allows, within these. */
+const SACHET_WIDTH = { min: 80, max: 250 } as const;
 /** Room the sachet keeps in its row: its top margin and its sway. */
-const SACHET_ROOM = 24;
-/** Room it keeps across: the desk's tooling on both sides, so the tiles lie inside it, and air around the sachet. */
-const SACHET_GUTTER = 2 * TOOLING_ROOM + 32;
-/** The desk's distance from the screen's sides. */
-const DESK_SIDE = 14;
+const SACHET_ROOM = 12;
+/** Room it keeps across: breathing room between the side tiles and the sachet. */
+const SACHET_GUTTER = 12;
+/** Horizontal padding of the counter row, pushing the side tiles to the screen edges. */
+const COUNTER_SIDE = 6;
 
 /**
  * The sachet's width in a row of this height, between tiles leaving this much width: on a short
@@ -179,7 +178,7 @@ export function LibraryCounter({
   const [screen, setScreen] = useState(0);
   const [row, setRow] = useState({ y: 0, height: 0 });
   const [place, setPlace] = useState({ y: 0, height: 0 });
-  const deskMiddle = (DESK_TOP + screen - DESK_BOTTOM) / 2;
+  const deskMiddle = (COUNTER_TOP + screen - COUNTER_BOTTOM) / 2;
   const climb = screen === 0 ? 0 : deskMiddle - row.y - place.y - place.height / 2;
   /** The columns of tiles, at their natural size: they shrink to the row when it is short. */
   const [tiles, setTiles] = useState({ width: 0, height: 0 });
@@ -188,7 +187,7 @@ export function LibraryCounter({
   const { width: windowWidth } = useWindowDimensions();
   const sachetWidth = fitSachet(
     row.height,
-    windowWidth - 2 * DESK_SIDE - 2 * tiles.width * tileScale - SACHET_GUTTER,
+    windowWidth - 2 * COUNTER_SIDE - 2 * tiles.width * tileScale - SACHET_GUTTER,
   );
   const fitTiles = {
     transform: [{ scale: tileScale }],
@@ -271,7 +270,6 @@ export function LibraryCounter({
       style={styles.screen}
       onLayout={({ nativeEvent: { layout } }) => setScreen(layout.height)}
     >
-      <Desk style={styles.desk} />
       <Animated.View style={fading} pointerEvents={opening ? "none" : "auto"}>
         <CollectionTitle
           kicker="Sachet"
@@ -416,6 +414,7 @@ function Tiles({
             icon={TILES[fab.id].icon}
             matter={TILES[fab.id].matter}
             label={fab.label}
+            compact
             badge={
               fab.badge > 0 ? String(fab.badge) : fab.id === "daily" && dailyLeft ? "!" : undefined
             }
@@ -428,25 +427,18 @@ function Tiles({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, alignItems: "center", paddingTop: 46 },
-  desk: {
-    position: "absolute",
-    top: DESK_TOP,
-    left: DESK_SIDE,
-    right: DESK_SIDE,
-    bottom: DESK_BOTTOM,
-  },
+  screen: { flex: 1, alignItems: "center", paddingTop: COUNTER_TOP },
   middle: {
     flex: 1,
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: DESK_SIDE + TOOLING_ROOM + 2,
-    marginTop: 6,
+    paddingHorizontal: COUNTER_SIDE,
+    marginTop: 4,
   },
-  side: { gap: 6 },
-  sachet: { paddingTop: 4, zIndex: 2 },
+  side: { gap: 8 },
+  sachet: { paddingTop: 2, zIndex: 2 },
   // The light it gathers, behind it.
   glow: {
     position: "absolute",
