@@ -41,7 +41,6 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { Card } from "@/cards/card";
-import { RecycleButton } from "@/ecus/recycle-button";
 import { play } from "@/feedback/feedback";
 import { openCoffret } from "@/levels/coffret";
 import { MainAction, PaperAction } from "@/library/play-pieces";
@@ -309,7 +308,6 @@ export function Recap({
           {!mustSignUp && !coffretWaits && nextSachet !== null && (
             <Text style={styles.note}>{nextSachet}</Text>
           )}
-          <RecycleButton />
         </View>
         <View style={styles.actions} onLayout={measureActions}>
           {coffretWaits ? (
