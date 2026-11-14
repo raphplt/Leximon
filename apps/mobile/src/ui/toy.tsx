@@ -90,6 +90,13 @@ function Thickness({ radius, depth }: { readonly radius: number; readonly depth:
   );
 }
 
+function hasSizedStyle(style: StyleProp<ViewStyle>): boolean {
+  if (style === undefined || style === null || typeof style !== "object") return false;
+  if (Array.isArray(style)) return style.some((item) => hasSizedStyle(item));
+  const view = style as ViewStyle;
+  return view.height !== undefined || view.flex !== undefined || (view.flexGrow ?? 0) > 0;
+}
+
 /**
  * Something to press, cut from leather, old gold or paper: it sinks by its thickness under the
  * finger and springs back as it is released.
@@ -119,6 +126,7 @@ export function Toy({
   const scale = useSharedValue(1);
   const depth = depthOf(shape, large);
   const radius = large && shape === "box" ? toyRadii.large : RADII[shape];
+  const sized = hasSizedStyle(style);
   const pressed = useAnimatedStyle(() => ({ transform: [{ translateY: sink.value * depth }] }));
   const popped = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const [first, ...rest] = press.scales;
@@ -148,9 +156,17 @@ export function Toy({
         style,
       ]}
     >
-      <Animated.View style={[styles.fill, popped]}>
+      <Animated.View style={[sized && styles.grow, popped]}>
         <Thickness radius={radius} depth={depth} />
-        <Animated.View style={[styles.body, bodyStyle(matter, radius, large), inner, pressed]}>
+        <Animated.View
+          style={[
+            styles.body,
+            sized && styles.grow,
+            bodyStyle(matter, radius, large),
+            inner,
+            pressed,
+          ]}
+        >
           {children}
         </Animated.View>
       </Animated.View>
@@ -409,8 +425,8 @@ const styles = StyleSheet.create({
   lettrineIcon: { marginBottom: toyValues.lip.small },
   off: { opacity: 0.6 },
   toy: { position: "relative", flexGrow: 0, flexShrink: 0 },
-  fill: { flexGrow: 1 },
-  body: { flexGrow: 1, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  grow: { flexGrow: 1 },
+  body: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   /** A shown body keeps its own size, where a pressed one fills its toy. */
   shown: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   outline: {
