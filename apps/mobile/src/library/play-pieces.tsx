@@ -415,7 +415,11 @@ export function SideTile({
           <Lettering size={compact ? 10 : 11}>{lockedAt}</Lettering>
         </ToyBody>
       )}
-      <Lettering size={compact ? 10 : 11} numberOfLines={2} style={styles.sideLabel}>
+      <Lettering
+        size={compact ? 9.5 : 11}
+        numberOfLines={2}
+        style={[styles.sideLabel, compact && styles.sideLabelCompact]}
+      >
         {label}
       </Lettering>
     </View>
@@ -485,6 +489,12 @@ export function CollectionTitle({
   );
 }
 
+/**
+ * Beyond this many letters, the label of the main action is set smaller: « Ouvrir un sachet
+ * bonus » and its count would not fit the button on a phone.
+ */
+const LONG_ACTION = 18;
+
 /** The main action, in old gold, which invites a press every few seconds while it waits. */
 export function MainAction({
   label,
@@ -531,7 +541,7 @@ export function MainAction({
         onPress={onPress}
       >
         <View style={styles.sheen} pointerEvents="none" />
-        <Lettering size={22}>{label}</Lettering>
+        <Lettering size={label.length > LONG_ACTION ? 19 : 22}>{label}</Lettering>
         {count !== undefined && (
           <ToyBody matter="red" shape="round" style={styles.mainCount}>
             <Lettering size={18}>{count}</Lettering>
@@ -781,13 +791,16 @@ const styles = StyleSheet.create({
   mail: { width: 46, height: 46 },
   mailCompact: { width: 42, height: 42 },
   side: { alignItems: "center", width: 88 },
-  sideCompact: { width: 58 },
+  sideCompact: { width: 60 },
   tile: { width: 58, height: 58 },
   tileCompact: { width: 48, height: 48 },
   diamondBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: room.desk.edge },
   lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
   levelTag: { zIndex: 2, marginTop: -9, paddingHorizontal: 7, paddingBottom: 2 },
   sideLabel: { marginTop: 4, textAlign: "center" },
+  // A long word (« Récompenses ») is wider than a narrow column: its label spills a little on
+  // each side rather than break the word in two.
+  sideLabelCompact: { width: 68, marginHorizontal: -4 },
   collection: { alignItems: "center" },
   collectionRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   arrow: { width: 42, height: 42 },

@@ -53,17 +53,14 @@ import { toast } from "@/ui/toast";
 import { type CounterMoment, LibraryCounter } from "./library-counter";
 import { isNewAt, type Pack } from "./pack";
 import { Recap } from "./recap";
-import { RevealCard } from "./reveal-card";
+import { RevealCard, revealCardHeight } from "./reveal-card";
 import { Sachet } from "./sachet";
 
 /** The sachet chosen last, kept on the device. */
 const CHOICE_KEY = "leximon_sachet";
 const CARD_MAX_WIDTH = 300;
-/**
- * Room kept around a revealed card: the banner above, the bar below, and under a new card the
- * line of its frequency, which takes two lines beside the buttons to hear it.
- */
-const REVEAL_CHROME = 236;
+/** The bar under a revealed card, until it is measured. */
+const REVEAL_BAR_GUESS = 150;
 
 type Phase =
   | { readonly name: "loading" }
@@ -156,6 +153,9 @@ function PlayFlow() {
   const [screenHeight, setScreenHeight] = useState(0);
   const measureScreen = (event: LayoutChangeEvent) =>
     setScreenHeight(event.nativeEvent.layout.height);
+  /** The bar under a revealed card: its rarity, its place in the pack and the buttons. */
+  const [barHeight, setBarHeight] = useState(REVEAL_BAR_GUESS);
+  const measureBar = (event: LayoutChangeEvent) => setBarHeight(event.nativeEvent.layout.height);
   const currentWallet = view.wallet;
   /** Boosters a guest may still open before creating an account; null for a member. */
   const guestLeft = who?.kind === "guest" ? who.boostersLeft : null;
@@ -397,7 +397,8 @@ function PlayFlow() {
     Math.min(
       CARD_MAX_WIDTH,
       window.width - 56,
-      ((screenHeight || window.height) - REVEAL_CHROME) * (cardSize.width / cardSize.height),
+      revealCardHeight((screenHeight || window.height) - barHeight) *
+        (cardSize.width / cardSize.height),
     ),
   );
 
@@ -431,20 +432,22 @@ function PlayFlow() {
           tone={pack.back}
           stage={stage}
           onNext={next}
+          footer={
+            <View style={styles.revealBar} onLayout={measureBar}>
+              <View style={styles.revealInfo}>
+                <RarityName rarity={drawn.rarity} color={colors.pageInk} />
+                <Text style={styles.position}>
+                  {phase.index + 1} / {pack.cards.length} · {pack.collectionName} {progress.owned}/
+                  {progress.total}
+                </Text>
+              </View>
+              <View style={styles.revealActions}>
+                {!last && !hurried && <PaperAction label="Tout révéler" onPress={revealAll} />}
+                <PaperAction label={revealNextLabel(last)} onPress={next} />
+              </View>
+            </View>
+          }
         />
-        <View style={styles.revealBar}>
-          <View style={styles.revealInfo}>
-            <RarityName rarity={drawn.rarity} color={colors.pageInk} />
-            <Text style={styles.position}>
-              {phase.index + 1} / {pack.cards.length} · {pack.collectionName} {progress.owned}/
-              {progress.total}
-            </Text>
-          </View>
-          <View style={styles.revealActions}>
-            {!last && !hurried && <PaperAction label="Tout révéler" onPress={revealAll} />}
-            <PaperAction label={revealNextLabel(last)} onPress={next} />
-          </View>
-        </View>
       </View>
     );
   }

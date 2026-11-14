@@ -47,7 +47,7 @@ export function Rays({
   const open = useSharedValue(0);
   const turn = useSharedValue(0);
   useEffect(() => {
-    open.value = shown ? withSpring(1, { damping: 12, stiffness: 140 }) : withTiming(0);
+    open.value = shown ? withSpring(1, { damping: 12, stiffness: 140, mass: 1 }) : withTiming(0);
     if (shown && !reduced) {
       turn.value = 0;
       turn.value = withRepeat(withTiming(1, { duration: 16000, easing: Easing.linear }), -1);

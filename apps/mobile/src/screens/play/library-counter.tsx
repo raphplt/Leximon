@@ -210,7 +210,7 @@ export function LibraryCounter({
         ? 1
         : 0
       : opening
-        ? withSpring(1, { damping: 12, stiffness: 140 })
+        ? withSpring(1, { damping: 12, stiffness: 140, mass: 1 })
         : withTiming(0, { duration: 200 });
   }, [opening, reduced, chrome, lift]);
   const fading = useAnimatedStyle(() => ({ opacity: chrome.value }));

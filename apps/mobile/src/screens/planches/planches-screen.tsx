@@ -398,7 +398,7 @@ function Effects() {
       setSweep((value) => value + 1);
       if (revealBanner[chosen] !== undefined) setStamp((value) => value + 1);
       if (stagingFor(chosen, { reducedMotion: false, hurried: false }).spotlight) {
-        lift.value = withSpring(1.12, { damping: 10 });
+        lift.value = withSpring(1.12, { damping: 10, stiffness: 100, mass: 1 });
       }
       setMoment("shown");
     });

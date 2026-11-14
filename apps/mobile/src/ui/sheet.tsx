@@ -70,10 +70,10 @@ export function Sheet({
           );
           return;
         }
-        translateY.value = withSpring(0, { damping: 24, stiffness: 280 });
+        translateY.value = withSpring(0, { damping: 24, stiffness: 280, mass: 1 });
       })
       .onFinalize((_, success) => {
-        if (!success) translateY.value = withSpring(0, { damping: 24, stiffness: 280 });
+        if (!success) translateY.value = withSpring(0, { damping: 24, stiffness: 280, mass: 1 });
       });
   }, [onClose, translateY]);
 

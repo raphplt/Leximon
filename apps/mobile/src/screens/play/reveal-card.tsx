@@ -1,7 +1,7 @@
 import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
 import { cardSize, rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
 import { cardRelease, frequencyLine, type RarityStaging } from "@leximon/view-model";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View, type ViewInstance } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -36,6 +36,21 @@ const TAP_SLOP = 8;
 const SPEAK_AFTER_CHIME_MS = 220;
 /** The corner of a card, for a card 300 wide. */
 const CARD_CORNER = 16;
+/** The line of « Ta première carte Légendaire ! », above the card. */
+const FIRST_LINE = 30;
+/** A card in the spotlight grows: the line above keeps clear of it. */
+const SPOTLIGHT_MARGIN = 14;
+const SPOTLIGHT_SCALE = 1.06;
+/** The buttons to hear the word, and the line of its frequency below them. */
+const UNDER_HEIGHT = 61;
+/**
+ * The tallest card a reveal fits in `room`, with the line above it, the buttons and the frequency
+ * below it, and the half of its growth in the spotlight that goes past its box at the bottom.
+ */
+export function revealCardHeight(room: number): number {
+  const around = FIRST_LINE + SPOTLIGHT_MARGIN + 2 * space.s7 + UNDER_HEIGHT;
+  return Math.max(0, (room - around) / (1 + (SPOTLIGHT_SCALE - 1) / 2));
+}
 
 /**
  * One card of the pack: its announcement on the back, then its face, then a touch or a swipe
@@ -52,6 +67,7 @@ export function RevealCard({
   firstLabel,
   tone,
   stage = null,
+  footer = null,
   onNext,
 }: {
   readonly card: CatalogCard;
@@ -70,6 +86,8 @@ export function RevealCard({
    * is announced, then sparks, rays and its name come as the face shows.
    */
   readonly stage?: Stage | null;
+  /** What sits under the card, at the foot of the screen: the room's shade covers it too. */
+  readonly footer?: ReactNode;
   readonly onNext: () => void;
 }) {
   const [flipped, setFlipped] = useState(false);
@@ -141,7 +159,7 @@ export function RevealCard({
   // The staging is read once: a card keeps the one it started with.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once per card.
   useEffect(() => {
-    arrival.value = reduced ? 1 : withSpring(1, { damping: 11, stiffness: 160 });
+    arrival.value = reduced ? 1 : withSpring(1, { damping: 11, stiffness: 160, mass: 1 });
     if (staging.dim) dim.value = withTiming(1, { duration: 400 });
     if (staging.flip === "instant") {
       flip();
@@ -216,35 +234,34 @@ export function RevealCard({
   useEffect(() => {
     settledValue.value = settled;
   }, [settled, settledValue]);
-  const moved = useSharedValue(false);
-  const pan = useMemo(() => {
+  // A tap and a drag are told apart by the distance the finger travels: a pan alone never
+  // starts for a finger that does not move, and the tap would be lost.
+  const gesture = useMemo(() => {
     const notifyPress = () => latest.current.press();
     const notifyRelease = (dx: number, dy: number) => {
       const { leave: away, settled: ready } = latest.current;
       if (ready && cardRelease(dx, dy, width) === "next") away(dx < 0 ? -1 : 1);
       else drag.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.back(1.6)) });
     };
-    return Gesture.Pan()
-      .minDistance(0)
-      .onBegin(() => {
-        moved.value = false;
-      })
+    const tap = Gesture.Tap()
+      .maxDistance(TAP_SLOP)
+      .onEnd((_, success) => {
+        if (success) scheduleOnRN(notifyPress);
+      });
+    const pan = Gesture.Pan()
+      .minDistance(TAP_SLOP)
       .onUpdate((event) => {
-        if (Math.hypot(event.translationX, event.translationY) >= TAP_SLOP) moved.value = true;
         // Only a face up card follows the finger: a back keeps its announcement.
         if (settledValue.value) drag.value = event.translationX;
       })
       .onEnd((event) => {
-        if (!moved.value) {
-          scheduleOnRN(notifyPress);
-          return;
-        }
         scheduleOnRN(notifyRelease, event.translationX, event.translationY);
       })
       .onFinalize((_, success) => {
         if (!success) drag.value = withTiming(0, { duration: 220 });
       });
-  }, [drag, moved, settledValue, width]);
+    return Gesture.Race(pan, tap);
+  }, [drag, settledValue, width]);
 
   const cardStyle = useAnimatedStyle(() => ({
     opacity: (1 - exit.value) * Math.min(1, arrival.value * 2),
@@ -254,7 +271,7 @@ export function RevealCard({
       { translateX: drag.value + exitSide.value * width * 0.6 * exit.value + shake.value * 3 },
       { translateY: -8 * float.value },
       { rotate: `${shake.value * 1.2 + drag.value / 20 + exitSide.value * exit.value * 8}deg` },
-      { scale: staging.spotlight ? 1 + 0.06 * turn.value : 1 },
+      { scale: staging.spotlight ? 1 + (SPOTLIGHT_SCALE - 1) * turn.value : 1 },
     ],
   }));
   const back = useAnimatedStyle(() => ({
@@ -277,95 +294,120 @@ export function RevealCard({
   const auraStrength = announcing ? 0.9 : !flipped ? 0 : card.rarity === "common" ? 0.25 : 0.6;
 
   return (
-    <View style={styles.reveal}>
+    <View style={styles.screen}>
       {staging.dim && <Animated.View style={[styles.dim, shade]} pointerEvents="none" />}
-      <Text
-        style={[
-          styles.first,
-          // A card in the spotlight grows: the banner keeps clear of it.
-          {
-            opacity: firstLabel !== null && settled ? 1 : 0,
-            marginBottom: staging.spotlight ? 14 : 0,
-          },
-        ]}
-      >
-        {firstLabel ?? " "}
-      </Text>
-      <Animated.View style={[{ width, height }, cardStyle]}>
-        {library && <Aura size={width * 2.4} color={rarityLight} strength={auraStrength} />}
-        {library && <Rays size={width * 2.8} color={rarityLight} shown={flipped && effect.rays} />}
-        {!library && glow !== null && (
-          <Animated.View
-            style={[
-              styles.glow,
-              { left: -width * 0.4, top: -height * 0.25, width: width * 1.8, height: height * 1.5 },
-              halo,
-            ]}
-            pointerEvents="none"
-          >
-            <Svg width="100%" height="100%">
-              <Defs>
-                <RadialGradient id="glow" cx="50%" cy="50%" r="50%">
-                  <Stop offset="0" stopColor={glow} stopOpacity={1} />
-                  <Stop offset="0.65" stopColor={glow} stopOpacity={0} />
-                </RadialGradient>
-              </Defs>
-              <Ellipse cx="50%" cy="50%" rx="50%" ry="50%" fill="url(#glow)" />
-            </Svg>
-          </Animated.View>
-        )}
-        <GestureDetector gesture={pan}>
-          <View
-            ref={target}
-            style={StyleSheet.absoluteFill}
-            collapsable={false}
-            accessible
-            accessibilityRole="button"
-            accessibilityLabel={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
-            accessibilityActions={[{ name: "activate" }]}
-            onAccessibilityAction={press}
-          >
-            <Animated.View style={[StyleSheet.absoluteFill, back]}>
-              <CardBack width={width} tone={tone} />
-              <Animated.View style={[StyleSheet.absoluteFill, edgeOn]}>
-                <CardEdge rarity={card.rarity} width={width} />
+      <View style={styles.reveal}>
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+          style={[
+            styles.first,
+            {
+              opacity: firstLabel !== null && settled ? 1 : 0,
+              marginBottom: staging.spotlight ? SPOTLIGHT_MARGIN : 0,
+            },
+          ]}
+        >
+          {firstLabel ?? " "}
+        </Text>
+        <Animated.View style={[{ width, height }, cardStyle]}>
+          {library && <Aura size={width * 2.4} color={rarityLight} strength={auraStrength} />}
+          {library && (
+            <Rays size={width * 2.8} color={rarityLight} shown={flipped && effect.rays} />
+          )}
+          {!library && glow !== null && (
+            <Animated.View
+              style={[
+                styles.glow,
+                {
+                  left: -width * 0.4,
+                  top: -height * 0.25,
+                  width: width * 1.8,
+                  height: height * 1.5,
+                },
+                halo,
+              ]}
+              pointerEvents="none"
+            >
+              <Svg width="100%" height="100%">
+                <Defs>
+                  <RadialGradient id="glow" cx="50%" cy="50%" r="50%">
+                    <Stop offset="0" stopColor={glow} stopOpacity={1} />
+                    <Stop offset="0.65" stopColor={glow} stopOpacity={0} />
+                  </RadialGradient>
+                </Defs>
+                <Ellipse cx="50%" cy="50%" rx="50%" ry="50%" fill="url(#glow)" />
+              </Svg>
+            </Animated.View>
+          )}
+          <GestureDetector gesture={gesture}>
+            <View
+              ref={target}
+              style={StyleSheet.absoluteFill}
+              collapsable={false}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
+              accessibilityActions={[{ name: "activate" }]}
+              onAccessibilityAction={press}
+            >
+              <Animated.View style={[StyleSheet.absoluteFill, back]}>
+                <CardBack width={width} tone={tone} />
+                <Animated.View style={[StyleSheet.absoluteFill, edgeOn]}>
+                  <CardEdge rarity={card.rarity} width={width} />
+                </Animated.View>
+                {staging.announce === "crack" && <Cracks width={width} height={height} />}
               </Animated.View>
-              {staging.announce === "crack" && <Cracks width={width} height={height} />}
-            </Animated.View>
-            <Animated.View style={[StyleSheet.absoluteFill, face]}>
-              <HoloCard
-                card={card}
-                collectionName={collectionName}
-                width={width}
-                touchable={settled}
-              />
-              {library && (
-                <View
-                  style={[styles.sheen, { borderRadius: (CARD_CORNER * width) / cardSize.width }]}
-                  pointerEvents="none"
-                >
-                  <Sheen width={width} sweep={sweep} />
-                </View>
-              )}
-            </Animated.View>
-          </View>
-        </GestureDetector>
-        {library && banner !== undefined && (
-          <RarityBanner text={RARITY_LABELS[card.rarity]} color={banner} stamp={stamp} />
-        )}
-        {settled && (
-          <Text style={[styles.badge, isNew ? styles.newBadge : styles.copies]}>
-            {isNew ? "Nouveau !" : `×${copies}`}
-          </Text>
-        )}
-      </Animated.View>
-      <View style={styles.under}>
-        {!flipped && staging.flip === "touch" && touchable && (
-          <Text style={styles.touchHint}>Touche la carte</Text>
-        )}
-        {settled && <SpeechButtons word={word} label={card.word} />}
-        {settled && isNew && <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>}
+              <Animated.View style={[StyleSheet.absoluteFill, face]}>
+                <HoloCard
+                  card={card}
+                  collectionName={collectionName}
+                  width={width}
+                  touchable={settled}
+                />
+                {library && (
+                  <View
+                    style={[styles.sheen, { borderRadius: (CARD_CORNER * width) / cardSize.width }]}
+                    pointerEvents="none"
+                  >
+                    <Sheen width={width} sweep={sweep} />
+                  </View>
+                )}
+              </Animated.View>
+            </View>
+          </GestureDetector>
+          {library && banner !== undefined && (
+            <RarityBanner text={RARITY_LABELS[card.rarity]} color={banner} stamp={stamp} />
+          )}
+          {settled && (
+            <Text style={[styles.badge, isNew ? styles.newBadge : styles.copies]}>
+              {isNew ? "Nouveau !" : `×${copies}`}
+            </Text>
+          )}
+        </Animated.View>
+        <View style={styles.under}>
+          {!flipped && staging.flip === "touch" && touchable && (
+            <Text style={styles.touchHint}>Touche la carte</Text>
+          )}
+          {settled && (
+            <View style={styles.speech}>
+              <SpeechButtons word={word} label={card.word} />
+            </View>
+          )}
+          {settled && isNew && (
+            <Text
+              style={styles.frequency}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {frequencyLine(card.perBillion)}
+            </Text>
+          )}
+        </View>
       </View>
+      {footer}
     </View>
   );
 }
@@ -397,11 +439,15 @@ function Cracks({ width, height }: { readonly width: number; readonly height: nu
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   reveal: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.s7 },
   dim: { ...StyleSheet.absoluteFill, backgroundColor: colors.dim },
   first: {
+    alignSelf: "stretch",
+    paddingHorizontal: space.s8,
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
+    lineHeight: FIRST_LINE,
     color: colors.rubric,
     textAlign: "center",
   },
@@ -421,17 +467,18 @@ const styles = StyleSheet.create({
   },
   newBadge: { backgroundColor: colors.sticker, color: colors.inkOnColor },
   copies: { backgroundColor: colors.sheet, color: colors.pageInk },
+  // Room for the buttons to hear the word and the line of its frequency, kept from the start:
+  // the card does not move when they appear.
   under: {
-    minHeight: 36,
-    flexDirection: "row",
+    minHeight: UNDER_HEIGHT,
     alignItems: "center",
-    justifyContent: "center",
-    gap: space.s5,
+    justifyContent: "flex-start",
+    gap: space.s3,
     paddingHorizontal: space.s12,
   },
+  speech: { flexDirection: "row", gap: space.s5 },
   touchHint: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInkMuted },
   frequency: {
-    flexShrink: 1,
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.body,
     lineHeight: 19,

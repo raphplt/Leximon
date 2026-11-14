@@ -239,6 +239,10 @@ export function Lettering({
   readonly minimumFontScale?: number;
 }) {
   const reach = Math.max(lettering.minOutline / 2, (lettering.outlineRatio * size) / 2);
+  // Android measures a label to the exact width of its letters, then may lay it out a pixel
+  // narrower and push its last word to a second line. A trailing hair space is measured but
+  // may hang past the edge, so the words keep their line.
+  const words = `${children}\u200A`;
   const text: TextStyle = { fontFamily: font, fontSize: size, lineHeight: Math.round(size * 1.15) };
   const copy = (key: string, dx: number, dy: number) => (
     <Text
@@ -250,7 +254,7 @@ export function Lettering({
       importantForAccessibility="no"
       style={[text, style, styles.outline, { transform: [{ translateX: dx }, { translateY: dy }] }]}
     >
-      {children}
+      {words}
     </Text>
   );
   return (
@@ -264,7 +268,7 @@ export function Lettering({
         minimumFontScale={minimumFontScale}
         style={[text, style, { color }]}
       >
-        {children}
+        {words}
       </Text>
     </View>
   );
