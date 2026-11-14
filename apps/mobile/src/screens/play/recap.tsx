@@ -401,9 +401,8 @@ const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
   // Clear of the desk's gilt frame.
   recap: { flex: 1 },
-  scroll: { flexGrow: 1 },
+  scroll: { flexGrow: 1, justifyContent: "space-between" },
   column: {
-    flexGrow: 1,
     alignItems: "center",
     paddingTop: space.s12,
     paddingBottom: space.s10,
