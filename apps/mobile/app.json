@@ -90,7 +90,8 @@
         {
           "motionPermission": "Leximon suit l'inclinaison du téléphone pour faire jouer la lumière sur les cartes."
         }
-      ]
+      ],
+      "./plugins/with-lean-gradle.js"
     ],
     "experiments": {
       "typedRoutes": true,
