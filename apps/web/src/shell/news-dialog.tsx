@@ -1,10 +1,11 @@
 "use client";
 
-import { changelogDate, newsToShow } from "@leximon/view-model";
+import { changelogDate, changelogFor, newsToShow } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
+import { StoreBadges } from "@/ui/store-badges";
 import styles from "./panels.module.css";
 
 const STORAGE_KEY = "leximon.news-seen";
@@ -34,7 +35,8 @@ export function NewsDialog({ level }: { readonly level: number | null }) {
   const [seen, setSeen] = useState<string | null | undefined>(undefined);
   useEffect(() => setSeen(readSeen()), []);
   const news = useMemo(
-    () => (seen === undefined || level === null ? null : newsToShow(seen, level)),
+    () =>
+      seen === undefined || level === null ? null : newsToShow(seen, level, changelogFor("web")),
     [seen, level],
   );
 
@@ -68,6 +70,9 @@ export function NewsDialog({ level }: { readonly level: number | null }) {
                 <li key={item}>{item}</li>
               ))}
             </ul>
+            {entry.stores === true && (
+              <StoreBadges small place="news" className={styles.newsStores} />
+            )}
           </section>
         ))}
         <Button wide onClick={close}>

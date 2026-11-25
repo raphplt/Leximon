@@ -230,6 +230,16 @@
   color: var(--lx-color-page-ink-muted);
 }
 
+.newsStores {
+  margin-top: var(--lx-s7);
+}
+
+.storesLine {
+  margin: 0 0 var(--lx-s6);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
+}
+
 .newsItems {
   display: flex;
   flex-direction: column;

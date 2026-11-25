@@ -10,6 +10,7 @@ import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { useNarrow } from "@/lib/use-narrow";
 import { ButtonLink } from "@/ui/button";
+import { StoreBadges } from "@/ui/store-badges";
 import ui from "@/ui/ui.module.css";
 import { CardFacts, CardOrigin, CardQuoteInFull } from "./card-facts";
 import type { CardLink } from "./catalog-server";
@@ -56,6 +57,7 @@ export function PublicCardView({
         <div className={styles.pitch}>
           <p>{pitch}</p>
           <ButtonLink href="/jouer">{CARD_PAGE_ACTION}</ButtonLink>
+          <StoreBadges small place="card" className={styles.stores} />
         </div>
         {neighbours.length > 0 && (
           <nav className={styles.neighbours} aria-label={CARD_PAGE_NEIGHBOURS}>

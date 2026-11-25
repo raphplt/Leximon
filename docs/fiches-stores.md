@@ -41,6 +41,8 @@ Tant que l'inscription passe par une invitation, ajouter en tête : « Pendant l
 | Champ | Adresse |
 |---|---|
 | Site | https://leximon.fr |
+| Page Google Play | https://play.google.com/store/apps/details?id=fr.leximon.app |
+| Page App Store | https://apps.apple.com/fr/app/leximon/id6827744020 |
 | Contact, assistance | contact@leximon.fr, page https://leximon.fr/mentions |
 | Politique de confidentialité | https://leximon.fr/confidentialite |
 | Suppression du compte (Play) | https://leximon.fr/confidentialite (section « Tes droits » : dans l'app, Réglages puis « Supprimer mon compte », ou par e-mail) |

@@ -1,3 +1,4 @@
+import { STORE_LINKS } from "@leximon/view-model";
 import Link from "next/link";
 import { Logo } from "@/ui/logo";
 import { ParticleStage } from "@/ui/stage";
@@ -62,6 +63,12 @@ export async function LandingPage() {
             <Link href="/conditions">Conditions</Link>
             <Link href="/mentions">Mentions</Link>
             <Link href="/nouveautes">Nouveautés</Link>
+            <a href={STORE_LINKS.android} target="_blank" rel="noopener noreferrer">
+              App Android
+            </a>
+            <a href={STORE_LINKS.ios} target="_blank" rel="noopener noreferrer">
+              App iPhone
+            </a>
             <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
               Discord
             </a>

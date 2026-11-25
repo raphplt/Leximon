@@ -109,3 +109,7 @@
   gap: var(--lx-s6);
   margin-top: var(--lx-s6);
 }
+
+.stores {
+  margin-top: var(--lx-s8);
+}

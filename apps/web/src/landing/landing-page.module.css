@@ -1232,6 +1232,27 @@
   align-items: center;
 }
 
+.closingStores {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 22px;
+  border-top: 1px solid color-mix(in srgb, var(--lx-color-gilt) 30%, transparent);
+}
+
+.closingStoresLine {
+  margin: 0;
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.closingBadges {
+  justify-content: center;
+}
+
 .closing .waitlist {
   width: 100%;
 }

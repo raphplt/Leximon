@@ -50,6 +50,7 @@ export * from "./road";
 export * from "./sanctions";
 export * from "./shell";
 export * from "./staging";
+export * from "./stores";
 export * from "./trades";
 export * from "./welcome";
 export * from "./wishes";

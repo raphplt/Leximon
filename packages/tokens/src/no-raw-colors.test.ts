@@ -37,6 +37,7 @@ const OWN_PALETTE = [
   /opengraph-image/,
   // Third-party identity and seals fanned on the account page.
   /google-button/,
+  /store-badges/,
   /account-screen\.module/,
 ];
 

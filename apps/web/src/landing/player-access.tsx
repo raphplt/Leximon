@@ -1,12 +1,13 @@
 "use client";
 
-import { SIGN_IN_QUERY, sharedResource } from "@leximon/view-model";
+import { SIGN_IN_QUERY, STORES_LINE, sharedResource } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/resource";
 import { Tooling } from "@/ui/ornaments";
+import { StoreBadges } from "@/ui/store-badges";
 import { Kicker, Lettering, toyClass } from "@/ui/toy";
 import type { Door } from "./door";
 import styles from "./landing-page.module.css";
@@ -91,6 +92,10 @@ export function Closing({ door }: { readonly door: Door }) {
         Six sachets gratuits t'attendent pour tirer tes trente premiers mots rares.
       </p>
       <DoorAction door={door} />
+      <div className={styles.closingStores}>
+        <p className={styles.closingStoresLine}>{STORES_LINE}</p>
+        <StoreBadges place="closing" className={styles.closingBadges} />
+      </div>
     </section>
   );
 }

@@ -62,6 +62,10 @@
   line-height: 1.45;
 }
 
+.stores {
+  margin-top: var(--lx-s7);
+}
+
 .neighbours {
   margin-top: var(--lx-s12);
   font-size: var(--lx-size-body);

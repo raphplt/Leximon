@@ -6,6 +6,7 @@ import {
   pseudoSettingLabel,
   publicProfileDetail,
   SIGN_IN_QUERY,
+  STORES_LINE,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ import { PseudoDialog } from "@/profile/pseudo-dialog";
 import { failureMessage, useProfileActions } from "@/profile/use-profile-actions";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
+import { StoreBadges } from "@/ui/store-badges";
 import { Switch } from "@/ui/switch";
 import ui from "@/ui/ui.module.css";
 import styles from "./panels.module.css";
@@ -296,6 +298,11 @@ export function SettingsPanel({
             {error}
           </p>
         )}
+      </section>
+      <section className={ui.group}>
+        <h3 className={ui.kicker}>App mobile</h3>
+        <p className={styles.storesLine}>{STORES_LINE}</p>
+        <StoreBadges small place="settings" />
       </section>
       <p className={styles.footnote}>
         <Link href="/mentions" onClick={onClose}>

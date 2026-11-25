@@ -1,8 +1,9 @@
-import { CHANGELOG, changelogDate } from "@leximon/view-model";
+import { changelogDate, changelogFor } from "@leximon/view-model";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Fragment } from "react";
 import { Tailpiece } from "@/ui/ornaments";
+import { StoreBadges } from "@/ui/store-badges";
 import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
@@ -19,7 +20,7 @@ export default function NewsPage() {
         Leximon
       </Link>
       <h1 className={`${styles.title} ${ui.lettered}`}>Nouveautés</h1>
-      {CHANGELOG.map((entry, index) => (
+      {changelogFor("web").map((entry, index) => (
         <Fragment key={entry.date}>
           {index > 0 && <Tailpiece className={styles.tailpiece} />}
           <section className={`${styles.section} ${styles.framed} ${ui.leaf}`}>
@@ -30,6 +31,7 @@ export default function NewsPage() {
                 <li key={item}>{item}</li>
               ))}
             </ul>
+            {entry.stores === true && <StoreBadges place="news-page" className={styles.stores} />}
           </section>
         </Fragment>
       ))}

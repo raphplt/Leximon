@@ -1,0 +1,99 @@
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Black like the stores' own badges, so a player knows them at a glance; the gilt edge is ours. */
+.badges .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 150px;
+  height: 48px;
+  padding: 0 16px 0 13px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--lx-color-gilt) 45%, #8a8a8a);
+  border-radius: 10px;
+  background: #0d0d0d;
+  color: #fff;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 28%);
+  transition:
+    transform 140ms ease-out,
+    border-color 140ms ease-out;
+}
+
+.badges .badge:hover {
+  transform: translateY(-1px);
+  border-color: var(--lx-color-gilt);
+}
+
+.badges .badge:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  text-align: left;
+}
+
+.over {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.88;
+}
+
+.name {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.badges[data-small] .badge {
+  min-width: 132px;
+  height: 40px;
+  padding: 0 12px 0 10px;
+  gap: 7px;
+  border-radius: 8px;
+}
+
+.badges[data-small] .over {
+  font-size: 9.5px;
+}
+
+.badges[data-small] .name {
+  font-size: 16px;
+}
+
+/* On a phone, both badges hold on one line. */
+@media (max-width: 420px) {
+  .badges .badge {
+    min-width: 0;
+    height: 44px;
+    padding: 0 11px 0 9px;
+    gap: 7px;
+  }
+
+  .over {
+    font-size: 10px;
+  }
+
+  .name {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge {
+    transition: none;
+  }
+  .badge:hover {
+    transform: none;
+  }
+}

@@ -1,4 +1,4 @@
-import { newsToShow } from "@leximon/view-model";
+import { changelogFor, newsToShow } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useMemo, useState } from "react";
@@ -37,7 +37,10 @@ export function NewsHost() {
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [seen, setSeen] = useState(readSeen);
-  const news = useMemo(() => (level === null ? null : newsToShow(seen, level)), [seen, level]);
+  const news = useMemo(
+    () => (level === null ? null : newsToShow(seen, level, changelogFor("mobile"))),
+    [seen, level],
+  );
 
   useEffect(() => {
     if (news !== null && news.entries.length === 0 && news.seen !== null && news.seen !== seen) {

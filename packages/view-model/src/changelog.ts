@@ -4,10 +4,27 @@ export interface ChangelogEntry {
   readonly date: string;
   readonly title: string;
   readonly items: readonly string[];
+  /** Told on that platform alone, when the news means nothing on the other. */
+  readonly only?: NewsPlatform;
+  /** The links to the app on the stores follow the items. */
+  readonly stores?: true;
 }
+
+export type NewsPlatform = "web" | "mobile";
 
 /** Newest first. An entry is added the day a change players can see goes live. */
 export const CHANGELOG: readonly ChangelogEntry[] = [
+  {
+    date: "2026-11-25",
+    title: "Leximon sur ton téléphone",
+    only: "web",
+    stores: true,
+    items: [
+      "L'app Leximon est sortie sur Android et sur iPhone. Elle est gratuite, comme le site.",
+      "Connecte-toi avec ton compte pour retrouver ta collection, tes amis et ton clan. Tu passes du site à l'app quand tu veux.",
+      "Sur le téléphone, les sachets se déchirent du doigt et la lumière glisse sur tes cartes quand tu l'inclines.",
+    ],
+  },
   {
     date: "2026-11-09",
     title: "La plus grande mise à jour de Leximon",
@@ -89,6 +106,14 @@ export function newsToShow(
     .filter((entry) => lastSeen === null || entry.date > lastSeen)
     .slice(0, NEWS_AT_ONCE);
   return { entries, seen: latest };
+}
+
+/** The entries told on a platform, newest first. */
+export function changelogFor(
+  platform: NewsPlatform,
+  changelog: readonly ChangelogEntry[] = CHANGELOG,
+): readonly ChangelogEntry[] {
+  return changelog.filter((entry) => entry.only === undefined || entry.only === platform);
 }
 
 const MONTHS = [

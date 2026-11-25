@@ -1,4 +1,5 @@
 import { colors, cssRootRule } from "@leximon/tokens";
+import { APP_STORE_ID } from "@leximon/view-model";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
 import { Umami } from "@/analytics/umami";
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
   title: "Leximon",
   description: "Les mots oubliés du français, en cartes à collectionner.",
   twitter: { card: "summary_large_image" },
+  // Safari on iPhone shows its own banner to open or install the app.
+  itunes: { appId: APP_STORE_ID },
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

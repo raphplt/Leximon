@@ -19,6 +19,7 @@ import { RarityName } from "@/components/rarity-icon";
 import { PaperAction } from "@/library/play-pieces";
 import { Fleurons, Tooling } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
+import { StoreBadges } from "@/ui/store-badges";
 import { Kicker, Leaf, Lettering, ToyIcon } from "@/ui/toy";
 import { DiscordLink } from "./discord";
 import type { Door } from "./door";
@@ -178,6 +179,7 @@ export function Hero({
             </li>
           </ul>
           <DoorAction door={door} />
+          <StoreBadges place="hero" />
           <DiscordLink className={styles.discord} />
         </div>
 

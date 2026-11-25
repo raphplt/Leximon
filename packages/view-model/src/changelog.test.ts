@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CHANGELOG, type ChangelogEntry, changelogDate, newsToShow } from "./changelog";
+import {
+  CHANGELOG,
+  type ChangelogEntry,
+  changelogDate,
+  changelogFor,
+  newsToShow,
+} from "./changelog";
 
 const entry = (date: string): ChangelogEntry => ({ date, title: date, items: ["Un changement."] });
 const LOG = [entry("2026-11-10"), entry("2026-11-05"), entry("2026-11-01"), entry("2026-10-29")];
@@ -26,6 +32,12 @@ describe("changelog", () => {
 
   it("spares a new player the news of the past", () => {
     expect(newsToShow(null, 2, LOG)).toEqual({ entries: [], seen: "2026-11-10" });
+  });
+
+  it("keeps the news of one platform off the other", () => {
+    const log = [{ ...entry("2026-11-12"), only: "web" as const }, ...LOG];
+    expect(changelogFor("web", log).map((e) => e.date)[0]).toBe("2026-11-12");
+    expect(changelogFor("mobile", log)).toEqual(LOG);
   });
 
   it("dates an entry in French", () => {
