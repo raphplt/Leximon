@@ -8,7 +8,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ORIGIN = process.env.CATALOG_ORIGIN ?? "https://leximon.fr";
+const ORIGIN = "https://leximon.fr";
 const BASE = `${ORIGIN}/catalog/`;
 const TARGET = join(dirname(fileURLToPath(import.meta.url)), "../../apps/web/public/catalog");
 const INDEXES = ["manifest.json", "engravings.json", "cabinet.json", "finders.json"];
