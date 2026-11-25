@@ -36,6 +36,7 @@
     "finds:reject:prod": "sh infra/prod/check-database-url.sh && pnpm finds:reject",
     "deploy:api": "pnpm --filter @leximon/api exec wrangler deploy --env production",
     "deploy:web": "pnpm --filter @leximon/web run deploy:production",
+    "deploy:front": "sh infra/prod/deploy-front.sh",
     "deploy:prod": "sh infra/prod/deploy.sh"
   },
   "devDependencies": {

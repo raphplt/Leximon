@@ -24,6 +24,7 @@ pnpm dev:bots <email> --challenge     # base locale seulement : ouvre les joutes
 pnpm dev:clan-feed [clan]            # base locale seulement : réinitialise le feed d'un clan avec des données réalistes
 pnpm format                      # corrige le formatage (Biome)
 pnpm deploy:prod                 # met main en production (docs/mise-en-ligne.md), arbre propre et Docker exigés
+pnpm deploy:front                # met en production le site seul, avec le catalogue déjà en ligne (sans base ni données de contenu)
 ```
 
 Chaîne de contenu (Python, `content/pipeline/`, voir D-019 et D-021) :
