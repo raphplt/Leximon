@@ -10,7 +10,15 @@ import {
   type StockView,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { type ReactNode, type Ref, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  type Ref,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   type LayoutChangeEvent,
   StyleSheet,
@@ -155,10 +163,10 @@ export function LibraryCounter({
     readonly right: CollectionChoice | null;
   };
   /**
-   * The sachet itself at a width, which the screen opens: the counter only sizes it to its row,
-   * moves it and makes it charge.
+   * The sachet of a collection at a width, which the screen opens: the counter only sizes it to
+   * its row, moves it and makes it charge.
    */
-  readonly sachet: (width: number) => ReactNode;
+  readonly sachet: (width: number, collectionId: string) => ReactNode;
   readonly stock: StockView | null;
   /** Sachets the player may still open, for the count on the button; null to show none. */
   readonly left: number | null;
@@ -173,6 +181,9 @@ export function LibraryCounter({
 }) {
   const now = useNow(60_000);
   const reduced = useReducedMotion();
+  // A sachet takes the phone a while to draw: on a change, the title and its dots answer the
+  // finger at once, and the new sachet follows in the next render.
+  const sachetChoice = useDeferredValue(choice);
   const [bubble, setBubble] = useState<{ readonly text: string } | null>(null);
   const say = (text: string) => setBubble({ text });
   const opening = moment !== "waiting";
@@ -323,7 +334,7 @@ export function LibraryCounter({
           <GestureDetector gesture={swipeCollection}>
             <Animated.View style={trembling} pointerEvents={opening ? "none" : "auto"}>
               <Animated.View
-                key={choice.id}
+                key={sachetChoice.id}
                 collapsable={false}
                 {...(entry === null
                   ? {}
@@ -332,7 +343,7 @@ export function LibraryCounter({
                       exiting: slideOut(entry === "right" ? "left" : "right"),
                     })}
               >
-                {sachet(sachetWidth)}
+                {sachet(sachetWidth, sachetChoice.id)}
               </Animated.View>
             </Animated.View>
           </GestureDetector>

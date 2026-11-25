@@ -492,10 +492,10 @@ function PlayFlow() {
           choices={choices}
           choice={choice}
           neighbours={neighbourChoices(choices, choice)}
-          sachet={(width) => (
+          sachet={(width, collectionId) => (
             <Sachet
-              key={collection.id}
-              collection={collection}
+              key={collectionId}
+              collection={catalog?.collections.find((c) => c.id === collectionId) ?? collection}
               state={
                 opening ? (moment === "burst" ? "opening" : "sealed") : canOpen ? "sealed" : "empty"
               }

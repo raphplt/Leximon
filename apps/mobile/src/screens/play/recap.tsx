@@ -65,8 +65,6 @@ const CARD_MAX = 260;
 const CARD_MIN = 156;
 /** Below this height the recap closes up its lines; below what even that leaves, it scrolls. */
 const TIGHT_ROOM = 600;
-/** Height kept around the cards until it is measured: the recap's lines, the buttons and the tabs. */
-const CHROME = 540;
 /** The main button's height, in the play pieces: the desk's edge runs through its middle. */
 const MAIN_ACTION_HEIGHT = 66;
 const STEP_MS = 80;
@@ -95,17 +93,19 @@ export function Recap({
   readonly onHome: () => void;
 }) {
   const window = useWindowDimensions();
-  const [room, setRoom] = useState(window.height);
-  const tight = room < TIGHT_ROOM;
-  // Everything but the cards, measured: lines come and go (a level, a completed rarity), and a
-  // long phone or a large font takes more than any estimate.
+  // The room, then everything but the cards, are measured before the cards are laid down: lines
+  // come and go (a level, a completed rarity) and a large font takes more than any estimate, and a
+  // card resized once on screen shrinks under the eye and lays its text out again.
+  const [room, setRoom] = useState<number | null>(null);
+  const tight = room !== null && room < TIGHT_ROOM;
+  const [columnHeight, setColumnHeight] = useState(0);
   const [carouselHeight, setCarouselHeight] = useState(0);
-  const [actionsBottom, setActionsBottom] = useState(0);
-  const chrome = carouselHeight > 0 && actionsBottom > 0 ? actionsBottom - carouselHeight : CHROME;
-  const measureActions = (event: LayoutChangeEvent) => {
-    const { y, height } = event.nativeEvent.layout;
-    setActionsBottom(Math.ceil(y + height));
-  };
+  const [actionsHeight, setActionsHeight] = useState(0);
+  const measured = columnHeight > 0 && carouselHeight > 0 && actionsHeight > 0;
+  // The column less its carousel: the same whatever the cards' size, so it settles at once.
+  const chrome = Math.round(columnHeight - carouselHeight + actionsHeight);
+  const heightOf = (set: (height: number) => void) => (event: LayoutChangeEvent) =>
+    set(event.nativeEvent.layout.height);
   const now = useNow(15_000);
   const progressNow = useShared(progressResource);
   const wallet = useShared(walletResource);
@@ -118,7 +118,7 @@ export function Recap({
       Math.min(
         CARD_MAX,
         window.width - PEEK,
-        ((room - chrome - 2 * space.s7) * cardSize.width) / cardSize.height,
+        (((room ?? 0) - chrome - 2 * space.s7) * cardSize.width) / cardSize.height,
       ),
     ),
   );
@@ -158,15 +158,21 @@ export function Recap({
   // The gains come once the cards have landed, one after the other.
   const after = (index: number) =>
     FadeInUp.delay(pack.cards.length * CASCADE_STEP_MS + 260 + index * 140).duration(320);
+  if (room === null) {
+    return <View style={styles.recap} onLayout={heightOf(setRoom)} />;
+  }
   return (
-    <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
+    <View style={styles.recap} onLayout={heightOf(setRoom)}>
       <ScrollView
-        scrollEnabled={actionsBottom > room + 1}
+        scrollEnabled={measured && columnHeight + actionsHeight > room + 1}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
         {/* The cards lie on the desk, as long as what it holds; the main button sits on its edge. */}
-        <View style={[styles.column, tight && styles.columnTight]}>
+        <View
+          style={[styles.column, tight && styles.columnTight]}
+          onLayout={heightOf(setColumnHeight)}
+        >
           <View style={styles.line}>
             {best !== null && (
               <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />
@@ -184,40 +190,41 @@ export function Recap({
               setActive(Math.round(event.nativeEvent.contentOffset.x / (width + GAP)))
             }
             scrollEventThrottle={32}
-            onLayout={(event) => setCarouselHeight(Math.floor(event.nativeEvent.layout.height))}
+            onLayout={heightOf(setCarouselHeight)}
             style={styles.carousel}
           >
-            {shown.map(({ card: drawn, index }, position) => (
-              <Animated.View
-                key={index}
-                entering={FadeInRight.delay(position * STEP_MS).duration(260)}
-              >
-                <Pressable
-                  onPress={() =>
-                    openCard(
-                      drawn.cardId,
-                      shown.map((entry) => entry.card.cardId),
-                    )
-                  }
-                  accessibilityRole="button"
-                  accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
+            {measured &&
+              shown.map(({ card: drawn, index }, position) => (
+                <Animated.View
+                  key={index}
+                  entering={FadeInRight.delay(position * STEP_MS).duration(260)}
                 >
-                  <Card
-                    card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
-                    collectionName={pack.collectionName}
-                    width={width}
-                  />
-                </Pressable>
-                {steps[position]?.glint === true && (
-                  <Glint
-                    color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
-                    width={width}
-                    delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
-                  />
-                )}
-                {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
-              </Animated.View>
-            ))}
+                  <Pressable
+                    onPress={() =>
+                      openCard(
+                        drawn.cardId,
+                        shown.map((entry) => entry.card.cardId),
+                      )
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
+                  >
+                    <Card
+                      card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
+                      collectionName={pack.collectionName}
+                      width={width}
+                    />
+                  </Pressable>
+                  {steps[position]?.glint === true && (
+                    <Glint
+                      color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
+                      width={width}
+                      delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
+                    />
+                  )}
+                  {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
+                </Animated.View>
+              ))}
           </ScrollView>
           <View style={styles.dots} importantForAccessibility="no-hide-descendants">
             {pack.cards.map((_, index) => (
@@ -309,7 +316,7 @@ export function Recap({
             <Text style={styles.note}>{nextSachet}</Text>
           )}
         </View>
-        <View style={styles.actions} onLayout={measureActions}>
+        <View style={styles.actions} onLayout={heightOf(setActionsHeight)}>
           {coffretWaits ? (
             <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
           ) : mustSignUp ? (
